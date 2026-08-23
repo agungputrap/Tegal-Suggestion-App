@@ -1,0 +1,65 @@
+# ---- AI tooling (never push these — personal/learned) ----
+
+# Command Code: taste = your personal learned preferences (like/dislike).
+# settings.json can contain local permissions/paths — keep local.
+.commandcode/taste/
+.commandcode/settings.json
+
+# Claude Code: personal settings
+.claude/settings.json
+.claude/settings.local.json
+
+# Copilot / editors: personal local config
+.github/copilot-instructions.md
+
+# Gemini: personal memory
+.gemini/
+
+# Node (frontend)
+node_modules/
+dist/
+build/
+*.local
+.vite/
+
+# Python (backend)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.db
+*.sqlite3
+uploads/
+media/
+
+# Env & secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Misc
+*.tmp
+*.bak
