@@ -98,3 +98,9 @@ Skills are the same content in each folder — copy on change, or symlink if you
 3. Validate (Definition of Done) before pushing; fix + recommit until all pass
 4. `git fetch origin && git rebase origin/development` before pushing
 5. Push, open a PR into `development`, other owner reviews (`/pr-review`), author merges after addressing feedback
+
+### Updating `master` (release branch)
+
+- `master` is a release snapshot; the daily loop is `development` only.
+- To update `master`: open a PR **`development` → `master`** (same as a GitLab MR) and merge. GitHub does not delete `development` on merge.
+- If the PR says "No commits between master and development", the branches are in sync — nothing to release.
