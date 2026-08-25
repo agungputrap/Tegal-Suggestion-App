@@ -7,12 +7,12 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "jajan-jasa-db"
-database_id = "00000000-0000-0000-0000-000000000001" # dummy, dev lokal saja
+database_id = "dca069e3-5e8b-4c07-80a8-45cc311a994c"
 
 # --- KV: cache daftar aktif hari ini per kota (read-heavy) ---
 [[kv_namespaces]]
 binding = "ACTIVE_CACHE"
-id = "dummy-local-kv-namespace-id" # dummy, dev lokal saja
+id = "789f5cb14b8942eb9e245670c731b3d3"
 
 # --- R2: foto jajanan / portofolio jasa ---
 [[r2_buckets]]
