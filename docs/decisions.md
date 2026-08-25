@@ -38,3 +38,11 @@
 
 - **Decision:** Mirrored the team skills into `.claude/skills/` (Claude Code discovery) and `.github/skills/` (Copilot discovery), and added `GEMINI.md` (self-contained project rules for Gemini CLI, which doesn't read `AGENTS.md` by default). All mirrors must stay identical to `.commandcode/skills/`.
 - **Why:** Members use different AI tools; the skills + rules need to be recognized by each tool's native discovery so output stays consistent across the team.
+
+## 2026-08-24 — Stack migrated to Cloudflare (FastAPI → Hono Workers)
+
+- **Decision:** Adopted the working implementation from `ref/` (built by Claude) as the actual codebase: `ref/jajan-jasa-web` → `frontend/`, `ref/jajan-jasa-worker` → `backend/`. Backend is now **Hono on Cloudflare Workers** (D1 + KV + R2 + Cron); frontend stays React + Vite + TS but uses custom CSS design tokens instead of Tailwind/shadcn and plain Leaflet instead of react-leaflet. Deploy target is Cloudflare Pages + Workers (free tier) instead of Render/Railway + Vercel/Netlify.
+- **API contract changed:** error shape is now `{"error": ...}` (was FastAPI `{"detail": ...}`); no `/api` prefix; data model is `categories` / `providers` / `checkins` (was `businesses` / `items` / `open_sessions` / `approvals`). The API contract shapes now live in `backend/src/types.ts` + `docs/tech-spec.md` (was `backend/app/schemas.py`).
+- **Not yet ported from the old spec:** items (menu/price-list), WhatsApp verify code, owner portal `/kelola/{token}`, trending sort, area filter, halal flag — tracked as gaps in `docs/tech-spec.md` and `TASKS.md`.
+- **Why:** the `ref/` implementation already ran end-to-end (register → checkin → map listings) and hosts free on Cloudflare; rewriting it in FastAPI would cost the hackathon week for zero user-visible gain. FastAPI on Cloudflare Python Workers was evaluated and rejected (Pyodide package limits, no SQLAlchemy/psycopg, rewrite of the DB layer anyway).
+- **Review note:** this touches shared files (`docs/tech-spec.md`, `AGENTS.md`, `TASKS.md`, ownership map) — both owners must review before merge.

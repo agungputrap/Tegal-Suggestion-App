@@ -9,24 +9,20 @@
 
 ### Language & formatting
 
-- **Python** backend, **TypeScript** frontend. No plain JS in frontend code.
-- **Formatting is enforced by tools, not by taste:**
-  - Backend: **Ruff** (format + lint)
-  - Frontend: **Prettier** + **ESLint**
+- **TypeScript everywhere** — frontend (React + Vite) and backend (Hono on Cloudflare Workers). No plain JS.
+- **Formatting is enforced by tools, not by taste** — Prettier + ESLint (setup pending, task #10). Until then: match the surrounding code exactly.
 - When in doubt, match the surrounding code — but the formatter is the source of truth.
 
 ### Naming
 
 | Thing | Convention | Example |
 | ----- | ---------- | ------- |
-| Files | kebab-case | `business-detail.tsx`, `open-session.py` |
-| Python functions/vars | snake_case | `get_open_businesses()` |
-| TS functions/vars | camelCase | `getOpenBusinesses()` |
-| Python classes | PascalCase | `Business` |
-| TS components/types | PascalCase | `BusinessCard`, `type BusinessDto` |
-| DB columns | snake_case | `owner_token`, `is_open` |
-| API JSON keys | snake_case | `{"owner_token": ...}` |
-| Endpoints | kebab-case, plural | `/api/businesses` |
+| Files | kebab-case | `listing-card.tsx`, `expire-checkins.ts` |
+| TS functions/vars | camelCase | `getActiveListings()` |
+| TS components/types | PascalCase | `ListingCard`, `type ActiveListing` |
+| DB columns | snake_case | `provider_id`, `is_active` |
+| API JSON keys | snake_case | `{"category_id": ...}` |
+| Endpoints | kebab-case, plural | `/providers`, `/checkins` |
 
 ### Commits & branches
 
@@ -38,40 +34,42 @@
 
 - Validate at the boundary (API input, form input, file uploads). Trust internal code.
 - Never swallow errors silently. Log it or show the user a message.
-- Backend errors → `{"detail": "..."}` (FastAPI shape). Frontend shows a toast/message.
+- Backend errors → `{"error": "..."}` with an appropriate HTTP status. Frontend shows a toast/message.
 
 ---
 
-## Part B — Backend (FastAPI + SQLAlchemy)
+## Part B — Backend (Hono on Cloudflare Workers)
 
 ### Structure
 
 ```
-backend/app/
-├── main.py          # app factory, router registration
-├── models.py        # SQLAlchemy models (Business, Item, OpenSession, Approval)
-├── schemas.py       # Pydantic schemas — THE API CONTRACT (shared file)
-├── seed.py          # demo data loader
-└── routers/         # one file per resource: businesses.py, kelola.py, register.py
+backend/
+├── src/
+│   ├── index.ts       # routes + scheduled (cron) handler
+│   ├── types.ts       # Env bindings + entity types (THE API CONTRACT shapes — shared)
+│   └── geo.ts         # bounding box, haversine, todayJakarta()
+├── schema.sql         # D1 schema + seeded categories
+├── wrangler.toml      # D1/KV/R2 bindings, cron trigger (NO secrets in here)
+└── .dev.vars          # local secrets (gitignored; see .dev.vars.example)
 ```
 
 ### Rules
 
-- **Pydantic for all input/output** in `schemas.py`. No raw dict access.
-- One router file per resource; register routers in `main.py`.
-- DB access only inside the router handlers (no business logic in models).
-- Public responses **never** include `owner_token` — serialize to a DTO in `schemas.py`.
-- Use SQLAlchemy ORM, not raw SQL (except in seed.sql). Parametrize everything.
+- **D1 is the source of truth.** KV (`ACTIVE_CACHE`) is cache only — writes delete cache keys, never write to KV directly.
+- Parametrize **all** SQL with `.bind()` — no string interpolation into queries.
+- Secrets (`ADMIN_TOKEN`) go in `.dev.vars` locally and `wrangler secret` in prod. Never in `wrangler.toml`.
+- CPU time is limited on the Workers free tier (10ms/request): prefilter with cheap SQL (bounding box) before expensive math (haversine).
+- Route files: routes currently live in `index.ts`; when it grows past ~500 lines, split one file per resource (`src/routes/admin.ts`, …) and register in `index.ts`.
+- "Today" always means Jakarta time — use `todayJakarta()` from `geo.ts`, never `new Date()` directly.
 - Follow `/api-guidelines` skill for endpoints and status codes.
 
 ### Validation commands (run before claiming done)
 
 ```bash
 cd backend
-ruff check .        # lint + style — must pass
-ruff format --check .   # formatting — must pass
-pytest              # unit tests — must pass
-python -m app.seed  # seed must run clean (smoke test)
+npm run typecheck       # tsc --noEmit — must pass
+npm run dev             # boots clean (smoke test)
+# unit tests: not set up yet (task #8) — when they land, `npm test` is mandatory
 ```
 
 ---
@@ -83,32 +81,30 @@ python -m app.seed  # seed must run clean (smoke test)
 ```
 frontend/src/
 ├── main.tsx            # entry
-├── App.tsx             # routes
-├── api/                # axios instance + typed API calls (one file per resource)
-├── pages/              # one file per route: HomeMap.tsx, BusinessDetail.tsx, ...
-├── components/         # reusable UI: BusinessCard.tsx, FilterBar.tsx, ...
-├── lib/                # utils, formatters (currency, wa link builder)
-└── types/              # TS types mirroring backend schemas
+├── App.tsx             # top-level page switching (Consumer / Provider / Admin)
+├── api.ts, adminApi.ts # typed API calls — public vs admin
+├── pages/              # ConsumerPage.tsx, ProviderPage.tsx, AdminPage.tsx
+├── components/         # MapView.tsx, ListingCard.tsx, CategoryFilter.tsx, PhotoUpload.tsx
+├── storage.ts          # localStorage helpers (provider identity, admin token)
+└── styles.css          # design tokens + custom CSS (no Tailwind — see decisions.md)
 ```
 
 ### Rules
 
 - **TypeScript strict mode on.** No `any` unless truly unavoidable (then comment why).
-- **All API calls go through `src/api/`** — typed functions, never raw axios in components.
-- TS types in `src/types/` mirror the backend Pydantic schemas; keep them in sync when the contract changes.
+- **All API calls go through `api.ts` / `adminApi.ts`** — typed functions, never raw `fetch` in components.
 - Components are function components + hooks. No class components.
-- Use shadcn/ui primitives + Tailwind; don't hand-roll new UI primitives.
-- Tailwind utility classes in the markup; keep custom CSS minimal.
+- Styling: custom CSS with design tokens in `styles.css` (market-morning palette, tiered radii, distinct button classes). Don't add Tailwind/component libraries without a team decision (see `docs/decisions.md`).
+- Map markers use emoji icons from the `categories` table via `L.divIcon` — adding a category must not require frontend changes.
 - Pages fetch data with a small custom hook or plain `useEffect` — no state library for MVP.
 
 ### Validation commands (run before claiming done)
 
 ```bash
 cd frontend
-npx tsc --noEmit    # typecheck — must pass (catches compile errors)
-npm run lint        # eslint — must pass
-npm run build       # production build — must succeed (catches build errors)
-npm test            # unit tests — must pass
+npm run typecheck    # tsc --noEmit — must pass
+npm run build        # production build — must succeed
+# lint + unit tests: not set up yet (tasks #9/#10) — when they land they are mandatory
 ```
 
 ---
@@ -119,42 +115,33 @@ npm test            # unit tests — must pass
 
 "Does it work?" has two answers: **the compiler** (syntax/type/build errors) and **the tests** (runtime behavior). Both are automated so any member's AI can verify before merging — no manual "trust me, it runs."
 
-### Backend: pytest + FastAPI TestClient
+### Backend: Vitest + `@cloudflare/vitest-pool-workers` (planned, task #8)
 
-- Test **routers end-to-end** with FastAPI's `TestClient` against an in-memory SQLite DB (same code path as prod, no extra deps).
-- `tests/` mirrors `app/`:
+- Tests run inside the real Workers runtime with local D1/KV/R2 bindings.
+- Cover at minimum: register validation, checkin idempotency (same day upsert), listings radius filter, suspended provider hidden, admin auth (bad token → 401), photo upload validation (bad type → 400, oversize → 413).
 
-```
-backend/tests/
-├── conftest.py       # in-memory DB fixture + TestClient fixture
-├── test_businesses.py
-├── test_register.py
-└── test_kelola.py    # owner portal: open/close/token auth
-```
-
-- Cover at minimum: list (open-today filter), detail, register + verify code, open/close flow, token auth (invalid token → 401), upload validation (bad type/size → 400).
-
-### Frontend: Vitest + React Testing Library
+### Frontend: Vitest + React Testing Library (planned, task #9)
 
 - Vitest (Vite-native, fast) + @testing-library/react + jsdom.
 - `*.test.tsx` next to the component or in `src/**/__tests__/`.
-- Cover at minimum: filter behavior, business card rendering (open vs closed), detail page data rendering, WhatsApp link builder (number format).
+- Cover at minimum: filter behavior, listing card rendering (active vs inactive), WhatsApp link builder (number format).
 
 ### Definition of Done (every task, every member)
 
 A task is **done** only when all of the following pass, verified by running the commands:
 
-- [ ] Backend: `ruff check .`, `ruff format --check .`, `pytest` all green
-- [ ] Frontend: `tsc --noEmit`, `npm run lint`, `npm run build`, `npm test` all green
-- [ ] App runs end-to-end: dev servers up, seed loaded, one happy path clicked through
+- [ ] Backend: `npm run typecheck` green, dev server boots, happy path smoke-tested via curl
+- [ ] Frontend: `npm run typecheck` green, `npm run build` succeeds
+- [ ] App runs end-to-end: both dev servers up, one happy path clicked through
 - [ ] `docs/decisions.md` appended if the change affects the other side
 - [ ] `TASKS.md` marked `[x]` with commit hash
+- [ ] (Once tasks #8/#9/#10 land: `npm test` + `npm run lint` on both sides are mandatory too)
 
 ---
 
 ## Part E — Model/AI usage agreement (team)
 
-1. **Let the repo rules drive the AI.** Every member uses the same `AGENTS.md` + `docs/` + `.commandcode/skills/` — the model's "personal style" stays out of shared code. The formatters (Ruff/Prettier) are the final arbiter, not the model.
+1. **Let the repo rules drive the AI.** Every member uses the same `AGENTS.md` + `docs/` + `.commandcode/skills/` — the model's "personal style" stays out of shared code. The formatters are the final arbiter, not the model.
 2. **Same validation commands for everyone.** The Definition of Done above is what every member's AI runs before merging. If your tool can't run a command, say so — don't skip it.
 3. **Skills are the SOPs.** `/api-guidelines` and `/code-review` are the playbooks; extend them when the team agrees, not per-person.
 4. **No per-person rules.** Personal preferences belong in your own `~/.commandcode/AGENTS.md`, never in the shared repo files.

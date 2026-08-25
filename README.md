@@ -8,33 +8,38 @@ Suggestion map for Tegal residents & newcomers — **food** (snacks, meals, tren
 
 ## Features (MVP)
 
-- Interactive map with clustered markers + list view
-- Filter by category (food / service) and area (kecamatan)
-- Business detail: items (menu / price-list), halal flag, WhatsApp CTA
-- "Open today" status — owners open/close from a phone portal
-- Trending sort by views/likes for the day
-- Registration with WhatsApp verification
+- Interactive map with clustered markers (to do — emoji markers per category done, clustering pending) + list view
+- Filter by category (food / service) and area (kecamatan) (to do — category filter done, area filter pending)
+- Business detail: items (menu / price-list) (to do), halal flag (to do), WhatsApp CTA
+- "Open today" status — owners open/close from a phone portal (to do — daily check-in ("open") done, close + `/kelola/{token}` portal pending)
+- Trending sort by views/likes for the day (to do)
+- Registration with WhatsApp verification (to do — registration form done, WA verify code + approval pending)
+
+Beyond the original list, the adopted codebase also ships: provider photo upload (R2), search-radius filtering, and an admin panel (stats, moderation, category management).
 
 ## Tech stack
 
 | Layer | Choice |
 | ----- | ------ |
-| Frontend | React + Vite + TypeScript, Tailwind + shadcn/ui, react-leaflet |
-| Backend | FastAPI + SQLAlchemy |
-| DB | SQLite (dev) / PostgreSQL (prod) |
-| Deploy | Vercel/Netlify (FE), Render/Railway (API + DB) |
+| Frontend | React + Vite + TypeScript, custom CSS design tokens, Leaflet |
+| Backend | Hono on Cloudflare Workers (TypeScript) |
+| DB / cache / storage | Cloudflare D1 (SQLite) / KV / R2 |
+| Deploy | Cloudflare Pages (frontend) + Workers (API) |
 
 ## Quick start
 
 ```bash
 # backend
 cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload     # API + Swagger at http://localhost:8000/docs
+npm install
+npm run db:migrate:local          # schema + seeded categories (local D1)
+cp .dev.vars.example .dev.vars    # set ADMIN_TOKEN for local admin login
+npm run dev                       # API at http://localhost:8787
 
 # frontend
 cd frontend
 npm install
+cp .env.example .env              # VITE_API_URL=http://localhost:8787
 npm run dev                       # http://localhost:5173
 ```
 

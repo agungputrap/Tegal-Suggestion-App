@@ -4,79 +4,101 @@
 
 ## Prerequisites
 
-- Node.js 20+ (frontend)
-- Python 3.11+ (backend)
+- Node.js 20+ (frontend and backend are both TypeScript)
+- A Cloudflare account (free tier is enough) — only needed for `wrangler` resource creation and deploy, not for local dev
 - Git
 
-## Frontend (Vite React)
+## Backend (Hono on Cloudflare Workers)
+
+```bash
+cd backend
+npm install
+
+# Local resources: none needed — wrangler dev simulates D1/KV/R2 locally.
+# Apply schema + seed categories to the local D1:
+npm run db:migrate:local
+
+# Admin token for local dev (copy, then edit):
+cp .dev.vars.example .dev.vars
+
+npm run dev          # http://localhost:8787
+```
+
+Production resources (once, before first deploy):
+
+```bash
+npm run db:create        # -> paste database_id into wrangler.toml
+npm run kv:create        # -> paste id into wrangler.toml
+npx wrangler r2 bucket create jajan-jasa-photos
+npx wrangler secret put ADMIN_TOKEN
+npm run db:migrate:remote
+npm run deploy
+```
+
+Smoke test:
+
+```bash
+curl http://localhost:8787/categories
+curl -X POST http://localhost:8787/providers -H "Content-Type: application/json" \
+  -d '{"name":"Tukang AC Pak Bud","phone":"08123456789","category_type":"jasa","category_id":"servis-ac","base_lat":-6.9219,"base_lng":109.1401}'
+curl -X POST http://localhost:8787/checkins -H "Content-Type: application/json" \
+  -d '{"provider_id":"<id_from_above>","lat":-6.9219,"lng":109.1401}'
+curl "http://localhost:8787/listings?type=jasa&lat=-6.922&lng=109.14&radius=5"
+```
+
+Validation (must pass before claiming done):
+
+```bash
+cd backend
+npm run typecheck    # tsc --noEmit
+```
+
+## Frontend (Vite + React SPA)
 
 ```bash
 cd frontend
 npm install
-npm run dev        # dev server with HMR, default http://localhost:5173
-npm run build      # production build to dist/
-npm run preview    # serve the production build locally
-
-# validation (must all pass before claiming done)
-npx tsc --noEmit   # typecheck — catches compile errors
-npm run lint       # eslint
-npm test           # vitest unit tests
+cp .env.example .env   # VITE_API_URL=http://localhost:8787 for local dev
+npm run dev            # http://localhost:5173
+npm run build          # production build to dist/
+npm run preview        # serve the production build locally
 ```
 
-## Backend (FastAPI)
+Validation (must pass before claiming done):
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-uvicorn app.main:app --reload    # dev server, Swagger docs at http://localhost:8000/docs
-
-# validation (must all pass before claiming done)
-ruff check .             # lint + style
-ruff format --check .    # formatting
-pytest                   # unit tests (FastAPI TestClient + in-memory SQLite)
+cd frontend
+npm run typecheck    # tsc --noEmit
+npm run build        # production build must succeed
 ```
 
-Env vars (copy `.env.example` to `.env`):
+> Lint and unit-test tooling are not set up yet — see `TASKS.md` (#8/#9/#10).
+> When they land, their commands belong here and in the Definition of Done.
 
-| Var | Dev default | Prod |
-| --- | ----------- | ---- |
-| `DATABASE_URL` | `sqlite:///./app.db` | Postgres URL |
-| `UPLOAD_DIR` | `./uploads` | Cloudinary/Supabase storage |
+Env vars:
 
-## Testing setup (do once when the repos are scaffolded)
-
-- **Backend:** `pytest` + FastAPI `TestClient`, tests in `backend/tests/` with an in-memory SQLite fixture. Add `pytest` and `httpx` (TestClient dep) to `requirements.txt` / a `requirements-dev.txt`.
-- **Frontend:** Vitest + React Testing Library + jsdom (`npm i -D vitest @testing-library/react jsdom`), `"test": "vitest run"` script in `package.json`.
+| Var | Where | Dev default | Prod |
+| --- | ----- | ----------- | ---- |
+| `VITE_API_URL` | `frontend/.env` | `http://localhost:8787` | Worker production URL (baked at build time — rebuild after changing) |
+| `ADMIN_TOKEN` | `backend/.dev.vars` (local) / `wrangler secret` (prod) | any string | strong random token |
 
 ## Seed data
 
-```bash
-cd backend
-# loads demo businesses (food + service) so the map is alive on demo day
-python -m app.seed        # or: psql $DATABASE_URL -f seed.sql
-```
-
-## Tests
-
-```bash
-# backend — pytest + FastAPI TestClient (in-memory SQLite)
-cd backend && pytest
-
-# frontend — Vitest + React Testing Library
-cd frontend && npm test
-```
-
-See `docs/dev-standards.md` Part D for what tests must cover and the full Definition of Done.
+`schema.sql` seeds the `categories` table (gorengan, kue basah, servis AC, tukang, …) — it is applied by `db:migrate:local` / `db:migrate:remote`. For demo-day provider data, register a few providers + checkins via the API (see smoke test above) or the Provider page in the frontend.
 
 ## Deploy
 
 | Piece | Target | Notes |
 | ----- | ------ | ----- |
-| API + DB | Render / Railway | set `DATABASE_URL` to Postgres |
-| Frontend | Vercel / Netlify | build `npm run build`, serve `dist/` |
+| API | Cloudflare Workers | `cd backend && npm run deploy` |
+| Frontend | Cloudflare Pages | `npm run build`, then `npx wrangler pages deploy dist --project-name=jajan-jasa-web`; set `VITE_API_URL` in the Pages dashboard and rebuild |
+
+Domain: connect a custom `.id` domain via Cloudflare DNS / Pages **Custom Domains** (a `.workers.dev` subdomain is not acceptable for the competition submission).
+
+## Testing setup (not done yet — tasks #8/#9)
+
+- **Backend:** Vitest + `@cloudflare/vitest-pool-workers` (runs against the real Workers runtime with local D1/KV/R2).
+- **Frontend:** Vitest + React Testing Library + jsdom, `"test": "vitest run"` in `package.json`.
 
 ## AI tool setup (team conventions are multi-tool)
 

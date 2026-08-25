@@ -1,0 +1,96 @@
+import { useEffect, useMemo, useRef } from "react";
+import L from "leaflet";
+import type { Category, Listing } from "../api";
+
+type Props = {
+  listings: Listing[];
+  categories: Category[];
+  center: { lat: number; lng: number };
+};
+
+const FALLBACK_ICON = { jajanan: "🍽️", jasa: "🛠️" };
+
+// Pin bentuk "tetesan" (rotate 45deg) dengan emoji di tengah, jadi tiap
+// kategori punya ikon sendiri alih-alih titik warna generik.
+function buildPinIcon(emoji: string, color: string): L.DivIcon {
+  return L.divIcon({
+    className: "map-pin-wrapper",
+    html: `
+      <div class="map-pin" style="background:${color}">
+        <span class="map-pin__emoji">${emoji}</span>
+      </div>
+    `,
+    iconSize: [34, 34],
+    iconAnchor: [17, 32],
+    popupAnchor: [0, -30],
+  });
+}
+
+export function MapView({ listings, categories, center }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.LayerGroup | null>(null);
+
+  const categoryById = useMemo(() => {
+    const map = new Map<string, Category>();
+    categories.forEach((c) => map.set(c.id, c));
+    return map;
+  }, [categories]);
+
+  // Cache icon per kategori supaya tidak dibuat ulang tiap render
+  const iconCache = useMemo(() => {
+    const cache = new Map<string, L.DivIcon>();
+    categories.forEach((cat) => {
+      const color = cat.type === "jajanan" ? "#e8a33d" : "#1f5c55";
+      cache.set(cat.id, buildPinIcon(cat.icon, color));
+    });
+    return cache;
+  }, [categories]);
+
+  function iconFor(listing: Listing): L.DivIcon {
+    const cached = iconCache.get(listing.category_id);
+    if (cached) return cached;
+    // Fallback kalau kategori belum termuat / tidak dikenal
+    const color = listing.category_type === "jajanan" ? "#e8a33d" : "#1f5c55";
+    return buildPinIcon(FALLBACK_ICON[listing.category_type], color);
+  }
+
+  // Init map sekali
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    const map = L.map(containerRef.current, {
+      zoomControl: false,
+    }).setView([center.lat, center.lng], 14);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap",
+      maxZoom: 19,
+    }).addTo(map);
+
+    markersRef.current = L.layerGroup().addTo(map);
+    mapRef.current = map;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Update marker tiap listings atau kategori berubah
+  useEffect(() => {
+    if (!mapRef.current || !markersRef.current) return;
+    markersRef.current.clearLayers();
+
+    for (const l of listings) {
+      const category = categoryById.get(l.category_id);
+      L.marker([l.checkin_lat, l.checkin_lng], { icon: iconFor(l) })
+        .bindPopup(`<strong>${l.name}</strong><br/>${category?.name ?? l.category_id}`)
+        .addTo(markersRef.current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listings, categoryById]);
+
+  return <div className="map-wrap" ref={containerRef} />;
+}

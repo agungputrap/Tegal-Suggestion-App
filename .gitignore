@@ -63,3 +63,8 @@ pnpm-debug.log*
 # Misc
 *.tmp
 *.bak
+
+# Cloudflare Workers (backend)
+.dev.vars
+.wrangler/
+*.tsbuildinfo

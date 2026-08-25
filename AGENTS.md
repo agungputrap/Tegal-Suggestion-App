@@ -19,15 +19,15 @@ Product requirements live in `docs/prd.md` — read it before starting new featu
 
 See `docs/runbook.md` for run / seed / test / deploy commands. Quick reference:
 
-- Frontend: `cd frontend && npm run dev`
-- Backend: `cd backend && uvicorn app.main:app --reload` (docs at `/docs`)
-- Tests: `pytest` (backend), `npm test` (frontend)
+- Frontend: `cd frontend && npm run dev` (Vite SPA, http://localhost:5173)
+- Backend: `cd backend && npm run db:migrate:local && npm run dev` (Hono on Cloudflare Workers, http://localhost:8787)
+- Validation: `npm run typecheck` on both sides (full list in `docs/dev-standards.md`)
 
 ## Ownership & shared files
 
 - `backend/` — Arief
 - `frontend/` — Budi
-- Shared, both review: `backend/app/schemas.py`, `docs/tech-spec.md`, `AGENTS.md`, `TASKS.md`
+- Shared, both review: `backend/src/types.ts`, `backend/schema.sql`, `docs/tech-spec.md`, `AGENTS.md`, `TASKS.md`
 - Never edit files outside your owned area without flagging it in the PR description.
 
 ## After any decision that affects the other side
@@ -37,14 +37,14 @@ Append to `docs/decisions.md` — contract change, schema change, new dependency
 ## Code style
 
 - Follow existing patterns in the codebase. When in doubt, match the surrounding code.
-- API responses use the envelope and error shape in `docs/tech-spec.md` (FastAPI `{"detail": ...}`).
+- API responses use the error shape in `docs/tech-spec.md` (`{"error": "..."}` with HTTP status).
 - Git workflow (see `.commandcode/skills/git-flow`): branch `feat/<issue>-<name>` from **`development`**, commit format `<type> #<issue>: <summary>`, never push to `development`/`main` directly, PRs merge via review.
 
 ## Validation (before claiming anything done)
 
 - A task is not done until its validation commands pass — see the Definition of Done in `docs/dev-standards.md`.
-- Backend: `ruff check .`, `ruff format --check .`, `pytest`
-- Frontend: `tsc --noEmit`, `npm run lint`, `npm run build`, `npm test`
+- Backend: `npm run typecheck` (+ `npm test` once task #8 lands)
+- Frontend: `npm run typecheck`, `npm run build` (+ `npm run lint`, `npm test` once tasks #9/#10 land)
 - Never claim "it works" without running the commands and showing the output.
 
 ## Skills

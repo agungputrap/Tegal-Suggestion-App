@@ -1,0 +1,27 @@
+name = "jajan-jasa-api"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# --- D1: source of truth (providers, checkins, categories) ---
+[[d1_databases]]
+binding = "DB"
+database_name = "jajan-jasa-db"
+database_id = "00000000-0000-0000-0000-000000000001" # dummy, dev lokal saja
+
+# --- KV: cache daftar aktif hari ini per kota (read-heavy) ---
+[[kv_namespaces]]
+binding = "ACTIVE_CACHE"
+id = "dummy-local-kv-namespace-id" # dummy, dev lokal saja
+
+# --- R2: foto jajanan / portofolio jasa ---
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "jajan-jasa-photos"
+
+# --- Cron: auto-expire checkin tiap tengah malam WIB (17:00 UTC) ---
+[triggers]
+crons = ["0 17 * * *"]
+
+[vars]
+ENVIRONMENT = "development"

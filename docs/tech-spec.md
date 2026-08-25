@@ -1,6 +1,6 @@
 # Tech Spec — Tegal Suggestion App
 
-> **Status:** Draft — update this file when the stack, data model, or API contract changes.
+> **Status:** Updated 2026-08-24 — stack migrated to Cloudflare (see `docs/decisions.md`).
 > This is the canonical spec. Read it before touching the API or data model.
 
 ## Goal
@@ -12,9 +12,9 @@ Suggestion application for local residents and newcomers in Tegal regarding:
 
 MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di Malang"):
 
-1. Business owner registers → admin approves via WhatsApp verification
-2. Owner opens their business daily from a phone portal ("open today")
-3. Public map/list only shows businesses that are **open today**
+1. Provider registers (name, WhatsApp number, category, base location)
+2. Provider checks in daily from their phone ("open today") — with current GPS location
+3. Public map/list only shows providers that are **checked in today**
 4. Buyer taps "Chat WhatsApp" → the whole order/booking happens in WhatsApp
    - No in-app transactions, no in-app chat, no payments
 
@@ -22,118 +22,122 @@ MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di
 
 | Layer | Choice | Notes |
 | ----- | ------ | ----- |
-| Frontend | React + Vite | Not CRA — Vite HMR saves time |
-| UI | Tailwind CSS + shadcn/ui | Radix primitives, lucide icons |
-| Maps | react-leaflet + Leaflet.markercluster | CARTO light tiles (free) |
-| HTTP | Axios | shared instance with base URL |
-| Routing | React Router | |
-| Backend | FastAPI (Python) | free Swagger docs at `/docs` |
-| ORM | SQLAlchemy | |
-| DB | SQLite in dev, PostgreSQL in prod | same code via SQLAlchemy |
-| Images | local disk in dev, Cloudinary/Supabase Storage in prod | |
-| Deploy | Render/Railway (API + DB), Vercel/Netlify (frontend) | free tiers |
+| Frontend | React + Vite + TypeScript | SPA statis, deploy ke Cloudflare Pages |
+| Maps | Leaflet (`L.divIcon` emoji markers) | marker per kategori, ikon dari tabel `categories` |
+| Backend | Hono on Cloudflare Workers | TypeScript, edge runtime |
+| DB | Cloudflare D1 (SQLite) | source of truth |
+| Cache | Cloudflare KV (`ACTIVE_CACHE`) | cache only — never the source of truth |
+| Photos | Cloudflare R2 (`PHOTOS`) | Worker proxies uploads, serves via `/photos/*` |
+| Cron | Workers Cron Trigger | `0 17 * * *` UTC = 00:00 WIB, expires yesterday's checkins |
+| Deploy | Cloudflare Pages (frontend) + Workers (API) | free tier; custom `.id` domain via Cloudflare DNS |
 | Notifications | none | WhatsApp is the interaction layer |
 
 ## Repository layout
 
 ```
 /
-├── frontend/          # React + Vite app
-├── backend/           # FastAPI app
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── models.py
-│   │   ├── schemas.py     # ← THE API CONTRACT (shared, review carefully)
-│   │   └── routers/
-│   ├── seed.sql
-│   └── requirements.txt
+├── frontend/          # React + Vite SPA (Cloudflare Pages)
+│   └── src/
+│       ├── api.ts, adminApi.ts   # typed API calls
+│       ├── pages/                # ConsumerPage, ProviderPage, AdminPage
+│       └── components/           # MapView, ListingCard, CategoryFilter, PhotoUpload
+├── backend/           # Hono Worker (Cloudflare Workers)
+│   ├── src/
+│   │   ├── index.ts   # all routes + scheduled handler
+│   │   ├── types.ts   # Env bindings + entity types (API contract shapes)
+│   │   └── geo.ts     # bounding box + haversine + todayJakarta()
+│   ├── schema.sql     # D1 schema + seeded categories
+│   └── wrangler.toml  # D1/KV/R2 bindings + cron trigger
 ├── docs/              # tech-spec, ownership, decisions, runbook
 ├── AGENTS.md          # standing rules + pointers to docs
 └── TASKS.md           # live task ledger
 ```
 
-## Data model (4 tables)
+## Data model (3 tables)
 
-### `businesses`
+### `categories`
 
 | Column | Type | Notes |
 | ------ | ---- | ----- |
-| id | int PK | |
+| id | text PK | slug, e.g. `servis-ac` |
+| name | string | display name |
+| type | enum | `jajanan` or `jasa` |
+| icon | string | emoji, used as map marker icon |
+
+### `providers`
+
+| Column | Type | Notes |
+| ------ | ---- | ----- |
+| id | text PK | UUID |
 | name | string | |
-| slug | string unique | used in URLs |
-| category | enum | `food` or `service` |
-| subcategory | string | e.g. snack, meal, AC cleaning, washing machine repair |
-| description | text | |
-| whatsapp | string | E.164, e.g. `6281234567890` |
-| lat / lng | float | |
-| area | string | kecamatan/district |
-| halal | bool nullable | food only |
-| photo_path | string | |
-| is_open | bool | today's status |
-| views | int | for trending sort |
-| owner_token | string unique | magic URL auth for owner portal |
+| phone | string unique | WhatsApp number |
+| category_type | enum | `jajanan` or `jasa` |
+| category_id | FK → categories | |
+| description | text nullable | |
+| photo_url | string nullable | `/photos/providers/<id>/<ts>.<ext>`, served from R2 |
+| base_lat / base_lng | float nullable | home base (jasa) |
+| service_radius_km | float | jasa only, 0 = no radius limit |
+| suspended | bool | 1 = hidden by admin (moderation) |
+| created_at | timestamp | |
 
-### `items`
-
-One shape for both verticals: menu item (food) or service price (home services).
+### `checkins`
 
 | Column | Type | Notes |
 | ------ | ---- | ----- |
-| id | int PK | |
-| business_id | FK | |
-| name | string | |
-| price | int | in Rupiah |
-| photo_path | string | |
-| note | string | e.g. "pedas sedang", "termasuk suku cadang" |
-| available | bool | |
-
-### `open_sessions`
-
-| Column | Type | Notes |
-| ------ | ---- | ----- |
-| id | int PK | |
-| business_id | FK | |
-| date | date | |
-| item_ids | json | which items are offered today |
-| note | string | "catatan hari ini" |
-
-### `approvals`
-
-| Column | Type | Notes |
-| ------ | ---- | ----- |
-| id | int PK | |
-| business_id | FK | |
-| status | enum | `pending`, `approved`, `rejected` |
-| verify_code | string | 6-digit WhatsApp handoff code |
+| id | text PK | UUID |
+| provider_id | FK → providers | |
+| date | date | Jakarta date; `UNIQUE(provider_id, date)` → checkin is idempotent per day |
+| lat / lng | float | GPS location at checkin — this is what shows on the map |
+| is_active | bool | 0 = expired (cron) or deactivated by admin |
 
 ## API contract (v1)
 
-Base path: `/api`. All responses JSON. Errors use FastAPI shape `{"detail": "..."}`.
+Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` with an appropriate status code.
 
-| Method | Path | Purpose | Auth |
-| ------ | ---- | ------- | ---- |
-| GET | `/api/businesses` | list open-today businesses, filter `?category=&area=` | public |
-| GET | `/api/businesses/{slug}` | detail + today's items + stats | public |
-| GET | `/api/businesses/{slug}/items` | all items | public |
-| POST | `/api/register` | business registration (creates approval + verify code) | public |
-| POST | `/api/upload` | image upload, returns `{path}` | public |
-| POST | `/api/businesses/{slug}/report` | report a business | public |
-| GET | `/api/kelola/{token}` | owner portal: business + items + today status | owner token |
-| POST | `/api/kelola/{token}/open` | open today with `{item_ids, note}` | owner token |
-| POST | `/api/kelola/{token}/close` | close today | owner token |
-| PUT | `/api/kelola/{token}/business` | update business fields | owner token |
+### Public
 
-Trending: sort by `views` (and likes) for the day — cheap "trending foods" signal.
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| GET | `/categories` | all categories (with icons) |
+| POST | `/providers` | register provider `{name, phone, category_type, category_id, description?, base_lat?, base_lng?, service_radius_km?}` → `{id}` |
+| GET | `/providers/:id` | provider detail |
+| POST | `/providers/:id/photo` | upload photo — raw image bytes (not multipart), `Content-Type: image/jpeg|png|webp`, max 5MB |
+| GET | `/photos/*` | serve photo from R2 (Cache-Control 1 year, immutable) |
+| POST | `/checkins` | daily checkin `{provider_id, lat, lng}` — upsert per day, invalidates KV cache |
+| GET | `/listings?type=&category=&lat=&lng=&radius=` | today's active providers; bounding-box prefilter + haversine, sorted by distance |
+
+### Admin (header `Authorization: Bearer <ADMIN_TOKEN>`)
+
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| GET | `/admin/me` | verify token (frontend "login") |
+| GET | `/admin/stats` | totals, active today, breakdown by type/category |
+| GET | `/admin/providers?type=&status=&q=` | list/filter/search providers |
+| PATCH | `/admin/providers/:id` | `{suspended: boolean}` — moderation |
+| DELETE | `/admin/providers/:id` | permanent delete (provider + checkins + photo) |
+| DELETE | `/admin/providers/:id/photo` | delete photo only |
+| POST | `/admin/providers/:id/deactivate-checkin` | deactivate today's checkin without suspending |
+| GET/POST/PATCH/DELETE | `/admin/categories[/:id]` | manage categories + icons (delete blocked while in use) |
 
 ## Key decisions locked
 
-- **No auth system.** Owner login = magic token in URL (`/kelola/{token}`). Admin approval via WhatsApp code handoff.
+- **No auth system for providers.** Provider identity lives in the browser `localStorage` after registration; checkin uses `provider_id` directly. Sufficient for demo day; proper WhatsApp OTP is Phase 2.
+- **Admin auth is one shared token** (`ADMIN_TOKEN` Worker secret). Multi-admin roles are Phase 2.
 - **No payments/chat/orders in-app.** Everything routes to WhatsApp via `wa.me` links.
-- **"Open today" is the freshness signal.** Map filters on `is_open`.
-- **One items table for both verticals.** Food menu and service price-list are the same shape.
+- **Daily checkin is the freshness signal.** `/listings` filters on `checkins.date = today (Jakarta) AND is_active = 1`. Cron expires old checkins at midnight WIB.
+- **KV is cache only.** D1 is the source of truth; writes delete cache keys instead of writing to KV.
+
+## Spec'd but not yet implemented (gaps vs PRD)
+
+These were in the original FastAPI-era spec and are **not** in the current code — see `TASKS.md`:
+
+- `items` table (menu / service price-list) + endpoints
+- WhatsApp verify code + approval flow for new registrations
+- Owner portal `/kelola/{token}` (open/close today, edit business) — current provider flow is localStorage-based
+- Trending sort (views/likes per day), filter by area (kecamatan), halal flag for food
 
 ## Explicitly cut (post-hackathon)
 
 - In-app payments, delivery tracking, in-app chat, ratings/reviews
-- Photo contribution + moderation, story-card/OG image generation
+- Photo contribution + moderation beyond admin, story-card/OG image generation
 - Real user accounts/auth, push notifications, multi-language

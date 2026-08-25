@@ -15,7 +15,8 @@
 
 These are the coordination points. Changes require the other person's review before merge:
 
-- `backend/app/schemas.py` — the API contract (frontend depends on it)
+- `backend/src/types.ts` — the API contract shapes (frontend depends on them)
+- `backend/schema.sql` — the data model
 - `docs/` — `tech-spec.md` (canonical spec), `prd.md` (product), `dev-standards.md` (conventions), `decisions.md` (log), `runbook.md`, `ownership.md`
 - `README.md` — repo front door
 - `AGENTS.md`, `TASKS.md` — team conventions and ledger
@@ -29,5 +30,5 @@ These are the coordination points. Changes require the other person's review bef
 
 ## Joining / leaving
 
-- **Joining:** assign a small owned area first (e.g. `backend/app/routers/` or `frontend/src/pages/`), then expand.
+- **Joining:** assign a small owned area first (e.g. `backend/src/routes/` or `frontend/src/pages/`), then expand.
 - **Leaving:** hand off by pointing the successor at your branches + commits + a one-paragraph note in `TASKS.md`. Ownership transfers in this file.

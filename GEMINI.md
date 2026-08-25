@@ -19,9 +19,9 @@ Suggestion app for Tegal: food (snacks, meals, trending) + household services (A
 
 ## Commands
 
-- Frontend: `cd frontend && npm run dev` — tests: `npm test`
-- Backend: `cd backend && uvicorn app.main:app --reload` (docs at `/docs`) — tests: `pytest`
-- Validation: see Definition of Done in `docs/dev-standards.md` (backend: `ruff check .`, `ruff format --check .`, `pytest`; frontend: `npx tsc --noEmit`, `npm run lint`, `npm run build`, `npm test`)
+- Frontend: `cd frontend && npm run dev` (Vite SPA, http://localhost:5173)
+- Backend: `cd backend && npm run db:migrate:local && npm run dev` (Hono on Cloudflare Workers, http://localhost:8787)
+- Validation: see Definition of Done in `docs/dev-standards.md` (backend: `npm run typecheck`; frontend: `npm run typecheck`, `npm run build`)
 
 ## Git workflow
 
@@ -35,4 +35,4 @@ Suggestion app for Tegal: food (snacks, meals, trending) + household services (A
 
 - `backend/` — Arief
 - `frontend/` — Budi
-- Shared (both review): `backend/app/schemas.py`, `docs/`, `AGENTS.md`/`GEMINI.md`, `TASKS.md`
+- Shared (both review): `backend/src/types.ts`, `backend/schema.sql`, `docs/`, `AGENTS.md`/`GEMINI.md`, `TASKS.md`

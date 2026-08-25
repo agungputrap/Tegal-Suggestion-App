@@ -1,0 +1,2 @@
+# Token admin untuk dev lokal (salin file ini ke .dev.vars, jangan commit .dev.vars)
+ADMIN_TOKEN=ganti-dengan-token-rahasia
