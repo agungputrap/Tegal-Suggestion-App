@@ -1,0 +1,36 @@
+import type { BusinessDto } from '../types/business'
+
+export const seededBusinesses: BusinessDto[] = [
+  {
+    id: 1,
+    name: 'Warung Makan Bu Sri',
+    slug: 'warung-makan-bu-sri',
+    category: 'food',
+    subcategory: 'meal',
+    description: 'Nasi goreng and soto Tegal.',
+    whatsapp: '6281234567890',
+    lat: -6.8714,
+    lng: 109.1322,
+    area: 'Tegal Barat',
+    halal: true,
+    photo_path: '',
+    is_open: true,
+    views: 120,
+  },
+  {
+    id: 2,
+    name: 'Service AC Pak Budi',
+    slug: 'service-ac-pak-budi',
+    category: 'service',
+    subcategory: 'AC cleaning',
+    description: 'Cuci AC dan perbaikan mesin cuci.',
+    whatsapp: '6289876543210',
+    lat: -6.865,
+    lng: 109.14,
+    area: 'Tegal Timur',
+    halal: null,
+    photo_path: '',
+    is_open: true,
+    views: 80,
+  },
+]
