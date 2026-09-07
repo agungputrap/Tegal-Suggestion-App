@@ -410,11 +410,12 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
 
             {/* Right Action Controls */}
             <div className="flex items-center space-x-2">
-              {/* Akses ke app inti (checkin) & admin */}
+              {/* Akses ke app inti (checkin) & admin — selalu tampil, label
+                  disembunyikan di layar kecil supaya tetap bisa dijangkau */}
               <button
                 onClick={onOpenLegacyApp}
                 title="Buka Hari Ini — app jajan & jasa"
-                className="hidden sm:flex p-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition items-center space-x-1.5"
+                className="flex p-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition items-center space-x-1.5"
               >
                 <i className="fa-solid fa-store"></i>
                 <span className="hidden lg:inline">Buka Hari Ini</span>
@@ -422,7 +423,7 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
               <button
                 onClick={onOpenAdmin}
                 title="Admin"
-                className="hidden sm:flex p-2 text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition items-center"
+                className="flex p-2 text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition items-center"
               >
                 <i className="fa-solid fa-user-shield"></i>
               </button>
