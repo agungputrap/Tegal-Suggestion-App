@@ -10,6 +10,13 @@ type Props = {
 
 const FALLBACK_ICON = { jajanan: "🍽️", jasa: "🛠️" };
 
+// Batas area Tegal (kota + kabupaten) supaya peta tidak bisa di-pan
+// keluar dari wilayah layanan aplikasi.
+const TEGAL_BOUNDS = L.latLngBounds(
+  [-7.25, 108.95], // barat daya
+  [-6.85, 109.25] // timur laut
+);
+
 // Pin bentuk "tetesan" (rotate 45deg) dengan emoji di tengah, jadi tiap
 // kategori punya ikon sendiri alih-alih titik warna generik.
 function buildPinIcon(emoji: string, color: string): L.DivIcon {
@@ -61,6 +68,9 @@ export function MapView({ listings, categories, center }: Props) {
 
     const map = L.map(containerRef.current, {
       zoomControl: false,
+      maxBounds: TEGAL_BOUNDS,
+      maxBoundsViscosity: 1.0,
+      minZoom: 11,
     }).setView([center.lat, center.lng], 14);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {

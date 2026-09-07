@@ -5,8 +5,8 @@ import { CategoryFilter } from "../components/CategoryFilter";
 import { ListingCard } from "../components/ListingCard";
 import { MapView } from "../components/MapView";
 
-// Default: pusat kota Malang, dipakai kalau geolocation browser ditolak
-const DEFAULT_CENTER = { lat: -7.9666, lng: 112.6326 };
+// Default: pusat kota Tegal, dipakai kalau geolocation browser ditolak
+const DEFAULT_CENTER = { lat: -6.8694, lng: 109.1402 };
 
 function todayLong(): string {
   return new Date().toLocaleDateString("id-ID", {
