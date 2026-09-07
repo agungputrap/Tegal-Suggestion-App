@@ -8,6 +8,8 @@
     "db:create": "wrangler d1 create jajan-jasa-db",
     "db:migrate:local": "wrangler d1 execute jajan-jasa-db --local --file=./schema.sql",
     "db:migrate:remote": "wrangler d1 execute jajan-jasa-db --remote --file=./schema.sql",
+    "db:seed:places": "node scripts/seed-places.mjs && wrangler d1 execute jajan-jasa-db --local --file=./seed-places.sql",
+    "db:seed:places:remote": "node scripts/seed-places.mjs && wrangler d1 execute jajan-jasa-db --remote --file=./seed-places.sql",
     "kv:create": "wrangler kv:namespace create ACTIVE_CACHE",
     "typecheck": "tsc --noEmit"
   },
@@ -16,6 +18,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240925.0",
+    "papaparse": "^5.7.0",
     "typescript": "^5.6.0",
     "wrangler": "^3.78.0"
   }

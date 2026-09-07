@@ -1,3 +1,7 @@
+import { toPlace, type Place } from "./explorer/types";
+
+export type { Place } from "./explorer/types";
+
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
 export type Category = {
@@ -135,6 +139,15 @@ export async function fetchListings(params: {
   if (!res.ok) throw new Error("Gagal memuat listing");
   const data = await res.json();
   return data.listings;
+}
+
+// Dataset F&B Tegal dari Google Maps (halaman Explorer).
+// Payload besar (~1.5MB) — kolom JSON di-parse sekali di sini.
+export async function fetchPlaces(): Promise<Place[]> {
+  const res = await fetch(`${API_URL}/places`);
+  if (!res.ok) throw new Error("Gagal memuat data places");
+  const data = await res.json();
+  return (data.places ?? []).map(toPlace);
 }
 
 export function waChatLink(phone: string, providerName: string): string {

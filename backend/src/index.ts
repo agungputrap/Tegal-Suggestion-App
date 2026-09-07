@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { Context, Next } from "hono";
-import type { Env, ActiveListing } from "./types";
+import type { Env, ActiveListing, PlaceRecord } from "./types";
 import { boundingBox, haversineKm, todayJakarta } from "./geo";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -41,6 +41,19 @@ app.get("/categories", async (c) => {
     "SELECT id, name, type, icon FROM categories ORDER BY type, name"
   ).all();
   return c.json({ categories: results });
+});
+
+// ---------------------------------------------------------
+// GET /places -> dataset F&B Tegal dari Google Maps (read-only referensi)
+// Data disemai via `npm run db:seed:places`, tidak pernah ditulis dari app.
+// Payload besar (~1.5MB) karena membawa ulasan & foto — kolom JSON dikirim
+// sebagai string supaya Worker tidak boros CPU parse; frontend yang parse.
+// ---------------------------------------------------------
+app.get("/places", async (c) => {
+  const { results } = await c.env.DB.prepare(
+    `SELECT * FROM places ORDER BY review_count DESC`
+  ).all<PlaceRecord>();
+  return c.json({ count: results.length, places: results });
 });
 
 // ---------------------------------------------------------

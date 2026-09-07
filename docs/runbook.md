@@ -18,6 +18,9 @@ npm install
 # Apply schema + seed categories to the local D1:
 npm run db:migrate:local
 
+# Seed the Explorer dataset (76 F&B places from Google Maps) into local D1:
+npm run db:seed:places
+
 # Admin token for local dev (copy, then edit):
 cp .dev.vars.example .dev.vars
 
@@ -85,6 +88,8 @@ Env vars:
 ## Seed data
 
 `schema.sql` seeds the `categories` table (gorengan, kue basah, servis AC, tukang, …) — it is applied by `db:migrate:local` / `db:migrate:remote`. For demo-day provider data, register a few providers + checkins via the API (see smoke test above) or the Provider page in the frontend.
+
+The Explorer page reads from the `places` table — seed it with `npm run db:seed:places` (local) or `npm run db:seed:places:remote` (production D1). Source: `backend/seeds/tegal-fnb.csv` (Google Maps export); the generated `backend/seed-places.sql` is gitignored — regenerate any time with the same command.
 
 ## Deploy
 

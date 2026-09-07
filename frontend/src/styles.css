@@ -75,6 +75,24 @@ a {
   padding-bottom: var(--sp-2);
 }
 
+/* ---------- Tombol kembali ke Explorer ---------- */
+/* Dipakai App.tsx pada view lama (cari/saya/admin), lihat explorer/explorer.css */
+.legacy-back {
+  margin: var(--sp-2) var(--sp-3) 0;
+  align-self: flex-start;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.legacy-back:hover {
+  border-color: var(--ink);
+}
+
 /* ---------- Bottom nav ---------- */
 .bottom-nav {
   display: flex;

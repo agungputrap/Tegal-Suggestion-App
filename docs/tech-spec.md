@@ -39,7 +39,8 @@ MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di
 ├── frontend/          # React + Vite SPA (Cloudflare Pages)
 │   └── src/
 │       ├── api.ts, adminApi.ts   # typed API calls
-│       ├── pages/                # ConsumerPage, ProviderPage, AdminPage
+│       ├── pages/                # ConsumerPage, ProviderPage, AdminPage (app inti, shell mobile)
+│       ├── explorer/             # halaman utama: port ref F&B Explorer (ExplorerApp, tabs, modal)
 │       └── components/           # MapView, ListingCard, CategoryFilter, PhotoUpload
 ├── backend/           # Hono Worker (Cloudflare Workers)
 │   ├── src/
@@ -53,7 +54,7 @@ MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di
 └── TASKS.md           # live task ledger
 ```
 
-## Data model (3 tables)
+## Data model (3 tables + 1 reference table)
 
 ### `categories`
 
@@ -90,6 +91,19 @@ MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di
 | lat / lng | float | GPS location at checkin — this is what shows on the map |
 | is_active | bool | 0 = expired (cron) or deactivated by admin |
 
+### `places` (reference data, read-only)
+
+76 F&B places in Tegal & surroundings scraped from Google Maps (`tegal-fnb.csv`). Powers the Explorer page; never written by the app — seeded via `npm run db:seed:places`.
+
+| Column | Type | Notes |
+| ------ | ---- | ----- |
+| id | text PK | Google Maps cid (`0x…:0x…`) |
+| title / category / address / city | text | `city` derived from address: Kota Tegal, Kabupaten Tegal, Kabupaten Brebes, Kota Jakarta … |
+| rating / review_count / price_range | real / int / text | GMaps rating data |
+| phone / website / thumbnail / link / street_view_url / plus_code | text | contact & source URLs |
+| latitude / longitude | float | map position |
+| open_hours / popular_times / images / about / user_reviews / reviews_per_rating | text (JSON) | stored as **JSON strings** — `GET /places` would risk the 10 ms Workers CPU limit if it parsed ~1.6 MB per request; the frontend parses once on load |
+
 ## API contract (v1)
 
 Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` with an appropriate status code.
@@ -105,6 +119,7 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 | GET | `/photos/*` | serve photo from R2 (Cache-Control 1 year, immutable) |
 | POST | `/checkins` | daily checkin `{provider_id, lat, lng}` — upsert per day, invalidates KV cache |
 | GET | `/listings?type=&category=&lat=&lng=&radius=` | today's active providers; bounding-box prefilter + haversine, sorted by distance |
+| GET | `/places` | all 76 reference F&B places (Explorer dataset); JSON columns returned as strings, client-side filter/sort |
 
 ### Admin (header `Authorization: Bearer <ADMIN_TOKEN>`)
 

@@ -1,0 +1,95 @@
+/*
+ * Style halaman Explorer (port dari ref/index.html — Tailwind + Plus Jakarta Sans).
+ *
+ * Tailwind v4 di-import TANPA layer preflight supaya reset CSS-nya tidak
+ * mengubah tampilan halaman lama (ConsumerPage/ProviderPage/AdminPage yang
+ * memakai styles.css). Dark mode memakai strategi class (`dark` di <html>),
+ * sama seperti konfigurasi ref (`darkMode: 'class'`).
+ */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+}
+
+.explorer {
+  font-family: var(--font-sans);
+}
+
+/* ---------- Custom CSS dari ref/index.html ---------- */
+
+.explorer .custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.explorer .custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+.explorer .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 9999px;
+}
+.explorer .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}
+.explorer .glass-nav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.explorer .leaflet-popup-content-wrapper {
+  border-radius: 1rem;
+  padding: 0;
+  overflow: hidden;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+.explorer .leaflet-popup-content {
+  margin: 0;
+  line-height: 1.5;
+}
+.explorer .tab-btn.active {
+  border-bottom-color: #16a34a;
+  color: #16a34a;
+  font-weight: 600;
+}
+.explorer .qf-btn.active {
+  background-color: #059669;
+  color: #ffffff;
+  border-color: #059669;
+}
+.explorer .line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.explorer .line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Marker pin kustom (L.divIcon dengan class 'custom-map-pin') */
+.explorer .custom-map-pin {
+  background: transparent;
+  border: none;
+}
+
+/* Leaflet harus selalu di bawah elemen overlay milik Explorer */
+.explorer .leaflet-pane,
+.explorer .leaflet-top,
+.explorer .leaflet-bottom {
+  z-index: 500;
+}
