@@ -17,9 +17,11 @@
 - [ ] #12 Backend: `items` table (menu / service price-list) + endpoints — Arief, **Budi reviews** (contract)
 - [ ] #13 Frontend: items on provider detail (menu/price-list) — Budi
 - [ ] #14 Filter by area (kecamatan) + halal flag for food — Arief + Budi (split backend/frontend)
+- [ ] #15 Explorer polish: code-split the 628 kB bundle (chart.js/markercluster lazy-load), photo thumbnails retry — Budi
 
 ## Done
 
+- [x] #16 Explorer page: port `ref/index.html` F&B dashboard to React + seed `places` from `tegal-fnb.csv` (schema + `GET /places` + `db:seed:places`) — **both review** (shared: `schema.sql`, `types.ts`, tech-spec) — validated: typecheck/build green both sides, e2e in browser
 - [x] #11 Adopt `ref/` implementation as the codebase (`frontend/` + `backend/`), sync all docs — **both review** (shared files)
 - [x] #1 Backend data model — superseded by adoption: `categories` + `providers` + `checkins` in `backend/schema.sql` (#11)
 - [x] #2 Frontend: Vite skeleton + map with markers — done via adoption (#11)

@@ -68,3 +68,5 @@ pnpm-debug.log*
 .dev.vars
 .wrangler/
 *.tsbuildinfo
+# Generated seed SQL (derived from seeds/tegal-fnb.csv by scripts/seed-places.mjs)
+backend/seed-places.sql

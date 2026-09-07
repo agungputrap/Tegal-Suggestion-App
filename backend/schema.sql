@@ -51,3 +51,40 @@ INSERT OR IGNORE INTO categories (id, name, type, icon) VALUES
   ('laundry', 'Laundry Panggilan', 'jasa', '🧺'),
   ('tukang-ledeng', 'Tukang Ledeng', 'jasa', '🔧'),
   ('penjahit', 'Penjahit', 'jasa', '🧵');
+
+-- ============================================
+-- Places: dataset F&B Tegal hasil ekspor Google Maps (tegal-fnb.csv).
+-- Data referensi read-only untuk halaman Explorer — disemai via
+-- `npm run db:seed:places` (scripts/seed-places.mjs), bukan ditulis dari app.
+-- Kolom JSON disimpan sebagai TEXT; frontend yang parse.
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS places (
+  id TEXT PRIMARY KEY,              -- cid Google Maps (0x…:0x…)
+  title TEXT NOT NULL,
+  category TEXT NOT NULL,           -- kategori asli GMaps: Kafe, Kedai Kopi, Restoran, …
+  address TEXT,
+  city TEXT,                        -- derivasi: Kota Tegal | Kabupaten Tegal | Kabupaten Brebes | Kota Jakarta …
+  rating REAL,
+  review_count INTEGER NOT NULL DEFAULT 0,
+  price_range TEXT,
+  phone TEXT,
+  website TEXT,
+  thumbnail TEXT,
+  latitude REAL NOT NULL,
+  longitude REAL NOT NULL,
+  link TEXT,                        -- URL Google Maps asli
+  street_view_url TEXT,
+  plus_code TEXT,
+  open_hours TEXT,                  -- JSON: { "Senin": ["08.00–21.00"], … }
+  popular_times TEXT,               -- JSON: { "Monday": { "0": 45, … }, … }
+  images TEXT,                      -- JSON: [{ "title": "Semua", "image": "https://…" }, …]
+  about TEXT,                       -- JSON: [{ "name": "Opsi layanan", "options": [{ "name", "enabled" }] }, …]
+  user_reviews TEXT,                -- JSON: [{ "Name", "ProfilePicture", "Rating", "Description", … }, …]
+  reviews_per_rating TEXT,          -- JSON: { "1": 29, "2": 8, … }
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_places_category ON places(category);
+CREATE INDEX IF NOT EXISTS idx_places_city ON places(city);
+CREATE INDEX IF NOT EXISTS idx_places_review_count ON places(review_count DESC);
