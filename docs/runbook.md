@@ -96,7 +96,7 @@ The Explorer page reads from the `places` table — seed it with `npm run db:see
 | Piece | Target | Notes |
 | ----- | ------ | ----- |
 | API | Cloudflare Workers | `cd backend && npm run deploy` |
-| Frontend | Cloudflare Pages | `npm run build`, then `npx wrangler pages deploy dist --project-name=jajan-jasa-web`; set `VITE_API_URL` in the Pages dashboard and rebuild |
+| Frontend | Cloudflare Pages | deploy dari checkout `development`: `VITE_API_URL=<url worker produksi> npm run build`, lalu `npx wrangler pages deploy dist --project-name=jajan-jasa-web`. Production branch project Pages = **`development`** (diubah 2026-09-08, sebelumnya `feat/11-cloudflare-stack`); deploy dari branch lain hanya jadi Preview. `VITE_API_URL` dibake saat build — build dengan env dev jangan dipakai untuk produksi. |
 
 Domain: connect a custom `.id` domain via Cloudflare DNS / Pages **Custom Domains** (a `.workers.dev` subdomain is not acceptable for the competition submission).
 
