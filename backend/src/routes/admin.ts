@@ -41,11 +41,13 @@ router.get("/stats", async (c) => {
   });
 });
 
-// GET /admin/providers?type=jajanan|jasa&status=active|suspended|all&q=search
+// GET /admin/providers?type=jajanan|jasa&status=active|suspended|pending|approved|rejected|all&q=search
+// status 'active'/'suspended' menyaring checkin/moderasi; 'pending'/'approved'/
+// 'rejected' menyaring alur approval registrasi (#6).
 router.get("/providers", async (c) => {
   const today = todayJakarta();
   const type = c.req.query("type"); // 'jajanan' | 'jasa' | undefined
-  const status = c.req.query("status") ?? "all"; // 'active' | 'suspended' | 'all'
+  const status = c.req.query("status") ?? "all";
   const q = c.req.query("q");
 
   let sql = `
@@ -65,6 +67,9 @@ router.get("/providers", async (c) => {
     sql += " AND p.suspended = 1";
   } else if (status === "active") {
     sql += " AND p.suspended = 0 AND ck.is_active = 1";
+  } else if (status === "pending" || status === "approved" || status === "rejected") {
+    sql += " AND p.approval_status = ?";
+    params.push(status);
   }
   if (q) {
     sql += " AND (p.name LIKE ? OR p.phone LIKE ?)";
@@ -78,6 +83,34 @@ router.get("/providers", async (c) => {
     .all();
 
   return c.json({ providers: results });
+});
+
+// POST /admin/providers/:id/approval -> alur verifikasi registrasi (#6)
+// body: { status: 'approved' | 'rejected' }. Menolak/menyetujui mengubah
+// visibilitas publik, jadi cache listings harus dibuang.
+router.post("/providers/:id/approval", async (c) => {
+  const id = c.req.param("id");
+  const body = await c.req.json();
+
+  if (body.status !== "approved" && body.status !== "rejected") {
+    return c.json(
+      { error: "status harus 'approved' atau 'rejected'" },
+      400
+    );
+  }
+
+  const result = await c.env.DB.prepare(
+    "UPDATE providers SET approval_status = ? WHERE id = ?"
+  )
+    .bind(body.status, id)
+    .run();
+
+  if (result.meta.changes === 0) {
+    return c.json({ error: "Provider tidak ditemukan" }, 404);
+  }
+
+  await invalidateListingsCache(c.env, todayJakarta());
+  return c.json({ status: "ok", approval_status: body.status });
 });
 
 // POST /admin/providers/:id/deactivate-checkin

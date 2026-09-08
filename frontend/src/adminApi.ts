@@ -48,12 +48,23 @@ export type AdminProvider = {
   photo_url: string | null;
   suspended: number;
   active_today: number;
+  approval_status: "pending" | "approved" | "rejected";
   created_at: string;
 };
 
 export async function fetchAdminProviders(
   token: string,
-  filters?: { type?: "jajanan" | "jasa"; status?: "active" | "suspended" | "all"; q?: string }
+  filters?: {
+    type?: "jajanan" | "jasa";
+    status?:
+      | "active"
+      | "suspended"
+      | "pending"
+      | "approved"
+      | "rejected"
+      | "all";
+    q?: string;
+  }
 ): Promise<AdminProvider[]> {
   const qs = new URLSearchParams();
   if (filters?.type) qs.set("type", filters.type);
@@ -90,6 +101,20 @@ export async function setProviderSuspended(
     body: JSON.stringify({ suspended }),
   });
   if (!res.ok) throw new Error("Gagal mengubah status provider");
+}
+
+// Alur verifikasi registrasi (#6): setujui / tolak pendaftar baru
+export async function setProviderApproval(
+  token: string,
+  id: string,
+  status: "approved" | "rejected"
+): Promise<void> {
+  const res = await fetch(`${API_URL}/admin/providers/${id}/approval`, {
+    method: "POST",
+    headers: { ...authHeaders(token), "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) throw new Error("Gagal mengubah status approval");
 }
 
 export async function deleteProvider(token: string, id: string): Promise<void> {

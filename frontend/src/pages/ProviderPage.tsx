@@ -20,9 +20,13 @@ import {
 import {
   clearStoredProvider,
   getLastCheckinDate,
+  getStoredOwnerToken,
   getStoredProviderId,
+  getStoredVerifyCode,
   setLastCheckinDate,
+  setStoredOwnerToken,
   setStoredProviderId,
+  setStoredVerifyCode,
 } from "../storage";
 
 function todayIso(): string {
@@ -104,7 +108,7 @@ export function ProviderPage() {
 
     setSubmitting(true);
     try {
-      const id = await createProvider({
+      const result = await createProvider({
         name: form.name,
         phone: form.phone,
         category_type: form.category_type,
@@ -116,8 +120,11 @@ export function ProviderPage() {
             : 0,
       });
 
-      setStoredProviderId(id);
-      const p = await fetchProvider(id);
+      // owner_token & verify_code hanya dikembalikan SEKALI di respons ini
+      setStoredProviderId(result.id);
+      setStoredOwnerToken(result.owner_token);
+      setStoredVerifyCode(result.verify_code);
+      const p = await fetchProvider(result.id);
       setProvider(p);
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Pendaftaran gagal");
@@ -171,6 +178,102 @@ export function ProviderPage() {
 
   if (loadingProvider) {
     return <p className="text-xs text-slate-500 dark:text-slate-400 py-8 text-center">memuat...</p>;
+  }
+
+  // ---------- Ditolak admin ----------
+  if (provider && provider.approval_status === "rejected") {
+    return (
+      <div className="max-w-md mx-auto text-center py-10 space-y-3">
+        <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto text-2xl">
+          <i className="fa-solid fa-circle-xmark"></i>
+        </div>
+        <h2 className="text-lg font-black text-slate-900 dark:text-white">
+          Pendaftaran ditolak
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Akun "{provider.name}" ditolak admin. Silakan daftar ulang atau
+          hubungi pengelola.
+        </p>
+        <button className={BTN_SECONDARY} onClick={handleGantiAkun}>
+          Daftar ulang
+        </button>
+      </div>
+    );
+  }
+
+  // ---------- Menunggu approval admin (#6) ----------
+  if (provider && provider.approval_status === "pending") {
+    const code = getStoredVerifyCode();
+    const ownerToken = getStoredOwnerToken();
+    const shareText = encodeURIComponent(
+      `Halo admin, saya ${provider.name} baru mendaftar di Jajan+Jasa Tegal. Kode verifikasi saya: ${code ?? "-"}. Mohon disetujui.`
+    );
+    const kelolaUrl = ownerToken
+      ? `${window.location.origin}/kelola/${ownerToken}`
+      : null;
+
+    return (
+      <div className="max-w-md mx-auto space-y-4 py-6">
+        <div className="text-center">
+          <h2 className="text-lg font-black text-slate-900 dark:text-white">
+            Menunggu Persetujuan Admin
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Kirim kode verifikasi di bawah ke admin via WhatsApp. Setelah
+            disetujui, akunmu bisa checkin &amp; tampil di peta.
+          </p>
+        </div>
+
+        {code && (
+          <div className={`${CARD} p-5 text-center space-y-3`}>
+            <p className={LABEL}>Kode verifikasi kamu</p>
+            <p className="text-3xl font-black tracking-[0.3em] text-emerald-600 dark:text-emerald-400">
+              {code}
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                className={BTN_SECONDARY}
+                onClick={() => navigator.clipboard.writeText(code)}
+              >
+                <i className="fa-solid fa-copy"></i>
+                <span>Salin kode</span>
+              </button>
+              <a
+                className={BTN_PRIMARY}
+                href={`https://wa.me/?text=${shareText}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <i className="fa-brands fa-whatsapp text-base"></i>
+                <span>Kirim via WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {kelolaUrl && (
+          <div className={`${CARD} p-4 space-y-2`}>
+            <p className={LABEL}>Link kelola usaha (simpan baik-baik)</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300 break-all">
+              {kelolaUrl}
+            </p>
+            <button
+              className={BTN_SECONDARY}
+              onClick={() => navigator.clipboard.writeText(kelolaUrl)}
+            >
+              <i className="fa-solid fa-copy"></i>
+              <span>Salin link</span>
+            </button>
+          </div>
+        )}
+
+        <div className="text-center">
+          <button className={BTN_SECONDARY} onClick={handleGantiAkun}>
+            Daftar dengan akun lain
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // ---------- Belum daftar: tampilkan form registrasi ----------
