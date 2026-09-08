@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { fetchPlaces } from "../api";
 import type { Place } from "../explorer/types";
 import {
@@ -8,10 +8,23 @@ import {
 } from "./helpers";
 import { useDarkMode } from "../hooks/useDarkMode";
 import { DirectoryTab } from "./DirectoryTab";
-import { FullMap } from "./FullMap";
-import { AnalyticsTab } from "./AnalyticsTab";
 import { FavoritesTab } from "./FavoritesTab";
 import { PlaceModal } from "./PlaceModal";
+
+// Tab berat di-code-split (#15): chart.js & leaflet hanya dimuat saat tab
+// pertama kali dibuka.
+const FullMap = lazy(() => import("./FullMap").then((m) => ({ default: m.FullMap })));
+const AnalyticsTab = lazy(() =>
+  import("./AnalyticsTab").then((m) => ({ default: m.AnalyticsTab }))
+);
+
+function TabFallback() {
+  return (
+    <div className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+      <i className="fa-solid fa-spinner fa-spin mr-2"></i>memuat...
+    </div>
+  );
+}
 
 export type ExplorerTab = "directory" | "map" | "analytics" | "favorites";
 export type DirectoryView = "grid" | "list" | "table" | "split";
@@ -626,15 +639,15 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
       )}
 
       {tab === "map" && (
-        <FullMap
-          places={filteredPlaces}
-          legend={mapLegend}
-          onOpenPlace={setModalPlaceId}
-        />
+        <Suspense fallback={<TabFallback />}>
+          <FullMap places={filteredPlaces} legend={mapLegend} onOpenPlace={setModalPlaceId} />
+        </Suspense>
       )}
 
       {tab === "analytics" && (
-        <AnalyticsTab places={places} dark={dark} onOpenPlace={setModalPlaceId} />
+        <Suspense fallback={<TabFallback />}>
+          <AnalyticsTab places={places} dark={dark} onOpenPlace={setModalPlaceId} />
+        </Suspense>
       )}
 
       {tab === "favorites" && (
