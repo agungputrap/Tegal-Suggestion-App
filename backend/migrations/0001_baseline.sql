@@ -1,3 +1,4 @@
+-- Migrasi 0001: baseline schema (adopsi d1 migrations; sebelumnya backend/schema.sql).
 -- ============================================
 -- Schema: Jajan + Jasa (D1 / SQLite)
 -- ============================================

@@ -55,3 +55,11 @@
 - **New frontend dependencies:** `tailwindcss` + `@tailwindcss/vite` (v4 — supersedes the "no Tailwind" rule from 2026-08-24; utilities are imported **without preflight** so legacy pages keep their custom-CSS look), `chart.js`, `leaflet.markercluster` (+types), papaparse (backend devDep, seed only). FontAwesome + Plus Jakarta Sans load from CDN (network is required anyway for OSM tiles & GMaps photos).
 - **Why:** demo-day visual impact — the Explorer shows real Tegal F&B data with analytics out of the box; the check-in MVP flow stays one click away for the live demo.
 - **Review note:** touches shared files (`backend/schema.sql`, `backend/src/types.ts`, `docs/tech-spec.md`) — backend owner please review the places contract; frontend owner review the App.tsx restructure.
+
+## 2026-09-08 — Fase 0 fondasi: adopsi d1 migrations + split route backend
+
+- **Decision (migration):** skema D1 kini dikelola lewat **`wrangler d1 migrations`** (`backend/migrations/`, baseline = `0001_baseline.sql`), bukan lagi `schema.sql` tunggal. Alasan: SQLite tidak punya `ADD COLUMN IF NOT EXISTS`; fitur baru (items, approval, portal, trending) butuh kolom baru yang harus terlacak & idempotent per environment. Script `db:migrate:local|remote` sekarang menjalankan `d1 migrations apply`. `backend/schema.sql` dihapus (isi pindah utuh ke baseline). File bersama `backend/schema.sql` di AGENTS.md/ownership diganti `backend/migrations/`.
+- **Decision (route split):** `backend/src/index.ts` (542 baris) sudah melampaui ambang ~500 baris di dev-standards → dipecah satu file per resource (`src/routes/{places,categories,providers,checkins,listings,photos,admin}.ts`) + `src/middleware.ts` (adminAuth), `src/constants.ts`, `src/cache.ts` (`invalidateListingsCache`), `src/expire-checkins.ts` (cron). `index.ts` jadi komposisi tipis (~33 baris). Tanpa perubahan perilaku.
+- **Skill update:** `api-guidelines` (3 mirror) disinkronkan ke kontrak aktual (Hono, tanpa prefix `/api`, error `{"error": ...}`, upload raw-bytes 5MB, owner token tak pernah expose).
+- **Why:** fondasi bersih sebelum implementasi to-do (#4b/#5/#6/#7/#12–#15) supaya tiap fitur masuk ke module kecil yang testable, bukan nambah file yang sudah terlalu besar.
+- **Review note:** menyentuh AGENTS.md, ownership.md, dev-standards, tech-spec, runbook — kedua owner mohon review.

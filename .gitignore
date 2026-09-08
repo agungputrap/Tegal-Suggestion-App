@@ -70,3 +70,9 @@ pnpm-debug.log*
 *.tsbuildinfo
 # Generated seed SQL (derived from seeds/tegal-fnb.csv by scripts/seed-places.mjs)
 backend/seed-places.sql
+
+# ZCode plan files
+.zcode/
+
+# Reference material (lokal saja; dataset hidup di backend/seeds/)
+ref/

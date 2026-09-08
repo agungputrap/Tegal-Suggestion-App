@@ -27,7 +27,7 @@ See `docs/runbook.md` for run / seed / test / deploy commands. Quick reference:
 
 - `backend/` — Arief
 - `frontend/` — Budi
-- Shared, both review: `backend/src/types.ts`, `backend/schema.sql`, `docs/tech-spec.md`, `AGENTS.md`, `TASKS.md`
+- Shared, both review: `backend/src/types.ts`, `backend/migrations/`, `docs/tech-spec.md`, `AGENTS.md`, `TASKS.md`
 - Never edit files outside your owned area without flagging it in the PR description.
 
 ## After any decision that affects the other side

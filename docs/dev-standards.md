@@ -48,7 +48,7 @@ backend/
 │   ├── index.ts       # routes + scheduled (cron) handler
 │   ├── types.ts       # Env bindings + entity types (THE API CONTRACT shapes — shared)
 │   └── geo.ts         # bounding box, haversine, todayJakarta()
-├── schema.sql         # D1 schema + seeded categories
+├── migrations/        # D1 migrations (baseline + perubahan skema, wrangler d1 migrations)
 ├── wrangler.toml      # D1/KV/R2 bindings, cron trigger (NO secrets in here)
 └── .dev.vars          # local secrets (gitignored; see .dev.vars.example)
 ```

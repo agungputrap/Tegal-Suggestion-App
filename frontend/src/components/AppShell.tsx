@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { useDarkMode } from "../hooks/useDarkMode";
 
 // Chrome halaman app inti (Hari Ini / Jasa Saya / Admin) — mengikuti gaya
 // header Explorer (banner gradient + glass header + tab) supaya seluruh app
@@ -19,17 +20,7 @@ const TABS: { id: CoreView; icon: string; label: string; short: string }[] = [
 ];
 
 export function AppShell({ active, onTabChange, onBackToExplorer, children }: Props) {
-  const [dark, setDark] = useState<boolean>(
-    () =>
-      localStorage.theme === "dark" ||
-      (!("theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-  );
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.theme = dark ? "dark" : "light";
-  }, [dark]);
+  const { dark, setDark } = useDarkMode();
 
   return (
     <div className="explorer bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
@@ -92,15 +83,28 @@ export function AppShell({ active, onTabChange, onBackToExplorer, children }: Pr
               ))}
             </nav>
 
-            {/* Kembali ke Explorer */}
-            <button
-              onClick={onBackToExplorer}
-              title="Kembali ke Tegal F&B Explorer"
-              className="flex p-2 text-sm bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 rounded-lg transition items-center space-x-1.5"
-            >
-              <i className="fa-solid fa-arrow-left"></i>
-              <span className="hidden sm:inline">Explorer</span>
-            </button>
+            {/* Kembali ke Explorer + toggle tema */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setDark((v) => !v)}
+                title="Toggle Dark/Light Mode"
+                className="p-2 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition"
+              >
+                <i
+                  className={`fa-solid ${
+                    dark ? "fa-sun text-amber-400" : "fa-moon text-slate-600"
+                  }`}
+                ></i>
+              </button>
+              <button
+                onClick={onBackToExplorer}
+                title="Kembali ke Tegal F&B Explorer"
+                className="flex p-2 text-sm bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 rounded-lg transition items-center space-x-1.5"
+              >
+                <i className="fa-solid fa-arrow-left"></i>
+                <span className="hidden sm:inline">Explorer</span>
+              </button>
+            </div>
           </div>
 
           {/* Tabs (mobile) */}

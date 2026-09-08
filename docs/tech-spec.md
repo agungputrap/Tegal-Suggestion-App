@@ -47,7 +47,7 @@ MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di
 │   │   ├── index.ts   # all routes + scheduled handler
 │   │   ├── types.ts   # Env bindings + entity types (API contract shapes)
 │   │   └── geo.ts     # bounding box + haversine + todayJakarta()
-│   ├── schema.sql     # D1 schema + seeded categories
+│   ├── migrations/    # D1 migrations (baseline + perubahan skema)
 │   └── wrangler.toml  # D1/KV/R2 bindings + cron trigger
 ├── docs/              # tech-spec, ownership, decisions, runbook
 ├── AGENTS.md          # standing rules + pointers to docs
