@@ -5,36 +5,43 @@ description: API endpoint conventions and response format for this project (Tega
 
 # API Guidelines
 
-Canonical contract lives in `docs/tech-spec.md` — this skill is the quick-reference for how to write endpoints that fit it.
+Canonical contract lives in `docs/tech-spec.md` — this skill is the quick-reference for how to write endpoints that fit it. Stack: Hono on Cloudflare Workers + D1/KV/R2 (routes live in `backend/src/routes/`, one file per resource).
 
 ## Endpoint naming
 
-- Base path: `/api`
-- Plural nouns: `/api/businesses`, `/api/businesses/{slug}/items`
-- Owner portal uses the magic token: `/api/kelola/{token}/open`
+- Base path: `/` (no `/api` prefix)
+- Plural nouns: `/providers`, `/checkins`, `/listings`, `/places`
+- Admin group: `/admin/*` (Bearer `ADMIN_TOKEN`, middleware `adminAuth`)
+- Owner portal uses the magic token in the path: `/kelola/{token}/open`, `/kelola/{token}/close` — never in a query string
 
 ## Response format
 
 - Always JSON.
-- List endpoints return the collection directly (envelope TBD in `docs/tech-spec.md` — check it first).
-- Errors use FastAPI's shape: `{"detail": "human readable message"}`.
+- Collections come back wrapped: `{"categories": [...]}`, `{"listings": [...], "date", "count"}`, `{"places": [...], "count"}`; single resource: `{"provider": {...}}`; creations return the new id: `{"id": "..."}`.
+- Errors use `{"error": "human readable message"}` (Indonesian, user-friendly).
 
 ## Status codes
 
 | Code | When |
 | ---- | ---- |
 | 200 | success |
+| 201 | created (registration, new resource) |
 | 400 | validation error (e.g. bad WhatsApp number, missing field) |
-| 401 | invalid/expired owner token |
-| 404 | business or item not found |
-| 409 | conflict (e.g. already registered today) |
-| 500 | server error — never leak stack traces in `detail` |
+| 401 | invalid/expired token (admin or owner) |
+| 403 | forbidden (e.g. suspended provider) |
+| 404 | resource not found |
+| 409 | conflict (e.g. category still in use) |
+| 413 | payload too large (photo upload) |
 
 ## Rules
 
-- All input goes through Pydantic schemas in `backend/app/schemas.py` — no raw dict parsing.
-- `schemas.py` is a **shared file**: changing it requires the frontend owner's review (see `docs/ownership.md`).
-- Never expose the `owner_token` in public responses — public endpoints return a `slug`, never the token.
-- WhatsApp numbers stored in E.164 (`6281234567890`); validate with regex, show friendly errors.
-- Image uploads: POST `/api/upload` multipart, returns `{"path": "..."}`. Reject files > 3MB and non-JPG/PNG/WebP.
-- Owner mutations (`open`, `close`, `update`) are token-authenticated; public endpoints are read-only except `register`, `upload`, `report`.
+- Validate at the boundary: read `await c.req.json()` and check required fields before touching D1; never trust internal code to pre-validate.
+- Parametrize **all** SQL with `.bind()` — no string interpolation of values.
+- `D1` is the source of truth; KV (`ACTIVE_CACHE`) is cache only. Any write that changes today's listings must call `invalidateListingsCache(env, date)` (see `src/cache.ts`).
+- "Today" always means Jakarta time — use `todayJakarta()` from `src/geo.ts`, never `new Date()` directly.
+- CPU budget on the free tier is 10 ms: prefilter with cheap SQL (bounding box) before expensive math (haversine); ship heavy JSON blobs (e.g. `/places`) as strings and let the client parse.
+- Never expose the `owner_token` in public responses — it is returned once at registration and lives only in the portal URL.
+- WhatsApp numbers are validated as digits with Indonesian format in mind (`08…` stored as-is for MVP, E.164 `628…` preferred); show friendly errors.
+- Image uploads: `POST /providers/:id/photo` with raw image bytes (not multipart), `Content-Type: image/jpeg|png|webp`, max 5MB — rejects others with 400/413.
+- Owner mutations (`open`, `close`, `update`, items CRUD) are token-authenticated via the portal path; public endpoints are read-only except register, checkin, photo upload.
+- When adding an endpoint: update `backend/src/types.ts` (contract types), `docs/tech-spec.md` (contract table), and the frontend fetcher in `src/api.ts` / `src/adminApi.ts` in the same PR.

@@ -6,6 +6,7 @@ import {
   isOpenNow,
   nowParts,
 } from "./helpers";
+import { useDarkMode } from "../hooks/useDarkMode";
 import { DirectoryTab } from "./DirectoryTab";
 import { FullMap } from "./FullMap";
 import { AnalyticsTab } from "./AnalyticsTab";
@@ -48,12 +49,7 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
 
   const [tab, setTab] = useState<ExplorerTab>("directory");
   const [view, setView] = useState<DirectoryView>("grid");
-  const [dark, setDark] = useState<boolean>(
-    () =>
-      localStorage.theme === "dark" ||
-      (!("theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-  );
+  const { dark, setDark } = useDarkMode();
 
   // Filter state (port dari applyFilters di ref)
   const [search, setSearch] = useState("");
@@ -82,12 +78,6 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
       })
       .catch(() => setStatus("error"));
   }, []);
-
-  // ----- Dark mode (class pada <html>, strategi sama dengan ref) -----
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.theme = dark ? "dark" : "light";
-  }, [dark]);
 
   // ----- Modal: kunci scroll + tombol Escape -----
   useEffect(() => {

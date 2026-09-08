@@ -16,7 +16,7 @@
 These are the coordination points. Changes require the other person's review before merge:
 
 - `backend/src/types.ts` — the API contract shapes (frontend depends on them)
-- `backend/schema.sql` — the data model
+- `backend/migrations/` — the data model (d1 migrations)
 - `docs/` — `tech-spec.md` (canonical spec), `prd.md` (product), `dev-standards.md` (conventions), `decisions.md` (log), `runbook.md`, `ownership.md`
 - `README.md` — repo front door
 - `AGENTS.md`, `TASKS.md` — team conventions and ledger

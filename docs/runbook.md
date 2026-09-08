@@ -87,7 +87,7 @@ Env vars:
 
 ## Seed data
 
-`schema.sql` seeds the `categories` table (gorengan, kue basah, servis AC, tukang, …) — it is applied by `db:migrate:local` / `db:migrate:remote`. For demo-day provider data, register a few providers + checkins via the API (see smoke test above) or the Provider page in the frontend.
+Skema dikelola lewat **d1 migrations** (`backend/migrations/`) — migrasi baseline menyemai tabel `categories` (gorengan, kue basah, servis AC, tukang, …), diterapkan oleh `db:migrate:local` / `db:migrate:remote`. Migrasi baru: `wrangler d1 migrations create <nama>` di `backend/`, tulis SQL, lalu apply sama seperti di atas. For demo-day provider data, register a few providers + checkins via the API (see smoke test above) or the Provider page in the frontend.
 
 The Explorer page reads from the `places` table — seed it with `npm run db:seed:places` (local) or `npm run db:seed:places:remote` (production D1). Source: `backend/seeds/tegal-fnb.csv` (Google Maps export); the generated `backend/seed-places.sql` is gitignored — regenerate any time with the same command.
 
