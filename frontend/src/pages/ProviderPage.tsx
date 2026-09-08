@@ -8,6 +8,16 @@ import {
 import type { Category, Provider } from "../api";
 import { PhotoUpload } from "../components/PhotoUpload";
 import {
+  BTN_PRIMARY,
+  BTN_SECONDARY,
+  CARD,
+  ERROR_LINE,
+  INPUT,
+  LABEL,
+  pillClass,
+  selectClass,
+} from "../components/ui";
+import {
   clearStoredProvider,
   getLastCheckinDate,
   getStoredProviderId,
@@ -160,34 +170,41 @@ export function ProviderPage() {
   }
 
   if (loadingProvider) {
-    return <p className="status-line">memuat...</p>;
+    return <p className="text-xs text-slate-500 dark:text-slate-400 py-8 text-center">memuat...</p>;
   }
 
   // ---------- Belum daftar: tampilkan form registrasi ----------
   if (!provider) {
     return (
-      <>
-        <header className="header">
-          <h1 className="header__title">Daftar Jadi Penyedia</h1>
-          <p className="header__subtitle">
-            Jualan jajanan atau tawarkan jasa? Daftar sekali, checkin tiap
-            hari kamu buka.
+      <div className="max-w-2xl mx-auto space-y-5">
+        <div className="text-center">
+          <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center justify-center">
+            <i className="fa-solid fa-bullhorn text-emerald-500 mr-2"></i> Daftar
+            Jadi Penyedia
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Jualan jajanan atau tawarkan jasa? Daftar sekali, checkin tiap hari
+            kamu buka.
           </p>
-        </header>
+        </div>
 
-        <form className="form" onSubmit={handleRegister}>
-          <label className="form__field">
-            <span>Nama {form.category_type === "jasa" ? "/ usaha" : "warung"}</span>
+        <form className={`${CARD} p-5 sm:p-6 space-y-4`} onSubmit={handleRegister}>
+          <label className="block">
+            <span className={LABEL}>
+              Nama {form.category_type === "jasa" ? "/ usaha" : "warung"}
+            </span>
             <input
+              className={INPUT}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="mis. Nasi Goreng Bu Sri / Servis AC Pak Bud"
             />
           </label>
 
-          <label className="form__field">
-            <span>Nomor WhatsApp</span>
+          <label className="block">
+            <span className={LABEL}>Nomor WhatsApp</span>
             <input
+              className={INPUT}
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               placeholder="08123456789"
@@ -195,44 +212,45 @@ export function ProviderPage() {
             />
           </label>
 
-          <div className="form__field">
-            <span>Jenis</span>
-            <div className="filters" style={{ padding: "8px 0" }}>
+          <div>
+            <span className={LABEL}>Jenis</span>
+            <div className="flex flex-wrap items-center gap-1.5">
               {(["jajanan", "jasa"] as const).map((t) => (
                 <button
                   type="button"
                   key={t}
-                  className="chip"
-                  data-active={form.category_type === t}
+                  className={pillClass(form.category_type === t)}
                   onClick={() =>
                     setForm({ ...form, category_type: t, category_id: "" })
                   }
                 >
-                  {t === "jajanan" ? "Jajanan" : "Jasa"}
+                  {t === "jajanan" ? "🍜 Jajanan" : "🛠️ Jasa"}
                 </button>
               ))}
             </div>
           </div>
 
-          <label className="form__field">
-            <span>Kategori</span>
+          <label className="block">
+            <span className={LABEL}>Kategori</span>
             <select
+              className={selectClass("w-full")}
               value={form.category_id}
               onChange={(e) => setForm({ ...form, category_id: e.target.value })}
             >
               <option value="">Pilih kategori</option>
               {categoryOptions.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.icon} {c.name}
                 </option>
               ))}
             </select>
           </label>
 
           {form.category_type === "jasa" && (
-            <label className="form__field">
-              <span>Radius jangkauan (km)</span>
+            <label className="block">
+              <span className={LABEL}>Radius jangkauan (km)</span>
               <input
+                className={INPUT}
                 type="number"
                 min="1"
                 max="20"
@@ -244,56 +262,77 @@ export function ProviderPage() {
             </label>
           )}
 
-          <label className="form__field">
-            <span>Deskripsi singkat (opsional)</span>
+          <label className="block">
+            <span className={LABEL}>Deskripsi singkat (opsional)</span>
             <input
+              className={INPUT}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="mis. buka jam 6 pagi, khusus wilayah Lowokwaru"
             />
           </label>
 
-          {formError && <p className="status-line form__error">{formError}</p>}
+          {formError && <p className={ERROR_LINE}>{formError}</p>}
 
-          <button className="btn-primary" type="submit" disabled={submitting}>
-            {submitting ? "Mendaftarkan..." : "Daftar"}
+          <button className={`${BTN_PRIMARY} w-full`} type="submit" disabled={submitting}>
+            <i className="fa-solid fa-circle-check"></i>
+            <span>{submitting ? "Mendaftarkan..." : "Daftar Sekarang"}</span>
           </button>
         </form>
-      </>
+      </div>
     );
   }
 
   // ---------- Sudah daftar: dashboard checkin + foto ----------
   return (
-    <>
-      <header className="header">
-        <h1 className="header__title">{provider.name}</h1>
-        <p className="header__subtitle">
+    <div className="max-w-2xl mx-auto space-y-5">
+      <div className="text-center">
+        <h2 className="text-xl font-black text-slate-900 dark:text-white">
+          {provider.name}
+        </h2>
+        <span
+          className={`inline-flex items-center mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
+            checkedInToday
+              ? "bg-emerald-500/90 text-white"
+              : "bg-rose-500/90 text-white"
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full bg-white mr-1.5 ${
+              checkedInToday ? "animate-pulse" : ""
+            }`}
+          ></span>
+          {checkedInToday ? "Aktif hari ini" : "Belum checkin hari ini"}
+        </span>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
           {checkedInToday
             ? "Statusmu aktif hari ini. Konsumen di sekitar bisa melihatmu."
             : "Belum checkin hari ini — konsumen belum bisa menemukanmu."}
         </p>
-      </header>
+      </div>
 
-      <div className="dashboard">
+      <div className={`${CARD} p-5 sm:p-6 space-y-5`}>
         <button
-          className="btn-primary"
+          className={`${BTN_PRIMARY} w-full py-3 text-base`}
           onClick={handleCheckin}
           disabled={checkinStatus === "locating" || checkinStatus === "sending"}
         >
-          {checkinStatus === "locating" && "Mengambil lokasi..."}
-          {checkinStatus === "sending" && "Mengirim checkin..."}
-          {checkinStatus === "idle" &&
-            (checkedInToday ? "Checkin ulang (update lokasi)" : "Checkin sekarang")}
-          {checkinStatus === "error" && "Coba lagi"}
+          <i className="fa-solid fa-location-crosshairs"></i>
+          <span>
+            {checkinStatus === "locating" && "Mengambil lokasi..."}
+            {checkinStatus === "sending" && "Mengirim checkin..."}
+            {checkinStatus === "idle" &&
+              (checkedInToday ? "Checkin ulang (update lokasi)" : "Checkin sekarang")}
+            {checkinStatus === "error" && "Coba lagi"}
+          </span>
         </button>
 
-        {checkinStatus === "error" && (
-          <p className="status-line form__error">{checkinError}</p>
-        )}
+        {checkinStatus === "error" && <p className={ERROR_LINE}>{checkinError}</p>}
 
-        <div className="dashboard__section">
-          <p className="dashboard__label">Foto {form.category_type === "jasa" ? "portofolio" : "jajanan"}</p>
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+          <p className={LABEL}>
+            Foto {provider.category_type === "jasa" ? "portofolio" : "jajanan"}
+          </p>
           <PhotoUpload
             providerId={provider.id}
             onUploaded={(photoUrl) =>
@@ -301,14 +340,19 @@ export function ProviderPage() {
             }
           />
           {provider.photo_url && (
-            <p className="status-line">Foto tersimpan ✓</p>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">
+              <i className="fa-solid fa-circle-check mr-1"></i> Foto tersimpan
+            </p>
           )}
         </div>
 
-        <button className="btn-secondary" onClick={handleGantiAkun}>
-          Ganti akun / keluar
-        </button>
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+          <button className={BTN_SECONDARY} onClick={handleGantiAkun}>
+            <i className="fa-solid fa-right-from-bracket"></i>
+            <span>Ganti akun / keluar</span>
+          </button>
+        </div>
       </div>
-    </>
+    </div>
   );
 }

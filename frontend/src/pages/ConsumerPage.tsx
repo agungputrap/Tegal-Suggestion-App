@@ -4,6 +4,7 @@ import type { Category, Listing } from "../api";
 import { CategoryFilter } from "../components/CategoryFilter";
 import { ListingCard } from "../components/ListingCard";
 import { MapView } from "../components/MapView";
+import { ERROR_LINE, STATUS_LINE } from "../components/ui";
 
 // Default: pusat kota Tegal, dipakai kalau geolocation browser ditolak
 const DEFAULT_CENTER = { lat: -6.8694, lng: 109.1402 };
@@ -68,48 +69,76 @@ export function ConsumerPage() {
   }, [categories]);
 
   return (
-    <>
-      <header className="header">
-        <h1 className="header__title">Buka Hari Ini</h1>
-        <p className="header__subtitle">
-          Jajanan &amp; jasa yang aktif di sekitarmu — sekarang, bukan minggu
-          lalu.
-        </p>
-        <span className="header__today">{todayLong()}</span>
-      </header>
+    <div className="space-y-5">
+      {/* Header halaman */}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center">
+            <i className="fa-solid fa-sun text-amber-500 mr-2"></i> Buka Hari
+            Ini
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Jajanan &amp; jasa yang aktif di sekitarmu — sekarang, bukan
+            minggu lalu.
+          </p>
+        </div>
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900">
+          <i className="fa-regular fa-calendar mr-1.5"></i>
+          {todayLong()}
+        </span>
+      </div>
 
       <CategoryFilter active={filter} onChange={setFilter} />
 
-      <MapView listings={listings} categories={categories} center={center} />
+      {/* Peta */}
+      <div className="relative h-[360px] sm:h-[440px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
+        <MapView listings={listings} categories={categories} center={center} />
+      </div>
 
-      <main className="list">
-        {status === "loading" && (
-          <p className="status-line">memuat status hari ini...</p>
-        )}
+      {/* Daftar listing */}
+      {status === "loading" && <p className={STATUS_LINE}>memuat status hari ini...</p>}
 
-        {status === "error" && (
-          <p className="status-line">
-            gagal memuat data. cek apakah API sedang jalan.
-          </p>
-        )}
+      {status === "error" && (
+        <p className={ERROR_LINE}>
+          gagal memuat data. cek apakah API sedang jalan.
+        </p>
+      )}
 
-        {status === "ready" && listings.length === 0 && (
-          <div className="empty-state">
-            <p className="empty-state__title">Belum ada yang checkin</p>
-            <p>Coba ganti kategori, atau cek lagi nanti pagi.</p>
+      {status === "ready" && listings.length === 0 && (
+        <div className={`${STATUS_LINE} py-12`}>
+          <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3 text-slate-400 text-xl">
+            <i className="fa-solid fa-store-slash"></i>
           </div>
-        )}
+          <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+            Belum ada yang checkin
+          </p>
+          <p className="mt-1">Coba ganti kategori, atau cek lagi nanti pagi.</p>
+        </div>
+      )}
 
-        {status === "ready" &&
-          listings.map((l) => (
-            <ListingCard
-              key={l.id}
-              listing={l}
-              categoryName={categoryById.get(l.category_id)?.name ?? l.category_id}
-              categoryIcon={categoryById.get(l.category_id)?.icon}
-            />
-          ))}
-      </main>
-    </>
+      {status === "ready" && listings.length > 0 && (
+        <>
+          <div className="text-xs text-slate-500 dark:text-slate-400">
+            Menampilkan{" "}
+            <span className="font-bold text-slate-800 dark:text-slate-200">
+              {listings.length}
+            </span>{" "}
+            penyedia aktif
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {listings.map((l) => (
+              <ListingCard
+                key={l.id}
+                listing={l}
+                categoryName={
+                  categoryById.get(l.category_id)?.name ?? l.category_id
+                }
+                categoryIcon={categoryById.get(l.category_id)?.icon}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { uploadProviderPhoto } from "../api";
+import { BTN_SECONDARY } from "./ui";
 
 type Props = {
   providerId: string;
@@ -43,8 +44,16 @@ export function PhotoUpload({ providerId, onUploaded }: Props) {
 
   return (
     <div>
-      <label className="chip" style={{ cursor: "pointer" }}>
-        {status === "uploading" ? "Mengunggah..." : "Pilih foto"}
+      <label
+        className={`${BTN_SECONDARY} cursor-pointer`}
+        style={{ cursor: "pointer" }}
+      >
+        <i
+          className={`fa-solid ${
+            status === "uploading" ? "fa-spinner fa-spin" : "fa-camera"
+          }`}
+        ></i>
+        <span>{status === "uploading" ? "Mengunggah..." : "Pilih foto"}</span>
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
@@ -54,9 +63,7 @@ export function PhotoUpload({ providerId, onUploaded }: Props) {
         />
       </label>
       {status === "error" && (
-        <p className="status-line" style={{ color: "var(--stamp-ink)" }}>
-          {errorMsg}
-        </p>
+        <p className="text-xs text-rose-500 mt-2">{errorMsg}</p>
       )}
     </div>
   );

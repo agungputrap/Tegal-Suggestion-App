@@ -44,11 +44,12 @@ export function MapView({ listings, categories, center }: Props) {
     return map;
   }, [categories]);
 
-  // Cache icon per kategori supaya tidak dibuat ulang tiap render
+  // Cache icon per kategori supaya tidak dibuat ulang tiap render.
+  // Warna ikut palet template baru: amber (jajanan) & emerald (jasa).
   const iconCache = useMemo(() => {
     const cache = new Map<string, L.DivIcon>();
     categories.forEach((cat) => {
-      const color = cat.type === "jajanan" ? "#e8a33d" : "#1f5c55";
+      const color = cat.type === "jajanan" ? "#f59e0b" : "#059669";
       cache.set(cat.id, buildPinIcon(cat.icon, color));
     });
     return cache;
@@ -58,7 +59,7 @@ export function MapView({ listings, categories, center }: Props) {
     const cached = iconCache.get(listing.category_id);
     if (cached) return cached;
     // Fallback kalau kategori belum termuat / tidak dikenal
-    const color = listing.category_type === "jajanan" ? "#e8a33d" : "#1f5c55";
+    const color = listing.category_type === "jajanan" ? "#f59e0b" : "#059669";
     return buildPinIcon(FALLBACK_ICON[listing.category_type], color);
   }
 
@@ -102,5 +103,5 @@ export function MapView({ listings, categories, center }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listings, categoryById]);
 
-  return <div className="map-wrap" ref={containerRef} />;
+  return <div className="absolute inset-0" ref={containerRef} />;
 }

@@ -3,58 +3,40 @@ import { AdminPage } from "./pages/AdminPage";
 import { ConsumerPage } from "./pages/ConsumerPage";
 import { ProviderPage } from "./pages/ProviderPage";
 import { ExplorerApp } from "./explorer/ExplorerApp";
+import { AppShell, type CoreView } from "./components/AppShell";
 
-// 'explorer' = halaman utama baru (port ref Tegal F&B Explorer).
-// View lain = app inti lama (shell mobile 480px) yang tetap bisa diakses.
-type View = "explorer" | "cari" | "saya" | "admin";
+// 'explorer' = halaman utama (port ref Tegal F&B Explorer).
+// View lain = app inti (Hari Ini / Jasa Saya / Admin) dengan chrome
+// bergaya sama lewat AppShell — tidak ada lagi shell mobile lama.
+type View = CoreView | "explorer";
+
+// Deep-link sederhana: ?view=hari-ini|saya|admin
+function initialView(): View {
+  const v = new URLSearchParams(window.location.search).get("view");
+  return v === "hari-ini" || v === "saya" || v === "admin" ? v : "explorer";
+}
 
 export default function App() {
-  const [view, setView] = useState<View>("explorer");
+  const [view, setView] = useState<View>(initialView);
 
   if (view === "explorer") {
     return (
       <ExplorerApp
-        onOpenLegacyApp={() => setView("cari")}
+        onOpenLegacyApp={() => setView("hari-ini")}
         onOpenAdmin={() => setView("admin")}
       />
     );
   }
 
   return (
-    <div className="app">
-      <button className="legacy-back" onClick={() => setView("explorer")}>
-        ← Kembali ke Explorer
-      </button>
-
-      <div className="app__content">
-        {view === "cari" && <ConsumerPage />}
-        {view === "saya" && <ProviderPage />}
-        {view === "admin" && <AdminPage />}
-      </div>
-
-      <nav className="bottom-nav">
-        <button
-          className="bottom-nav__item"
-          data-active={view === "cari"}
-          onClick={() => setView("cari")}
-        >
-          Cari
-        </button>
-        <button
-          className="bottom-nav__item"
-          data-active={view === "saya"}
-          onClick={() => setView("saya")}
-        >
-          Jualan / Jasa Saya
-        </button>
-        <button
-          className="bottom-nav__item"
-          data-active={view === "admin"}
-          onClick={() => setView("admin")}
-        >
-          Admin
-        </button>
-      </nav>
-    </div>
+    <AppShell
+      active={view}
+      onTabChange={setView}
+      onBackToExplorer={() => setView("explorer")}
+    >
+      {view === "hari-ini" && <ConsumerPage />}
+      {view === "saya" && <ProviderPage />}
+      {view === "admin" && <AdminPage />}
+    </AppShell>
   );
 }
