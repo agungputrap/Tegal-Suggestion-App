@@ -169,3 +169,122 @@ export function waChatLink(phone: string, providerName: string): string {
   );
   return `https://wa.me/${digits}?text=${text}`;
 }
+
+// ---------------------------------------------------------
+// Portal pemilik (/kelola/{token}) — auth via token di path
+// ---------------------------------------------------------
+export type PortalItem = {
+  id: string;
+  name: string;
+  price: number;
+  note: string | null;
+  available: number;
+  sort_order: number;
+};
+
+export type PortalData = {
+  provider: Provider;
+  items: PortalItem[];
+  today: { open: boolean; note?: string | null };
+};
+
+async function portalFetch(
+  token: string,
+  path: string,
+  init?: RequestInit
+): Promise<Response> {
+  return fetch(`${API_URL}/kelola/${token}${path}`, init);
+}
+
+async function portalJson<T>(res: Response, fallbackError: string): Promise<T> {
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: fallbackError }));
+    throw new Error(err.error ?? fallbackError);
+  }
+  return res.json();
+}
+
+export async function fetchPortal(token: string): Promise<PortalData> {
+  return portalFetch(token, "").then((res) =>
+    portalJson<PortalData>(res, "Gagal memuat portal")
+  );
+}
+
+export async function portalOpen(
+  token: string,
+  input: { item_ids?: string[]; note?: string; lat?: number; lng?: number }
+): Promise<{ status: string; date: string }> {
+  return portalFetch(token, "/open", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  }).then((res) => portalJson(res, "Gagal buka hari ini"));
+}
+
+export async function portalClose(token: string): Promise<{ status: string }> {
+  return portalFetch(token, "/close", { method: "POST" }).then((res) =>
+    portalJson(res, "Gagal tutup hari ini")
+  );
+}
+
+export async function portalUpdateBusiness(
+  token: string,
+  input: {
+    name?: string;
+    description?: string;
+    area?: string;
+    halal?: boolean;
+    service_radius_km?: number;
+    base_lat?: number;
+    base_lng?: number;
+  }
+): Promise<void> {
+  const res = await portalFetch(token, "/business", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error("Gagal menyimpan data usaha");
+}
+
+export async function portalCreateItem(
+  token: string,
+  input: { name: string; price: number; note?: string }
+): Promise<void> {
+  const res = await portalFetch(token, "/items", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Gagal menambah item" }));
+    throw new Error(err.error ?? "Gagal menambah item");
+  }
+}
+
+export async function portalUpdateItem(
+  token: string,
+  itemId: string,
+  input: {
+    name?: string;
+    price?: number;
+    note?: string;
+    available?: boolean;
+    sort_order?: number;
+  }
+): Promise<void> {
+  const res = await portalFetch(token, `/items/${itemId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error("Gagal menyimpan item");
+}
+
+export async function portalDeleteItem(
+  token: string,
+  itemId: string
+): Promise<void> {
+  const res = await portalFetch(token, `/items/${itemId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Gagal menghapus item");
+}
