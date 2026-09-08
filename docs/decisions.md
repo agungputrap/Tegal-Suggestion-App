@@ -63,3 +63,9 @@
 - **Skill update:** `api-guidelines` (3 mirror) disinkronkan ke kontrak aktual (Hono, tanpa prefix `/api`, error `{"error": ...}`, upload raw-bytes 5MB, owner token tak pernah expose).
 - **Why:** fondasi bersih sebelum implementasi to-do (#4b/#5/#6/#7/#12–#15) supaya tiap fitur masuk ke module kecil yang testable, bukan nambah file yang sudah terlalu besar.
 - **Review note:** menyentuh AGENTS.md, ownership.md, dev-standards, tech-spec, runbook — kedua owner mohon review.
+
+## 2026-09-08 — Dataset Explorer: 13 tempat Jakarta dibuang dari seed
+
+- **Decision:** `scripts/seed-places.mjs` sekarang melewati baris yang `city`-nya Jakarta (hasil scrape Google Maps memang ikut menyertakan 13 tempat di Jakarta Pusat/Selatan, ±230 km dari Tegal). SQL hasil generate juga menjalankan `DELETE FROM places WHERE city LIKE '%Jakarta%'` supaya re-seed bersih dari data lama. Dataset turun 76 → 63 tempat. Opsi filter "Jakarta Area" + special-case filternya dihapus dari Explorer.
+- **Why:** app ini untuk saran area Tegal — titik Jakarta merusak `fitBounds` peta (view awal melebar sampai Jakarta), mengotori KPI, dan membingungkan pengguna. CSV sumber (`backend/seeds/tegal-fnb.csv`) tidak diubah, filter hanya di pipeline seed.
+- **Review note:** menyentuh `backend/scripts/` (area Arief) dan `frontend/src/explorer/` (area Budi) — kedua owner mohon review.
