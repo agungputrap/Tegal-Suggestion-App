@@ -5,9 +5,25 @@ import { EXT_BY_TYPE, MAX_PHOTO_BYTES } from "../constants";
 
 const router = new Hono<{ Bindings: Env }>();
 
+// Kode verifikasi 6 digit yang ditampilkan ke pemilik (dikirim manual via
+// WhatsApp ke admin — OTP otomatis eksplisit di-cut, lihat PRD Flow B).
+function generateVerifyCode(): string {
+  const n = crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000;
+  return String(n).padStart(6, "0");
+}
+
+// Token magic-link /kelola/{token} — 32 char URL-safe, dikembalikan sekali
+// saat registrasi dan tidak pernah muncul di respons publik.
+function generateOwnerToken(): string {
+  return crypto.randomUUID().replace(/-/g, "");
+}
+
 // ---------------------------------------------------------
 // POST /providers  -> daftar penyedia baru
-// body: { name, phone, category_type, category_id, description?, base_lat?, base_lng?, service_radius_km? }
+// body: { name, phone, category_type, category_id, description?, base_lat?,
+//         base_lng?, service_radius_km?, area?, halal? }
+// Pendaftar baru berstatus 'pending' sampai admin approve (#6); respons
+// membawa owner_token + verify_code SEKALI ini saja.
 // ---------------------------------------------------------
 router.post("/providers", async (c) => {
   const body = await c.req.json();
@@ -19,27 +35,40 @@ router.post("/providers", async (c) => {
     );
   }
 
+  const phone = String(body.phone).replace(/\D/g, "");
+  if (phone.length < 9 || phone.length > 15) {
+    return c.json({ error: "Nomor WhatsApp tidak valid" }, 400);
+  }
+
   const id = crypto.randomUUID();
+  const ownerToken = generateOwnerToken();
+  const verifyCode = generateVerifyCode();
 
   await c.env.DB.prepare(
     `INSERT INTO providers
-      (id, name, phone, category_type, category_id, description, base_lat, base_lng, service_radius_km)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      (id, name, phone, category_type, category_id, description, base_lat,
+       base_lng, service_radius_km, area, halal, approval_status,
+       verify_code, owner_token)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`
   )
     .bind(
       id,
       body.name,
-      body.phone,
+      phone,
       body.category_type,
       body.category_id,
       body.description ?? null,
       body.base_lat ?? null,
       body.base_lng ?? null,
-      body.service_radius_km ?? 0
+      body.service_radius_km ?? 0,
+      body.area ?? null,
+      body.category_type === "jajanan" && body.halal ? 1 : null,
+      verifyCode,
+      ownerToken
     )
     .run();
 
-  return c.json({ id }, 201);
+  return c.json({ id, owner_token: ownerToken, verify_code: verifyCode }, 201);
 });
 
 // ---------------------------------------------------------

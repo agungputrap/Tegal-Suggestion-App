@@ -62,6 +62,17 @@ export type Provider = {
   base_lat: number | null;
   base_lng: number | null;
   service_radius_km: number;
+  area: string | null;
+  halal: number | null;
+  approval_status: "pending" | "approved" | "rejected";
+};
+
+// Hasil registrasi — owner_token & verify_code HANYA dikembalikan sekali
+// di sini, jadi harus langsung ditampilkan/disimpan di sisi pemilik.
+export type RegistrationResult = {
+  id: string;
+  owner_token: string;
+  verify_code: string;
 };
 
 export async function createProvider(input: {
@@ -73,7 +84,9 @@ export async function createProvider(input: {
   base_lat?: number;
   base_lng?: number;
   service_radius_km?: number;
-}): Promise<string> {
+  area?: string;
+  halal?: boolean;
+}): Promise<RegistrationResult> {
   const res = await fetch(`${API_URL}/providers`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -85,8 +98,7 @@ export async function createProvider(input: {
     throw new Error(err.error ?? "Pendaftaran gagal");
   }
 
-  const data = await res.json();
-  return data.id as string;
+  return res.json();
 }
 
 export async function fetchProvider(id: string): Promise<Provider | null> {

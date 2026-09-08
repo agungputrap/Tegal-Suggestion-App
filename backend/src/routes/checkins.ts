@@ -17,15 +17,21 @@ router.post("/checkins", async (c) => {
   }
 
   const provider = await c.env.DB.prepare(
-    "SELECT suspended FROM providers WHERE id = ?"
+    "SELECT suspended, approval_status FROM providers WHERE id = ?"
   )
     .bind(body.provider_id)
-    .first<{ suspended: number }>();
+    .first<{ suspended: number; approval_status: string }>();
 
   if (!provider) return c.json({ error: "Provider tidak ditemukan" }, 404);
   if (provider.suspended) {
     return c.json(
       { error: "Akun ini dinonaktifkan admin. Hubungi pengelola." },
+      403
+    );
+  }
+  if (provider.approval_status !== "approved") {
+    return c.json(
+      { error: "Pendaftaran belum disetujui admin. Kirim kode verifikasi dulu." },
       403
     );
   }

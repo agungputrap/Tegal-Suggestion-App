@@ -10,6 +10,7 @@ import {
   fetchAdminProviders,
   fetchAdminStats,
   getStoredAdminToken,
+  setProviderApproval,
   setProviderSuspended,
   setStoredAdminToken,
   verifyAdminToken,
@@ -317,7 +318,7 @@ function ProvidersPanel({ token }: { token: string }) {
     "semua"
   );
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "suspended"
+    "all" | "active" | "suspended" | "pending" | "approved" | "rejected"
   >("all");
   const [query, setQuery] = useState("");
 
@@ -356,6 +357,18 @@ function ProvidersPanel({ token }: { token: string }) {
       reload();
     } catch {
       alert("Gagal menonaktifkan checkin");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleApproval(p: AdminProvider, status: "approved" | "rejected") {
+    setBusyId(p.id);
+    try {
+      await setProviderApproval(token, p.id, status);
+      reload();
+    } catch {
+      alert("Gagal mengubah status approval");
     } finally {
       setBusyId(null);
     }
@@ -429,6 +442,23 @@ function ProvidersPanel({ token }: { token: string }) {
               {label}
             </button>
           ))}
+          <span className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1" />
+          <span className="text-slate-400 text-xs mr-1">Verifikasi:</span>
+          {(
+            [
+              ["pending", "Menunggu"],
+              ["approved", "Disetujui"],
+              ["rejected", "Ditolak"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              className={pillClass(statusFilter === value)}
+              onClick={() => setStatusFilter(value)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -462,6 +492,16 @@ function ProvidersPanel({ token }: { token: string }) {
               <div className="flex-grow min-w-0">
                 <p className="font-bold text-sm text-slate-900 dark:text-white flex items-center flex-wrap gap-1.5">
                   {p.name}
+                  {p.approval_status === "pending" && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/90 text-white">
+                      menunggu verifikasi
+                    </span>
+                  )}
+                  {p.approval_status === "rejected" && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-500 text-white">
+                      ditolak
+                    </span>
+                  )}
                   {p.suspended === 1 && (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/90 text-white">
                       nonaktif
@@ -480,6 +520,25 @@ function ProvidersPanel({ token }: { token: string }) {
                 </p>
 
                 <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                  {p.approval_status === "pending" && (
+                    <>
+                      <button
+                        className="inline-flex items-center justify-center space-x-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition disabled:opacity-60"
+                        disabled={busyId === p.id}
+                        onClick={() => handleApproval(p, "approved")}
+                      >
+                        <i className="fa-solid fa-check"></i>
+                        <span>Setujui</span>
+                      </button>
+                      <button
+                        className={BTN_DANGER}
+                        disabled={busyId === p.id}
+                        onClick={() => handleApproval(p, "rejected")}
+                      >
+                        Tolak
+                      </button>
+                    </>
+                  )}
                   <button
                     className={BTN_SECONDARY}
                     disabled={busyId === p.id}
