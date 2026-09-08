@@ -8,6 +8,7 @@ import { providersRoutes } from "./routes/providers";
 import { checkinsRoutes } from "./routes/checkins";
 import { listingsRoutes } from "./routes/listings";
 import { photosRoutes } from "./routes/photos";
+import { kelolaRoutes } from "./routes/kelola";
 import { adminRoutes } from "./routes/admin";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -21,6 +22,7 @@ app.route("/", providersRoutes);
 app.route("/", checkinsRoutes);
 app.route("/", listingsRoutes);
 app.route("/", photosRoutes);
+app.route("/", kelolaRoutes);
 
 // Admin (auth di dalam router)
 app.route("/admin", adminRoutes);
