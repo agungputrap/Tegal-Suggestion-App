@@ -75,8 +75,8 @@ npm run typecheck    # tsc --noEmit
 npm run build        # production build must succeed
 ```
 
-> Lint and unit-test tooling are not set up yet — see `TASKS.md` (#8/#9/#10).
-> When they land, their commands belong here and in the Definition of Done.
+> Validasi tiap perubahan: `npm run lint` + `npm test` + `npm run typecheck`
+> (dan `npm run build` untuk frontend) di sisi terkait.
 
 Env vars:
 
@@ -100,9 +100,9 @@ The Explorer page reads from the `places` table — seed it with `npm run db:see
 
 Domain: connect a custom `.id` domain via Cloudflare DNS / Pages **Custom Domains** (a `.workers.dev` subdomain is not acceptable for the competition submission).
 
-## Testing setup (not done yet — tasks #8/#9)
+## Testing
 
-- **Backend:** Vitest + `@cloudflare/vitest-pool-workers` (runs against the real Workers runtime with local D1/KV/R2).
+- **Backend:** `npm test` — Vitest + `@cloudflare/vitest-pool-workers` (runtime Workers asli, migrasi D1 diterapkan otomatis ke DB test).
 - **Frontend:** Vitest + React Testing Library + jsdom, `"test": "vitest run"` in `package.json`.
 
 ## AI tool setup (team conventions are multi-tool)

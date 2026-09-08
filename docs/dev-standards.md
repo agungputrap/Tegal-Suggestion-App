@@ -10,7 +10,7 @@
 ### Language & formatting
 
 - **TypeScript everywhere** — frontend (React + Vite) and backend (Hono on Cloudflare Workers). No plain JS.
-- **Formatting is enforced by tools, not by taste** — Prettier + ESLint (setup pending, task #10). Until then: match the surrounding code exactly.
+- **Formatting is enforced by tools, not by taste** — Prettier + ESLint (flat config di root). Jalankan `npm run lint` / `npm run format` sebelum commit.
 - When in doubt, match the surrounding code — but the formatter is the source of truth.
 
 ### Naming
@@ -69,7 +69,7 @@ backend/
 cd backend
 npm run typecheck       # tsc --noEmit — must pass
 npm run dev             # boots clean (smoke test)
-# unit tests: not set up yet (task #8) — when they land, `npm test` is mandatory
+# unit tests wajib: vitest + @cloudflare/vitest-pool-workers (test/)
 ```
 
 ---
@@ -104,7 +104,7 @@ frontend/src/
 cd frontend
 npm run typecheck    # tsc --noEmit — must pass
 npm run build        # production build — must succeed
-# lint + unit tests: not set up yet (tasks #9/#10) — when they land they are mandatory
+# lint + unit tests wajib: eslint + vitest (RTL + jsdom, test/)
 ```
 
 ---
@@ -115,12 +115,12 @@ npm run build        # production build — must succeed
 
 "Does it work?" has two answers: **the compiler** (syntax/type/build errors) and **the tests** (runtime behavior). Both are automated so any member's AI can verify before merging — no manual "trust me, it runs."
 
-### Backend: Vitest + `@cloudflare/vitest-pool-workers` (planned, task #8)
+### Backend: Vitest + `@cloudflare/vitest-pool-workers`
 
 - Tests run inside the real Workers runtime with local D1/KV/R2 bindings.
 - Cover at minimum: register validation, checkin idempotency (same day upsert), listings radius filter, suspended provider hidden, admin auth (bad token → 401), photo upload validation (bad type → 400, oversize → 413).
 
-### Frontend: Vitest + React Testing Library (planned, task #9)
+### Frontend: Vitest + React Testing Library + jsdom
 
 - Vitest (Vite-native, fast) + @testing-library/react + jsdom.
 - `*.test.tsx` next to the component or in `src/**/__tests__/`.
@@ -135,7 +135,7 @@ A task is **done** only when all of the following pass, verified by running the 
 - [ ] App runs end-to-end: both dev servers up, one happy path clicked through
 - [ ] `docs/decisions.md` appended if the change affects the other side
 - [ ] `TASKS.md` marked `[x]` with commit hash
-- [ ] (Once tasks #8/#9/#10 land: `npm test` + `npm run lint` on both sides are mandatory too)
+- [ ] `npm test` + `npm run lint` hijau di kedua sisi
 
 ---
 

@@ -174,14 +174,14 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 - **Daily checkin is the freshness signal.** `/listings` filters on `checkins.date = today (Jakarta) AND is_active = 1`. Cron expires old checkins at midnight WIB.
 - **KV is cache only.** D1 is the source of truth; writes delete cache keys instead of writing to KV.
 
-## Spec'd but not yet implemented (gaps vs PRD)
+## Gaps vs PRD — selesai (2026-09-08)
 
-These were in the original FastAPI-era spec and are **not** in the current code — see `TASKS.md`:
+Semua gap di bawah sudah diimplementasikan (lihat `TASKS.md` + `docs/decisions.md`):
 
-- `items` table (menu / service price-list) + endpoints
-- WhatsApp verify code + approval flow for new registrations
-- Owner portal `/kelola/{token}` (open/close today, edit business) — current provider flow is localStorage-based
-- Trending sort (views/likes per day), filter by area (kecamatan), halal flag for food
+- `items` table (menu / service price-list) + endpoint publik & CRUD portal pemilik
+- WhatsApp verify code (6 digit, ditampilkan ke pemilik) + approval admin
+- Owner portal `/kelola/{token}` (buka/tutup hari ini + pilih item tersedia + catatan + edit usaha)
+- Trending sort (`/listings?sort=trending`, berdasar views/hari), filter area (kecamatan), halal flag
 
 ## Explicitly cut (post-hackathon)
 
