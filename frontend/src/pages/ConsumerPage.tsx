@@ -4,7 +4,9 @@ import type { Category, Listing } from "../api";
 import { CategoryFilter } from "../components/CategoryFilter";
 import { ListingCard } from "../components/ListingCard";
 import { MapView } from "../components/MapView";
-import { ERROR_LINE, STATUS_LINE } from "../components/ui";
+import { ProviderDetailModal } from "../components/ProviderDetailModal";
+import { KECAMATAN } from "../data/kecamatan";
+import { ERROR_LINE, STATUS_LINE, pillClass, selectClass } from "../components/ui";
 
 // Default: pusat kota Tegal, dipakai kalau geolocation browser ditolak
 const DEFAULT_CENTER = { lat: -6.8694, lng: 109.1402 };
@@ -19,12 +21,16 @@ function todayLong(): string {
 
 export function ConsumerPage() {
   const [filter, setFilter] = useState<"semua" | "jajanan" | "jasa">("semua");
+  const [area, setArea] = useState("");
+  const [halalOnly, setHalalOnly] = useState(false);
+  const [trending, setTrending] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading"
   );
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   // Ambil lokasi user kalau diizinkan
   useEffect(() => {
@@ -51,6 +57,9 @@ export function ConsumerPage() {
     setStatus("loading");
     fetchListings({
       type: filter === "semua" ? undefined : filter,
+      area: area || undefined,
+      halal: halalOnly || undefined,
+      sort: trending ? "trending" : undefined,
       lat: center.lat,
       lng: center.lng,
       radius: 5,
@@ -60,7 +69,12 @@ export function ConsumerPage() {
         setStatus("ready");
       })
       .catch(() => setStatus("error"));
-  }, [filter, center]);
+  }, [filter, area, halalOnly, trending, center]);
+
+  const detailListing = useMemo(
+    () => (detailId ? listings.find((l) => l.id === detailId) ?? null : null),
+    [detailId, listings]
+  );
 
   const categoryById = useMemo(() => {
     const map = new Map<string, Category>();
@@ -89,6 +103,39 @@ export function ConsumerPage() {
       </div>
 
       <CategoryFilter active={filter} onChange={setFilter} />
+
+      {/* Filter area + halal + trending (#14/#4b) */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-slate-400 text-xs mr-1">
+          <i className="fa-solid fa-location-dot mr-1"></i>Area:
+        </span>
+        <select
+          value={area}
+          onChange={(e) => setArea(e.target.value)}
+          className={`${selectClass()} !py-1 !px-2.5 text-xs`}
+        >
+          <option value="">Semua kecamatan</option>
+          {KECAMATAN.map((k) => (
+            <option key={k} value={k}>
+              {k}
+            </option>
+          ))}
+        </select>
+        <button
+          className={pillClass(halalOnly)}
+          onClick={() => setHalalOnly((v) => !v)}
+          title="Hanya yang berhalal"
+        >
+          ☪️ Halal
+        </button>
+        <button
+          className={pillClass(trending)}
+          onClick={() => setTrending((v) => !v)}
+          title="Urutkan paling banyak dilihat hari ini"
+        >
+          🔥 Trending
+        </button>
+      </div>
 
       {/* Peta */}
       <div className="relative h-[360px] sm:h-[440px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -134,10 +181,21 @@ export function ConsumerPage() {
                   categoryById.get(l.category_id)?.name ?? l.category_id
                 }
                 categoryIcon={categoryById.get(l.category_id)?.icon}
+                onOpenDetail={() => setDetailId(l.id)}
               />
             ))}
           </div>
         </>
+      )}
+      {detailListing && (
+        <ProviderDetailModal
+          listing={detailListing}
+          categoryName={
+            categoryById.get(detailListing.category_id)?.name ??
+            detailListing.category_id
+          }
+          onClose={() => setDetailId(null)}
+        />
       )}
     </div>
   );

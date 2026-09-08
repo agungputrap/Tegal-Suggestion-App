@@ -22,6 +22,20 @@ export type Listing = {
   checkin_lat: number;
   checkin_lng: number;
   distance_km?: number;
+  area: string | null;
+  halal: number | null;
+  views: number;
+};
+
+// Item menu/price-list penyedia (bentuk sama dengan backend/src/types.ts)
+export type Item = {
+  id: string;
+  provider_id: string;
+  name: string;
+  price: number;
+  note: string | null;
+  available: number;
+  sort_order: number;
 };
 
 // photo_url yang disimpan backend berbentuk path relatif ("/photos/...")
@@ -137,12 +151,20 @@ export async function fetchCategories(): Promise<Category[]> {
 
 export async function fetchListings(params: {
   type?: "jajanan" | "jasa";
+  category?: string;
+  area?: string;
+  halal?: boolean;
+  sort?: "trending";
   lat?: number;
   lng?: number;
   radius?: number;
 }): Promise<Listing[]> {
   const qs = new URLSearchParams();
   if (params.type) qs.set("type", params.type);
+  if (params.category) qs.set("category", params.category);
+  if (params.area) qs.set("area", params.area);
+  if (params.halal) qs.set("halal", "1");
+  if (params.sort) qs.set("sort", params.sort);
   if (params.lat != null) qs.set("lat", String(params.lat));
   if (params.lng != null) qs.set("lng", String(params.lng));
   if (params.radius != null) qs.set("radius", String(params.radius));
@@ -151,6 +173,21 @@ export async function fetchListings(params: {
   if (!res.ok) throw new Error("Gagal memuat listing");
   const data = await res.json();
   return data.listings;
+}
+
+// Items penyedia (menu / daftar harga) untuk halaman detail (#5/#13)
+export async function fetchProviderItems(id: string): Promise<Item[]> {
+  const res = await fetch(`${API_URL}/providers/${id}/items`);
+  if (!res.ok) throw new Error("Gagal memuat item");
+  const data = await res.json();
+  return data.items;
+}
+
+// Fire-and-forget: catat 1 view saat detail dibuka (#4b trending)
+export function trackProviderView(id: string): void {
+  fetch(`${API_URL}/providers/${id}/view`, { method: "POST" }).catch(() => {
+    /* view tracking tidak boleh mengganggu UI */
+  });
 }
 
 // Dataset F&B Tegal dari Google Maps (halaman Explorer).

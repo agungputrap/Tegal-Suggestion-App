@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import type { Env } from "../types";
+import type { Env, Item } from "../types";
 import { PUBLIC_PROVIDER_COLUMNS } from "../types";
 import { EXT_BY_TYPE, MAX_PHOTO_BYTES } from "../constants";
+import { todayJakarta } from "../geo";
 
 const router = new Hono<{ Bindings: Env }>();
 
@@ -85,6 +86,40 @@ router.get("/providers/:id", async (c) => {
 
   if (!provider) return c.json({ error: "Provider tidak ditemukan" }, 404);
   return c.json({ provider });
+});
+
+// ---------------------------------------------------------
+// GET /providers/:id/items -> menu / daftar harga (publik)
+// ---------------------------------------------------------
+router.get("/providers/:id/items", async (c) => {
+  const id = c.req.param("id");
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, name, price, note, available, sort_order FROM items WHERE provider_id = ? ORDER BY sort_order, created_at"
+  )
+    .bind(id)
+    .all<Item>();
+  return c.json({ items: results });
+});
+
+// ---------------------------------------------------------
+// POST /providers/:id/view -> catat 1 view hari ini (untuk trending #4b)
+// Dijalankan via waitUntil: client tidak menunggu write selesai.
+// ---------------------------------------------------------
+router.post("/providers/:id/view", async (c) => {
+  const id = c.req.param("id");
+  const date = todayJakarta();
+
+  c.executionCtx.waitUntil(
+    c.env.DB.prepare(
+      `INSERT INTO provider_views (provider_id, date, views)
+       VALUES (?, ?, 1)
+       ON CONFLICT(provider_id, date) DO UPDATE SET views = views + 1`
+    )
+      .bind(id, date)
+      .run()
+  );
+
+  return c.json({ status: "ok" });
 });
 
 // ---------------------------------------------------------

@@ -6,6 +6,7 @@ type Props = {
   listing: Listing;
   categoryName: string;
   categoryIcon?: string;
+  onOpenDetail?: () => void;
 };
 
 function todayLabel(): string {
@@ -15,7 +16,7 @@ function todayLabel(): string {
   });
 }
 
-export function ListingCard({ listing, categoryName, categoryIcon }: Props) {
+export function ListingCard({ listing, categoryName, categoryIcon, onOpenDetail }: Props) {
   const photoSrc = resolvePhotoUrl(listing.photo_url);
   const isJajanan = listing.category_type === "jajanan";
 
@@ -24,7 +25,10 @@ export function ListingCard({ listing, categoryName, categoryIcon }: Props) {
       className={`${CARD} overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition duration-300 flex flex-col group`}
     >
       {/* Media: foto provider, atau tile emoji kategori */}
-      <div className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <div
+        className="relative h-40 overflow-hidden bg-slate-100 dark:bg-slate-800 cursor-pointer"
+        onClick={onOpenDetail}
+      >
         {photoSrc ? (
           <img
             className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
@@ -58,24 +62,28 @@ export function ListingCard({ listing, categoryName, categoryIcon }: Props) {
       </div>
 
       <div className="p-4 flex-grow flex flex-col">
-        <h3 className="font-bold text-slate-900 dark:text-white text-base line-clamp-1">
+        <h3
+          className="font-bold text-slate-900 dark:text-white text-base line-clamp-1 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition"
+          onClick={onOpenDetail}
+        >
           {listing.name}
         </h3>
 
-        <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mt-1.5 mb-3">
+        <div className="flex items-center flex-wrap gap-x-2 text-xs text-slate-500 dark:text-slate-400 mt-1.5 mb-3">
           {listing.distance_km != null && (
             <span className="inline-flex items-center">
               <i className="fa-solid fa-location-dot text-rose-400 mr-1"></i>
               {listing.distance_km.toFixed(1)} km
             </span>
           )}
+          {listing.halal === 1 && (
+            <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold">
+              ☪️ Halal
+            </span>
+          )}
+          {listing.area && <span>{listing.area}</span>}
           {listing.description && (
-            <>
-              {listing.distance_km != null && (
-                <span className="text-slate-400">•</span>
-              )}
-              <span className="line-clamp-1">{listing.description}</span>
-            </>
+            <span className="line-clamp-1">{listing.description}</span>
           )}
         </div>
 
