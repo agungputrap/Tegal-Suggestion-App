@@ -14,7 +14,8 @@ router.get("/photos/*", async (c) => {
 
   return new Response(obj.body, {
     headers: {
-      "Content-Type": obj.httpMetadata?.contentType ?? "application/octet-stream",
+      "Content-Type":
+        obj.httpMetadata?.contentType ?? "application/octet-stream",
       "Cache-Control": "public, max-age=31536000, immutable",
       ETag: obj.httpEtag,
     },

@@ -19,7 +19,12 @@ const TABS: { id: CoreView; icon: string; label: string; short: string }[] = [
   { id: "admin", icon: "fa-user-shield", label: "Admin", short: "Admin" },
 ];
 
-export function AppShell({ active, onTabChange, onBackToExplorer, children }: Props) {
+export function AppShell({
+  active,
+  onTabChange,
+  onBackToExplorer,
+  children,
+}: Props) {
   const { dark, setDark } = useDarkMode();
 
   return (

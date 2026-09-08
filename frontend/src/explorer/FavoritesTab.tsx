@@ -22,7 +22,7 @@ export function FavoritesTab({
 }: Props) {
   const favPlaces = useMemo(
     () => places.filter((p) => favorites.includes(p.id)),
-    [places, favorites]
+    [places, favorites],
   );
 
   return (
@@ -30,8 +30,8 @@ export function FavoritesTab({
       <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center">
-            <i className="fa-solid fa-heart text-rose-500 mr-2"></i> Tempat Kuliner
-            Tersimpan &amp; Komparasi
+            <i className="fa-solid fa-heart text-rose-500 mr-2"></i> Tempat
+            Kuliner Tersimpan &amp; Komparasi
           </h3>
           <p className="text-xs text-slate-500">
             Tandai tempat favorit Anda untuk membandingkan fasilitas, harga, dan
@@ -123,9 +123,7 @@ export function FavoritesTab({
       </div>
 
       {/* Comparison table kalau >= 2 tempat tersimpan */}
-      {favPlaces.length >= 2 && (
-        <ComparisonTable places={favPlaces} />
-      )}
+      {favPlaces.length >= 2 && <ComparisonTable places={favPlaces} />}
     </section>
   );
 }
@@ -154,7 +152,9 @@ function ComparisonTable({ places }: { places: Place[] }) {
         <table className="w-full text-xs text-left border-collapse">
           <thead>
             <tr className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-              <th className="p-3 border dark:border-slate-700 w-32">Kriteria</th>
+              <th className="p-3 border dark:border-slate-700 w-32">
+                Kriteria
+              </th>
               {places.map((p) => (
                 <th
                   key={p.id}
@@ -169,7 +169,9 @@ function ComparisonTable({ places }: { places: Place[] }) {
             {makeRow("Kategori", (p) => p.category)}
             {makeRow("Rating", (p) => (
               <span>
-                <span className="text-amber-500 font-bold">★ {formatRating(p)}</span>{" "}
+                <span className="text-amber-500 font-bold">
+                  ★ {formatRating(p)}
+                </span>{" "}
                 ({p.review_count || 0})
               </span>
             ))}
@@ -183,10 +185,11 @@ function ComparisonTable({ places }: { places: Place[] }) {
                 </a>
               ) : (
                 "-"
-              )
+              ),
             )}
-            {makeRow("Fasilitas Populer", (p) =>
-              extractHighlights(p).slice(0, 4).join(", ") || "-"
+            {makeRow(
+              "Fasilitas Populer",
+              (p) => extractHighlights(p).slice(0, 4).join(", ") || "-",
             )}
           </tbody>
         </table>

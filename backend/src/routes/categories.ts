@@ -8,7 +8,7 @@ const router = new Hono<{ Bindings: Env }>();
 // ---------------------------------------------------------
 router.get("/categories", async (c) => {
   const { results } = await c.env.DB.prepare(
-    "SELECT id, name, type, icon FROM categories ORDER BY type, name"
+    "SELECT id, name, type, icon FROM categories ORDER BY type, name",
   ).all();
   return c.json({ categories: results });
 });

@@ -48,7 +48,7 @@ export function resolvePhotoUrl(photoUrl: string | null): string | null {
 
 export async function uploadProviderPhoto(
   providerId: string,
-  file: File
+  file: File,
 ): Promise<string> {
   const res = await fetch(`${API_URL}/providers/${providerId}/photo`, {
     method: "POST",
@@ -202,7 +202,7 @@ export async function fetchPlaces(): Promise<Place[]> {
 export function waChatLink(phone: string, providerName: string): string {
   const digits = phone.replace(/^0/, "62").replace(/\D/g, "");
   const text = encodeURIComponent(
-    `Halo ${providerName}, saya lihat statusnya aktif hari ini di Buka Hari Ini. Masih bisa?`
+    `Halo ${providerName}, saya lihat statusnya aktif hari ini di Buka Hari Ini. Masih bisa?`,
   );
   return `https://wa.me/${digits}?text=${text}`;
 }
@@ -228,7 +228,7 @@ export type PortalData = {
 async function portalFetch(
   token: string,
   path: string,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<Response> {
   return fetch(`${API_URL}/kelola/${token}${path}`, init);
 }
@@ -243,13 +243,13 @@ async function portalJson<T>(res: Response, fallbackError: string): Promise<T> {
 
 export async function fetchPortal(token: string): Promise<PortalData> {
   return portalFetch(token, "").then((res) =>
-    portalJson<PortalData>(res, "Gagal memuat portal")
+    portalJson<PortalData>(res, "Gagal memuat portal"),
   );
 }
 
 export async function portalOpen(
   token: string,
-  input: { item_ids?: string[]; note?: string; lat?: number; lng?: number }
+  input: { item_ids?: string[]; note?: string; lat?: number; lng?: number },
 ): Promise<{ status: string; date: string }> {
   return portalFetch(token, "/open", {
     method: "POST",
@@ -260,7 +260,7 @@ export async function portalOpen(
 
 export async function portalClose(token: string): Promise<{ status: string }> {
   return portalFetch(token, "/close", { method: "POST" }).then((res) =>
-    portalJson(res, "Gagal tutup hari ini")
+    portalJson(res, "Gagal tutup hari ini"),
   );
 }
 
@@ -274,7 +274,7 @@ export async function portalUpdateBusiness(
     service_radius_km?: number;
     base_lat?: number;
     base_lng?: number;
-  }
+  },
 ): Promise<void> {
   const res = await portalFetch(token, "/business", {
     method: "PUT",
@@ -286,7 +286,7 @@ export async function portalUpdateBusiness(
 
 export async function portalCreateItem(
   token: string,
-  input: { name: string; price: number; note?: string }
+  input: { name: string; price: number; note?: string },
 ): Promise<void> {
   const res = await portalFetch(token, "/items", {
     method: "POST",
@@ -294,7 +294,9 @@ export async function portalCreateItem(
     body: JSON.stringify(input),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Gagal menambah item" }));
+    const err = await res
+      .json()
+      .catch(() => ({ error: "Gagal menambah item" }));
     throw new Error(err.error ?? "Gagal menambah item");
   }
 }
@@ -308,7 +310,7 @@ export async function portalUpdateItem(
     note?: string;
     available?: boolean;
     sort_order?: number;
-  }
+  },
 ): Promise<void> {
   const res = await portalFetch(token, `/items/${itemId}`, {
     method: "PUT",
@@ -320,8 +322,10 @@ export async function portalUpdateItem(
 
 export async function portalDeleteItem(
   token: string,
-  itemId: string
+  itemId: string,
 ): Promise<void> {
-  const res = await portalFetch(token, `/items/${itemId}`, { method: "DELETE" });
+  const res = await portalFetch(token, `/items/${itemId}`, {
+    method: "DELETE",
+  });
   if (!res.ok) throw new Error("Gagal menghapus item");
 }

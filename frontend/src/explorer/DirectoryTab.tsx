@@ -135,7 +135,9 @@ export function DirectoryTab({
 
             <select
               value={String(filters.minRating)}
-              onChange={(e) => onFilterChange.setMinRating(parseFloat(e.target.value))}
+              onChange={(e) =>
+                onFilterChange.setMinRating(parseFloat(e.target.value))
+              }
               className={selectClass}
             >
               <option value="0">⭐ Semua Rating</option>
@@ -146,7 +148,9 @@ export function DirectoryTab({
 
             <select
               value={filters.sort}
-              onChange={(e) => onFilterChange.setSort(e.target.value as SortOption)}
+              onChange={(e) =>
+                onFilterChange.setSort(e.target.value as SortOption)
+              }
               className={`${selectClass} font-medium`}
             >
               <option value="rating_desc">🔥 Rating Tertinggi</option>
@@ -460,7 +464,11 @@ function ListView({
   onOpenPlace: (id: string) => void;
 }) {
   if (places.length === 0) {
-    return <div className="p-8 text-center text-slate-500">Tidak ada data ditemukan.</div>;
+    return (
+      <div className="p-8 text-center text-slate-500">
+        Tidak ada data ditemukan.
+      </div>
+    );
   }
 
   return (
@@ -590,7 +598,9 @@ function TableView({
                   <td className="p-3 whitespace-nowrap text-xs">{p.city}</td>
                   <td className="p-3 whitespace-nowrap text-xs">
                     {p.open_hours ? (
-                      <span className="text-emerald-600 font-medium">Tersedia</span>
+                      <span className="text-emerald-600 font-medium">
+                        Tersedia
+                      </span>
                     ) : (
                       <span className="text-slate-400">-</span>
                     )}

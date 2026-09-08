@@ -57,7 +57,7 @@ export function isOpenNow(
   place: Place,
   dayIndo: string,
   hour: number,
-  min: number
+  min: number,
 ): boolean | null {
   if (!place.open_hours || !place.open_hours[dayIndo]) return null;
   const hoursList = place.open_hours[dayIndo];
@@ -67,7 +67,7 @@ export function isOpenNow(
   if (timeStr.includes("tutup") || timeStr.includes("closed")) return false;
   if (timeStr.includes("24 jam") || timeStr.includes("24 hours")) return true;
 
-  const parts = timeStr.split(/[–—\-]/);
+  const parts = timeStr.split(/[–—-]/);
   if (parts.length === 2) {
     const start = parseTimeString(parts[0]);
     const end = parseTimeString(parts[1]);

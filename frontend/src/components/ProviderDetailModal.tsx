@@ -130,7 +130,8 @@ export function ProviderDetailModal({ listing, categoryName, onClose }: Props) {
                 <p className="text-xs text-slate-500">memuat item...</p>
               ) : items.filter((i) => i.available === 1).length === 0 ? (
                 <p className="text-xs text-slate-400">
-                  Belum ada daftar {isJajananLabel(isJajanan)} yang tersedia hari ini.
+                  Belum ada daftar {isJajananLabel(isJajanan)} yang tersedia
+                  hari ini.
                 </p>
               ) : (
                 <div className="space-y-1.5">

@@ -17,7 +17,7 @@ router.post("/checkins", async (c) => {
   }
 
   const provider = await c.env.DB.prepare(
-    "SELECT suspended, approval_status FROM providers WHERE id = ?"
+    "SELECT suspended, approval_status FROM providers WHERE id = ?",
   )
     .bind(body.provider_id)
     .first<{ suspended: number; approval_status: string }>();
@@ -26,13 +26,15 @@ router.post("/checkins", async (c) => {
   if (provider.suspended) {
     return c.json(
       { error: "Akun ini dinonaktifkan admin. Hubungi pengelola." },
-      403
+      403,
     );
   }
   if (provider.approval_status !== "approved") {
     return c.json(
-      { error: "Pendaftaran belum disetujui admin. Kirim kode verifikasi dulu." },
-      403
+      {
+        error: "Pendaftaran belum disetujui admin. Kirim kode verifikasi dulu.",
+      },
+      403,
     );
   }
 
@@ -44,7 +46,7 @@ router.post("/checkins", async (c) => {
     `INSERT INTO checkins (id, provider_id, date, lat, lng, is_active)
      VALUES (?, ?, ?, ?, ?, 1)
      ON CONFLICT(provider_id, date)
-     DO UPDATE SET lat = excluded.lat, lng = excluded.lng, is_active = 1`
+     DO UPDATE SET lat = excluded.lat, lng = excluded.lng, is_active = 1`,
   )
     .bind(id, body.provider_id, date, body.lat, body.lng)
     .run();

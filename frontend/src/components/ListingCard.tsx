@@ -18,7 +18,12 @@ function todayLabel(): string {
   });
 }
 
-export function ListingCard({ listing, categoryName, categoryIcon, onOpenDetail }: Props) {
+export function ListingCard({
+  listing,
+  categoryName,
+  categoryIcon,
+  onOpenDetail,
+}: Props) {
   const photoSrc = resolvePhotoUrl(listing.photo_url);
   const isJajanan = listing.category_type === "jajanan";
 

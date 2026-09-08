@@ -16,20 +16,24 @@ router.get("/stats", async (c) => {
   const today = todayJakarta();
 
   const [totalProviders, activeToday, byType, byCategory] = await Promise.all([
-    c.env.DB.prepare("SELECT COUNT(*) as n FROM providers WHERE suspended = 0").first<{ n: number }>(),
+    c.env.DB.prepare(
+      "SELECT COUNT(*) as n FROM providers WHERE suspended = 0",
+    ).first<{ n: number }>(),
     c.env.DB.prepare(
       `SELECT COUNT(*) as n FROM checkins ck
        JOIN providers p ON p.id = ck.provider_id
-       WHERE ck.date = ? AND ck.is_active = 1 AND p.suspended = 0`
-    ).bind(today).first<{ n: number }>(),
+       WHERE ck.date = ? AND ck.is_active = 1 AND p.suspended = 0`,
+    )
+      .bind(today)
+      .first<{ n: number }>(),
     c.env.DB.prepare(
       `SELECT category_type as type, COUNT(*) as n FROM providers
-       WHERE suspended = 0 GROUP BY category_type`
+       WHERE suspended = 0 GROUP BY category_type`,
     ).all<{ type: string; n: number }>(),
     c.env.DB.prepare(
       `SELECT c.name as category, COUNT(*) as n FROM providers p
        JOIN categories c ON c.id = p.category_id
-       WHERE p.suspended = 0 GROUP BY p.category_id ORDER BY n DESC`
+       WHERE p.suspended = 0 GROUP BY p.category_id ORDER BY n DESC`,
     ).all<{ category: string; n: number }>(),
   ]);
 
@@ -67,7 +71,11 @@ router.get("/providers", async (c) => {
     sql += " AND p.suspended = 1";
   } else if (status === "active") {
     sql += " AND p.suspended = 0 AND ck.is_active = 1";
-  } else if (status === "pending" || status === "approved" || status === "rejected") {
+  } else if (
+    status === "pending" ||
+    status === "approved" ||
+    status === "rejected"
+  ) {
     sql += " AND p.approval_status = ?";
     params.push(status);
   }
@@ -93,14 +101,11 @@ router.post("/providers/:id/approval", async (c) => {
   const body = await c.req.json();
 
   if (body.status !== "approved" && body.status !== "rejected") {
-    return c.json(
-      { error: "status harus 'approved' atau 'rejected'" },
-      400
-    );
+    return c.json({ error: "status harus 'approved' atau 'rejected'" }, 400);
   }
 
   const result = await c.env.DB.prepare(
-    "UPDATE providers SET approval_status = ? WHERE id = ?"
+    "UPDATE providers SET approval_status = ? WHERE id = ?",
   )
     .bind(body.status, id)
     .run();
@@ -121,7 +126,7 @@ router.post("/providers/:id/deactivate-checkin", async (c) => {
   const today = todayJakarta();
 
   const result = await c.env.DB.prepare(
-    "UPDATE checkins SET is_active = 0 WHERE provider_id = ? AND date = ?"
+    "UPDATE checkins SET is_active = 0 WHERE provider_id = ? AND date = ?",
   )
     .bind(id, today)
     .run();
@@ -145,7 +150,7 @@ router.patch("/providers/:id", async (c) => {
   }
 
   const result = await c.env.DB.prepare(
-    "UPDATE providers SET suspended = ? WHERE id = ?"
+    "UPDATE providers SET suspended = ? WHERE id = ?",
   )
     .bind(body.suspended ? 1 : 0, id)
     .run();
@@ -162,7 +167,7 @@ router.delete("/providers/:id", async (c) => {
   const id = c.req.param("id");
 
   const provider = await c.env.DB.prepare(
-    "SELECT photo_url FROM providers WHERE id = ?"
+    "SELECT photo_url FROM providers WHERE id = ?",
   )
     .bind(id)
     .first<{ photo_url: string | null }>();
@@ -187,7 +192,7 @@ router.delete("/providers/:id/photo", async (c) => {
   const id = c.req.param("id");
 
   const provider = await c.env.DB.prepare(
-    "SELECT photo_url FROM providers WHERE id = ?"
+    "SELECT photo_url FROM providers WHERE id = ?",
   )
     .bind(id)
     .first<{ photo_url: string | null }>();
@@ -209,7 +214,7 @@ router.delete("/providers/:id/photo", async (c) => {
 // GET /admin/categories -> sama seperti publik, tapi lewat auth (dipakai form admin)
 router.get("/categories", async (c) => {
   const { results } = await c.env.DB.prepare(
-    "SELECT id, name, type, icon FROM categories ORDER BY type, name"
+    "SELECT id, name, type, icon FROM categories ORDER BY type, name",
   ).all();
   return c.json({ categories: results });
 });
@@ -227,7 +232,7 @@ router.post("/categories", async (c) => {
   }
 
   await c.env.DB.prepare(
-    "INSERT INTO categories (id, name, type, icon) VALUES (?, ?, ?, ?)"
+    "INSERT INTO categories (id, name, type, icon) VALUES (?, ?, ?, ?)",
   )
     .bind(body.id, body.name, body.type, body.icon ?? "📍")
     .run();
@@ -241,7 +246,7 @@ router.patch("/categories/:id", async (c) => {
   const body = await c.req.json();
 
   await c.env.DB.prepare(
-    "UPDATE categories SET name = COALESCE(?, name), icon = COALESCE(?, icon) WHERE id = ?"
+    "UPDATE categories SET name = COALESCE(?, name), icon = COALESCE(?, icon) WHERE id = ?",
   )
     .bind(body.name ?? null, body.icon ?? null, id)
     .run();
@@ -254,15 +259,17 @@ router.delete("/categories/:id", async (c) => {
   const id = c.req.param("id");
 
   const inUse = await c.env.DB.prepare(
-    "SELECT COUNT(*) as n FROM providers WHERE category_id = ?"
+    "SELECT COUNT(*) as n FROM providers WHERE category_id = ?",
   )
     .bind(id)
     .first<{ n: number }>();
 
   if (inUse && inUse.n > 0) {
     return c.json(
-      { error: `Kategori masih dipakai ${inUse.n} provider, tidak bisa dihapus` },
-      409
+      {
+        error: `Kategori masih dipakai ${inUse.n} provider, tidak bisa dihapus`,
+      },
+      409,
     );
   }
 

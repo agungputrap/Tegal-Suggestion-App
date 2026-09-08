@@ -29,19 +29,19 @@ router.get("/kelola/:token", async (c) => {
   if (!provider) return unauthorized(c);
 
   const { results: items } = await c.env.DB.prepare(
-    "SELECT * FROM items WHERE provider_id = ? ORDER BY sort_order, created_at"
+    "SELECT * FROM items WHERE provider_id = ? ORDER BY sort_order, created_at",
   )
     .bind(provider.id)
     .all<Item>();
 
   const today = await c.env.DB.prepare(
-    "SELECT lat, lng, note FROM checkins WHERE provider_id = ? AND date = ? AND is_active = 1"
+    "SELECT lat, lng, note FROM checkins WHERE provider_id = ? AND date = ? AND is_active = 1",
   )
     .bind(provider.id, todayJakarta())
     .first<{ lat: number; lng: number; note: string | null }>();
 
   // Sama seperti endpoint publik: token & kode verifikasi tidak ikut.
-  const { owner_token, verify_code, ...safeProvider } = provider;
+  const { owner_token: _ownerToken, verify_code: _verifyCode, ...safeProvider } = provider;
 
   return c.json({
     provider: safeProvider,
@@ -57,7 +57,10 @@ router.post("/kelola/:token/open", async (c) => {
   const provider = await providerByToken(c.env, c.req.param("token"));
   if (!provider) return unauthorized(c);
   if (provider.suspended) {
-    return c.json({ error: "Akun dinonaktifkan admin. Hubungi pengelola." }, 403);
+    return c.json(
+      { error: "Akun dinonaktifkan admin. Hubungi pengelola." },
+      403,
+    );
   }
 
   const body = await c.req.json().catch(() => ({}) as Record<string, unknown>);
@@ -66,8 +69,11 @@ router.post("/kelola/:token/open", async (c) => {
 
   if (lat == null || lng == null) {
     return c.json(
-      { error: "Lokasi dibutuhkan: kirim lat/lng atau lengkapi lokasi dasar usaha" },
-      400
+      {
+        error:
+          "Lokasi dibutuhkan: kirim lat/lng atau lengkapi lokasi dasar usaha",
+      },
+      400,
     );
   }
 
@@ -76,7 +82,7 @@ router.post("/kelola/:token/open", async (c) => {
     `INSERT INTO checkins (id, provider_id, date, lat, lng, is_active, note)
      VALUES (?, ?, ?, ?, ?, 1, ?)
      ON CONFLICT(provider_id, date)
-     DO UPDATE SET lat = excluded.lat, lng = excluded.lng, is_active = 1, note = excluded.note`
+     DO UPDATE SET lat = excluded.lat, lng = excluded.lng, is_active = 1, note = excluded.note`,
   )
     .bind(crypto.randomUUID(), provider.id, date, lat, lng, body.note ?? null)
     .run();
@@ -84,9 +90,11 @@ router.post("/kelola/:token/open", async (c) => {
   // Pilihan item hari ini: yang ditandai tersedia, sisanya tidak
   if (Array.isArray(body.item_ids)) {
     await c.env.DB.batch([
-      c.env.DB.prepare("UPDATE items SET available = 0 WHERE provider_id = ?").bind(provider.id),
       c.env.DB.prepare(
-        `UPDATE items SET available = 1 WHERE provider_id = ? AND id IN (${body.item_ids.map(() => "?").join(",")})`
+        "UPDATE items SET available = 0 WHERE provider_id = ?",
+      ).bind(provider.id),
+      c.env.DB.prepare(
+        `UPDATE items SET available = 1 WHERE provider_id = ? AND id IN (${body.item_ids.map(() => "?").join(",")})`,
       ).bind(provider.id, ...body.item_ids),
     ]);
   }
@@ -102,7 +110,7 @@ router.post("/kelola/:token/close", async (c) => {
 
   const date = todayJakarta();
   const result = await c.env.DB.prepare(
-    "UPDATE checkins SET is_active = 0 WHERE provider_id = ? AND date = ?"
+    "UPDATE checkins SET is_active = 0 WHERE provider_id = ? AND date = ?",
   )
     .bind(provider.id, date)
     .run();
@@ -126,7 +134,9 @@ router.put("/kelola/:token/business", async (c) => {
     provider.category_type === "jasa"
       ? null
       : typeof body.halal === "boolean"
-        ? body.halal ? 1 : 0
+        ? body.halal
+          ? 1
+          : 0
         : null;
 
   const result = await c.env.DB.prepare(
@@ -138,17 +148,19 @@ router.put("/kelola/:token/business", async (c) => {
        service_radius_km = COALESCE(?, service_radius_km),
        base_lat = COALESCE(?, base_lat),
        base_lng = COALESCE(?, base_lng)
-     WHERE id = ?`
+     WHERE id = ?`,
   )
     .bind(
       body.name ?? null,
       body.description ?? null,
       body.area ?? null,
       halal,
-      typeof body.service_radius_km === "number" ? body.service_radius_km : null,
+      typeof body.service_radius_km === "number"
+        ? body.service_radius_km
+        : null,
       typeof body.base_lat === "number" ? body.base_lat : null,
       typeof body.base_lng === "number" ? body.base_lng : null,
-      provider.id
+      provider.id,
     )
     .run();
 
@@ -173,9 +185,16 @@ router.post("/kelola/:token/items", async (c) => {
 
   const id = crypto.randomUUID();
   await c.env.DB.prepare(
-    "INSERT INTO items (id, provider_id, name, price, note, sort_order) VALUES (?, ?, ?, ?, ?, ?)"
+    "INSERT INTO items (id, provider_id, name, price, note, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
   )
-    .bind(id, provider.id, body.name, body.price, body.note ?? null, body.sort_order ?? 0)
+    .bind(
+      id,
+      provider.id,
+      body.name,
+      body.price,
+      body.note ?? null,
+      body.sort_order ?? 0,
+    )
     .run();
 
   return c.json({ id }, 201);
@@ -194,7 +213,7 @@ router.put("/kelola/:token/items/:itemId", async (c) => {
        note = COALESCE(?, note),
        available = COALESCE(?, available),
        sort_order = COALESCE(?, sort_order)
-     WHERE id = ? AND provider_id = ?`
+     WHERE id = ? AND provider_id = ?`,
   )
     .bind(
       body.name ?? null,
@@ -203,7 +222,7 @@ router.put("/kelola/:token/items/:itemId", async (c) => {
       typeof body.available === "boolean" ? (body.available ? 1 : 0) : null,
       typeof body.sort_order === "number" ? body.sort_order : null,
       c.req.param("itemId"),
-      provider.id
+      provider.id,
     )
     .run();
 
@@ -219,7 +238,7 @@ router.delete("/kelola/:token/items/:itemId", async (c) => {
   if (!provider) return unauthorized(c);
 
   const result = await c.env.DB.prepare(
-    "DELETE FROM items WHERE id = ? AND provider_id = ?"
+    "DELETE FROM items WHERE id = ? AND provider_id = ?",
   )
     .bind(c.req.param("itemId"), provider.id)
     .run();

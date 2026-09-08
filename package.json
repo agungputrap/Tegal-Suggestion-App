@@ -1,0 +1,10 @@
+{
+  "name": "tegal-suggestion-app",
+  "private": true,
+  "type": "module",
+  "description": "Peta rekomendasi kuliner & jasa rumah tangga Tegal — frontend React di frontend/, API Hono di backend/",
+  "scripts": {
+    "lint": "eslint backend/src frontend/src",
+    "format": "prettier --write \"backend/src/**/*.ts\" \"frontend/src/**/*.{ts,tsx}\""
+  }
+}

@@ -120,7 +120,7 @@ export function toPlace(row: PlaceRecord): Place {
     user_reviews: parseJson<UserReview[]>(row.user_reviews, []),
     reviews_per_rating: parseJson<Record<string, number> | null>(
       row.reviews_per_rating,
-      null
+      null,
     ),
   };
 }

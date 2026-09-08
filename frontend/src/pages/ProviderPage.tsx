@@ -99,7 +99,7 @@ export function ProviderPage() {
   }, []);
 
   const categoryOptions = categories.filter(
-    (c) => c.type === form.category_type
+    (c) => c.type === form.category_type,
   );
 
   async function handleRegister(e: React.FormEvent) {
@@ -170,9 +170,11 @@ export function ProviderPage() {
       },
       () => {
         setCheckinStatus("error");
-        setCheckinError("Izin lokasi ditolak. Checkin butuh lokasimu saat ini.");
+        setCheckinError(
+          "Izin lokasi ditolak. Checkin butuh lokasimu saat ini.",
+        );
       },
-      { timeout: 8000 }
+      { timeout: 8000 },
     );
   }
 
@@ -184,7 +186,11 @@ export function ProviderPage() {
   }
 
   if (loadingProvider) {
-    return <p className="text-xs text-slate-500 dark:text-slate-400 py-8 text-center">memuat...</p>;
+    return (
+      <p className="text-xs text-slate-500 dark:text-slate-400 py-8 text-center">
+        memuat...
+      </p>
+    );
   }
 
   // ---------- Ditolak admin ----------
@@ -213,7 +219,7 @@ export function ProviderPage() {
     const code = getStoredVerifyCode();
     const ownerToken = getStoredOwnerToken();
     const shareText = encodeURIComponent(
-      `Halo admin, saya ${provider.name} baru mendaftar di Jajan+Jasa Tegal. Kode verifikasi saya: ${code ?? "-"}. Mohon disetujui.`
+      `Halo admin, saya ${provider.name} baru mendaftar di Jajan+Jasa Tegal. Kode verifikasi saya: ${code ?? "-"}. Mohon disetujui.`,
     );
     const kelolaUrl = ownerToken
       ? `${window.location.origin}/kelola/${ownerToken}`
@@ -289,8 +295,8 @@ export function ProviderPage() {
       <div className="max-w-2xl mx-auto space-y-5">
         <div className="text-center">
           <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center justify-center">
-            <i className="fa-solid fa-bullhorn text-emerald-500 mr-2"></i> Daftar
-            Jadi Penyedia
+            <i className="fa-solid fa-bullhorn text-emerald-500 mr-2"></i>{" "}
+            Daftar Jadi Penyedia
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Jualan jajanan atau tawarkan jasa? Daftar sekali, checkin tiap hari
@@ -298,7 +304,10 @@ export function ProviderPage() {
           </p>
         </div>
 
-        <form className={`${CARD} p-5 sm:p-6 space-y-4`} onSubmit={handleRegister}>
+        <form
+          className={`${CARD} p-5 sm:p-6 space-y-4`}
+          onSubmit={handleRegister}
+        >
           <label className="block">
             <span className={LABEL}>
               Nama {form.category_type === "jasa" ? "/ usaha" : "warung"}
@@ -345,7 +354,9 @@ export function ProviderPage() {
             <select
               className={selectClass("w-full")}
               value={form.category_id}
-              onChange={(e) => setForm({ ...form, category_id: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, category_id: e.target.value })
+              }
             >
               <option value="">Pilih kategori</option>
               {categoryOptions.map((c) => (
@@ -394,7 +405,9 @@ export function ProviderPage() {
                 <input
                   type="checkbox"
                   checked={form.halal}
-                  onChange={(e) => setForm({ ...form, halal: e.target.checked })}
+                  onChange={(e) =>
+                    setForm({ ...form, halal: e.target.checked })
+                  }
                   className="accent-emerald-600"
                 />
                 <span>Berhalal</span>
@@ -407,14 +420,20 @@ export function ProviderPage() {
             <input
               className={INPUT}
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               placeholder="mis. buka jam 6 pagi, khusus wilayah Lowokwaru"
             />
           </label>
 
           {formError && <p className={ERROR_LINE}>{formError}</p>}
 
-          <button className={`${BTN_PRIMARY} w-full`} type="submit" disabled={submitting}>
+          <button
+            className={`${BTN_PRIMARY} w-full`}
+            type="submit"
+            disabled={submitting}
+          >
             <i className="fa-solid fa-circle-check"></i>
             <span>{submitting ? "Mendaftarkan..." : "Daftar Sekarang"}</span>
           </button>
@@ -462,12 +481,16 @@ export function ProviderPage() {
             {checkinStatus === "locating" && "Mengambil lokasi..."}
             {checkinStatus === "sending" && "Mengirim checkin..."}
             {checkinStatus === "idle" &&
-              (checkedInToday ? "Checkin ulang (update lokasi)" : "Checkin sekarang")}
+              (checkedInToday
+                ? "Checkin ulang (update lokasi)"
+                : "Checkin sekarang")}
             {checkinStatus === "error" && "Coba lagi"}
           </span>
         </button>
 
-        {checkinStatus === "error" && <p className={ERROR_LINE}>{checkinError}</p>}
+        {checkinStatus === "error" && (
+          <p className={ERROR_LINE}>{checkinError}</p>
+        )}
 
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
           <p className={LABEL}>

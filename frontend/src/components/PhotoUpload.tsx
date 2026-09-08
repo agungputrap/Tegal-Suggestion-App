@@ -11,9 +11,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export function PhotoUpload({ providerId, onUploaded }: Props) {
-  const [status, setStatus] = useState<"idle" | "uploading" | "error">(
-    "idle"
-  );
+  const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
