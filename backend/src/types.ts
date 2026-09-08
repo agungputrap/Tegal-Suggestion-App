@@ -18,6 +18,28 @@ export type Provider = {
   base_lng: number | null;
   service_radius_km: number;
   suspended: number;
+  area: string | null; // kecamatan (dropdown statis di frontend)
+  halal: number | null; // 1 = halal; NULL untuk jasa
+  approval_status: "pending" | "approved" | "rejected";
+  created_at: string;
+};
+
+// Kolom providers yang aman untuk respons PUBLIK. owner_token & verify_code
+// TIDAK boleh ikut — dipakai SELECT eksplisit di route publik.
+export const PUBLIC_PROVIDER_COLUMNS =
+  "id, name, phone, category_type, category_id, description, photo_url, " +
+  "base_lat, base_lng, service_radius_km, suspended, area, halal, " +
+  "approval_status, created_at";
+
+// Item menu (jajanan) / jasa (daftar harga) — satu bentuk untuk dua vertikal.
+export type Item = {
+  id: string;
+  provider_id: string;
+  name: string;
+  price: number; // Rupiah
+  note: string | null;
+  available: number;
+  sort_order: number;
   created_at: string;
 };
 

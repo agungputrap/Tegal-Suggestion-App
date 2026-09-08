@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Env } from "../types";
+import { PUBLIC_PROVIDER_COLUMNS } from "../types";
 import { EXT_BY_TYPE, MAX_PHOTO_BYTES } from "../constants";
 
 const router = new Hono<{ Bindings: Env }>();
@@ -43,11 +44,12 @@ router.post("/providers", async (c) => {
 
 // ---------------------------------------------------------
 // GET /providers/:id
+// SELECT eksplisit: kolom rahasia (owner_token, verify_code) tidak untuk publik
 // ---------------------------------------------------------
 router.get("/providers/:id", async (c) => {
   const id = c.req.param("id");
   const provider = await c.env.DB.prepare(
-    "SELECT * FROM providers WHERE id = ?"
+    `SELECT ${PUBLIC_PROVIDER_COLUMNS} FROM providers WHERE id = ?`
   )
     .bind(id)
     .first();
