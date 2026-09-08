@@ -54,7 +54,9 @@ MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di
 └── TASKS.md           # live task ledger
 ```
 
-## Data model (3 tables + 1 reference table)
+## Data model (5 tables + 1 reference table)
+
+> Skema dikelola lewat **d1 migrations** (`backend/migrations/`) — bukan lagi `schema.sql` (lihat `docs/decisions.md` 2026-09-08).
 
 ### `categories`
 
@@ -79,6 +81,26 @@ MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di
 | base_lat / base_lng | float nullable | home base (jasa) |
 | service_radius_km | float | jasa only, 0 = no radius limit |
 | suspended | bool | 1 = hidden by admin (moderation) |
+| area | text nullable | kecamatan (dropdown statis di frontend) |
+| halal | bool nullable | food only; NULL untuk jasa |
+| approval_status | enum | `pending` \| `approved` \| `rejected`; migrasi memberi default `approved` (data lama tetap tampil); registrasi baru = `pending` (#6) |
+| verify_code | text nullable | kode 6 digit, ditampilkan ke pemilik saat daftar (#6) — **tidak pernah di respons publik** |
+| owner_token | text unique nullable | magic-link `/kelola/{token}` (#7) — **tidak pernah di respons publik** |
+| created_at | timestamp | |
+
+### `items`
+
+Satu bentuk untuk dua vertikal (menu jajanan / daftar harga jasa) — locked decision 2026-08-23.
+
+| Column | Type | Notes |
+| ------ | ---- | ----- |
+| id | text PK | UUID |
+| provider_id | FK → providers | ON DELETE CASCADE |
+| name | string | |
+| price | int | Rupiah |
+| note | text nullable | mis. "pedas sedang", "termasuk suku cadang" |
+| available | bool | portal pemilik (#7): item ditawarkan hari ini |
+| sort_order | int | urutan tampil |
 | created_at | timestamp | |
 
 ### `checkins`
@@ -89,7 +111,17 @@ MVP scope for hackathon. The core mechanic (from the reference app "Jajan Apa di
 | provider_id | FK → providers | |
 | date | date | Jakarta date; `UNIQUE(provider_id, date)` → checkin is idempotent per day |
 | lat / lng | float | GPS location at checkin — this is what shows on the map |
+| note | text nullable | catatan opsional saat buka dari portal pemilik (#7) |
 | is_active | bool | 0 = expired (cron) or deactivated by admin |
+
+### `provider_views`
+
+Penghitung views per hari untuk trending sort (#4b); increment saat detail penyedia dibuka.
+
+| Column | Type | Notes |
+| ------ | ---- | ----- |
+| provider_id + date | PK komposit | Jakarta date, pola sama dengan checkins |
+| views | int | |
 
 ### `places` (reference data, read-only)
 

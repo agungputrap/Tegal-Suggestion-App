@@ -18,10 +18,15 @@ router.get("/listings", async (c) => {
   const date = todayJakarta();
 
   let sql = `
-    SELECT p.*, ck.lat as checkin_lat, ck.lng as checkin_lng
+    SELECT p.id, p.name, p.phone, p.category_type, p.category_id,
+           p.description, p.photo_url, p.base_lat, p.base_lng,
+           p.service_radius_km, p.suspended, p.area, p.halal,
+           p.approval_status, p.created_at,
+           ck.lat as checkin_lat, ck.lng as checkin_lng
     FROM checkins ck
     JOIN providers p ON p.id = ck.provider_id
     WHERE ck.date = ? AND ck.is_active = 1 AND p.suspended = 0
+      AND p.approval_status = 'approved'
   `;
   const params: (string | number)[] = [date];
 
