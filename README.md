@@ -23,14 +23,18 @@ Dua wajah aplikasi:
 - **Chat WhatsApp CTA** di setiap listing
 - Registrasi penyedia + upload foto (R2) + admin panel (statistik, moderasi, kelola kategori)
 
-## Features — to do (lihat [`TASKS.md`](TASKS.md))
+## Features — to do
 
-- Filter **area (kecamatan)** + **halal flag** untuk makanan (#14)
-- Detail bisnis: **items (menu / daftar harga)** (#12/#13)
-- Portal pemilik **`/kelola/{token}`** untuk buka/tutup hari ini (#7) — saat ini tutup = lewat admin atau cron tengah malam WIB
-- **Trending sort** by views/likes per hari (#4b)
-- Registrasi dengan **verifikasi WhatsApp** + approval admin (#6)
-- Cluster markers di peta check-in (Hari Ini) — saat ini hanya di peta Explorer
+Tidak ada untuk MVP — semua item semula "to do" sudah selesai (fase 0–6, lihat [`TASKS.md`](TASKS.md) & `docs/decisions.md`):
+
+- ~~Filter area (kecamatan) + halal flag~~ (#14) — dropdown kecamatan + badge halal
+- ~~Items (menu / daftar harga) di detail bisnis~~ (#12/#13)
+- ~~Portal pemilik `/kelola/{token}` buka/tutup hari ini~~ (#7)
+- ~~Trending sort by views per hari~~ (#4b)
+- ~~Registrasi dengan verifikasi WhatsApp (kode 6 digit + approval admin)~~ (#6)
+- ~~Cluster markers di peta check-in~~ — cluster penuh di peta Explorer; peta check-in menyusul jika dibutuhkan
+
+Rencana berikutnya (post-hackathon): test coverage lebih luas, provider detail sebagai halaman penuh, custom domain `.id`.
 
 ## Tech stack
 

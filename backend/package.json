@@ -13,15 +13,19 @@
     "kv:create": "wrangler kv:namespace create ACTIVE_CACHE",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "test": "vitest run"
   },
   "dependencies": {
     "hono": "^4.6.0"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^4.20240925.0",
     "papaparse": "^5.7.0",
     "typescript": "^5.6.0",
-    "wrangler": "^3.78.0"
-  }
+    "vitest": "^4.1.11",
+    "wrangler": "^4.129.1"
+  },
+  "type": "module"
 }
