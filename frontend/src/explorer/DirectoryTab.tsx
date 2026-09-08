@@ -115,7 +115,6 @@ export function DirectoryTab({
               <option value="Kota Tegal">Kota Tegal</option>
               <option value="Kabupaten Brebes">Kabupaten Brebes</option>
               <option value="Kabupaten Tegal">Kabupaten Tegal</option>
-              <option value="Jakarta">Jakarta Area</option>
             </select>
 
             <select

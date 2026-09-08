@@ -7,6 +7,11 @@ import {
   useState,
 } from "react";
 import { fetchPlaces } from "../api";
+import {
+  clearStoredAdminToken,
+  getStoredAdminToken,
+  verifyAdminToken,
+} from "../adminApi";
 import type { Place } from "../explorer/types";
 import { extractHighlights, isOpenNow, nowParts } from "./helpers";
 import { useDarkMode } from "../hooks/useDarkMode";
@@ -90,6 +95,8 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
   const [favorites, setFavorites] = useState<string[]>(loadFavorites);
   const [modalPlaceId, setModalPlaceId] = useState<string | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  // Ekspor dataset hanya untuk admin — pengunjung tidak butuh menu ini.
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // ----- Data -----
   useEffect(() => {
@@ -99,6 +106,19 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
         setStatus("ready");
       })
       .catch(() => setStatus("error"));
+  }, []);
+
+  // ----- Sesi admin: token tersimpan diverifikasi ringan agar menu
+  //       Ekspor hanya tampil untuk admin yang masih valid -----
+  useEffect(() => {
+    const stored = getStoredAdminToken();
+    if (!stored) return;
+    verifyAdminToken(stored)
+      .then((ok) => {
+        if (ok) setIsAdmin(true);
+        else clearStoredAdminToken();
+      })
+      .catch(() => setIsAdmin(false));
   }, []);
 
   // ----- Modal: kunci scroll + tombol Escape -----
@@ -142,13 +162,7 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
         }
       }
 
-      if (city !== "all") {
-        if (city === "Jakarta") {
-          if (!p.city.toLowerCase().includes("jakarta")) return false;
-        } else if (p.city !== city) {
-          return false;
-        }
-      }
+      if (city !== "all" && p.city !== city) return false;
 
       if (category !== "all" && p.category !== category) return false;
       if (minRating > 0 && (p.rating ?? 0) < minRating) return false;
@@ -300,6 +314,22 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
     ? (places.find((p) => p.id === modalPlaceId) ?? null)
     : null;
 
+  // Dashboard & Statistik hanya untuk admin — pengunjung tidak butuh
+  // analytics internal (label beda antara nav desktop & bar mobile).
+  type NavTab = readonly [ExplorerTab, string, string];
+  const navTabs: NavTab[] = [
+    ["directory", "fa-table-cells-large", "Direktori"],
+    ["map", "fa-map-location-dot", "Peta Interaktif"],
+    ...(isAdmin
+      ? ([["analytics", "fa-chart-pie", "Dashboard & Statistik"]] as const)
+      : []),
+  ];
+  const mobileTabs: NavTab[] = [
+    ["directory", "fa-table-cells-large", "Direktori"],
+    ["map", "fa-map-location-dot", "Peta"],
+    ...(isAdmin ? ([["analytics", "fa-chart-pie", "Statistik"]] as const) : []),
+  ];
+
   // ----- Export (port dari exportData) -----
   const exportData = useCallback(
     (format: "json" | "csv") => {
@@ -394,25 +424,14 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
                 <i className="fa-solid fa-utensils text-lg"></i>
               </div>
-              <div>
-                <h1 className="text-lg font-bold bg-gradient-to-r from-slate-900 via-emerald-800 to-teal-700 dark:from-white dark:via-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
-                  Tegal F&amp;B Explorer
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Direktori &amp; Analisis Kuliner Google Maps
-                </p>
-              </div>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-slate-900 via-emerald-800 to-teal-700 dark:from-white dark:via-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
+                Tegal F&amp;B Explorer
+              </h1>
             </div>
 
             {/* Navigation Tabs */}
-            <nav className="hidden md:flex space-x-1 lg:space-x-2">
-              {(
-                [
-                  ["directory", "fa-table-cells-large", "Direktori"],
-                  ["map", "fa-map-location-dot", "Peta Interaktif"],
-                  ["analytics", "fa-chart-pie", "Dashboard & Statistik"],
-                ] as const
-              ).map(([id, icon, label]) => (
+            <nav className="hidden lg:flex space-x-2">
+              {navTabs.map(([id, icon, label]) => (
                 <button
                   key={id}
                   onClick={() => setTab(id)}
@@ -464,44 +483,54 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
                 <i className="fa-solid fa-user-shield"></i>
               </button>
 
-              {/* Export Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setExportOpen((v) => !v)}
-                  className="p-2 text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition flex items-center space-x-1.5"
-                >
-                  <i className="fa-solid fa-download"></i>
-                  <span className="hidden sm:inline">Ekspor</span>
-                </button>
-                {exportOpen && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 z-50">
-                    <button
-                      onClick={() => exportData("json")}
-                      className="w-full text-left px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center space-x-2"
-                    >
-                      <i className="fa-solid fa-code text-amber-500"></i>
-                      <span>Download JSON</span>
-                    </button>
-                    <button
-                      onClick={() => exportData("csv")}
-                      className="w-full text-left px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center space-x-2"
-                    >
-                      <i className="fa-solid fa-file-csv text-emerald-500"></i>
-                      <span>Download CSV</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        setExportOpen(false);
-                        window.print();
-                      }}
-                      className="w-full text-left px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center space-x-2"
-                    >
-                      <i className="fa-solid fa-print text-indigo-500"></i>
-                      <span>Cetak / PDF</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              {/* Export Dropdown — admin only */}
+              {isAdmin && (
+                <div className="relative">
+                  <button
+                    onClick={() => setExportOpen((v) => !v)}
+                    className="p-2 text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition flex items-center space-x-1.5"
+                  >
+                    <i className="fa-solid fa-download"></i>
+                    <span className="hidden sm:inline">Ekspor</span>
+                  </button>
+                  {exportOpen && (
+                    <>
+                      {/* Klik di luar menutup dropdown */}
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setExportOpen(false)}
+                        aria-hidden="true"
+                      ></div>
+                      <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1.5 z-50">
+                        <button
+                          onClick={() => exportData("json")}
+                          className="w-full text-left px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center space-x-2"
+                        >
+                          <i className="fa-solid fa-code text-amber-500"></i>
+                          <span>Download JSON</span>
+                        </button>
+                        <button
+                          onClick={() => exportData("csv")}
+                          className="w-full text-left px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center space-x-2"
+                        >
+                          <i className="fa-solid fa-file-csv text-emerald-500"></i>
+                          <span>Download CSV</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setExportOpen(false);
+                            window.print();
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center space-x-2"
+                        >
+                          <i className="fa-solid fa-print text-indigo-500"></i>
+                          <span>Cetak / PDF</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Dark Mode Toggle */}
               <button
@@ -519,15 +548,8 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
           </div>
 
           {/* Mobile Tabs Bar */}
-          <div className="flex md:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
-            {(
-              [
-                ["directory", "fa-table-cells-large", "Direktori"],
-                ["map", "fa-map-location-dot", "Peta"],
-                ["analytics", "fa-chart-pie", "Statistik"],
-                ["favorites", "fa-heart", "Tersimpan"],
-              ] as const
-            ).map(([id, icon, label]) => (
+          <div className="flex lg:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
+            {mobileTabs.map(([id, icon, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
@@ -681,7 +703,7 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
         </Suspense>
       )}
 
-      {tab === "analytics" && (
+      {tab === "analytics" && isAdmin && (
         <Suspense fallback={<TabFallback />}>
           <AnalyticsTab
             places={places}
