@@ -1,0 +1,6 @@
+dist/
+node_modules/
+ref/
+.zcode/
+package-lock.json
+backend/.wrangler/

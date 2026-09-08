@@ -33,7 +33,9 @@ type Props = { token: string };
 export function OwnerPortalPage({ token }: Props) {
   const { dark, setDark } = useDarkMode();
   const [data, setData] = useState<PortalData | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
   const [error, setError] = useState("");
 
   async function reload() {
@@ -139,18 +141,26 @@ export function OwnerPortalPage({ token }: Props) {
 }
 
 // ---------- Kartu Buka / Tutup ----------
-function OpenCloseCard({ token, data, onDone }: { token: string; data: PortalData; onDone: () => void }) {
+function OpenCloseCard({
+  token,
+  data,
+  onDone,
+}: {
+  token: string;
+  data: PortalData;
+  onDone: () => void;
+}) {
   const isOpen = data.today.open;
   const [note, setNote] = useState(data.today.note ?? "");
   const [selected, setSelected] = useState<string[]>(
-    data.items.filter((i) => i.available).map((i) => i.id)
+    data.items.filter((i) => i.available).map((i) => i.id),
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   function toggleItem(id: string) {
     setSelected((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   }
 
@@ -162,7 +172,9 @@ function OpenCloseCard({ token, data, onDone }: { token: string; data: PortalDat
       let lng: number | undefined;
       if (useGps && navigator.geolocation) {
         const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            timeout: 8000,
+          }),
         );
         lat = pos.coords.latitude;
         lng = pos.coords.longitude;
@@ -198,7 +210,11 @@ function OpenCloseCard({ token, data, onDone }: { token: string; data: PortalDat
               Catatan hari ini: {data.today.note}
             </p>
           )}
-          <button className={`${BTN_DANGER} w-full py-3 text-sm`} disabled={busy} onClick={handleClose}>
+          <button
+            className={`${BTN_DANGER} w-full py-3 text-sm`}
+            disabled={busy}
+            onClick={handleClose}
+          >
             <i className="fa-solid fa-door-closed"></i>
             <span>Tutup sekarang — hilang dari peta</span>
           </button>
@@ -269,7 +285,15 @@ function OpenCloseCard({ token, data, onDone }: { token: string; data: PortalDat
 }
 
 // ---------- Kartu kelola item ----------
-function ItemsCard({ token, data, onDone }: { token: string; data: PortalData; onDone: () => void }) {
+function ItemsCard({
+  token,
+  data,
+  onDone,
+}: {
+  token: string;
+  data: PortalData;
+  onDone: () => void;
+}) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [note, setNote] = useState("");
@@ -285,7 +309,11 @@ function ItemsCard({ token, data, onDone }: { token: string; data: PortalData; o
     setBusy(true);
     setError("");
     try {
-      await portalCreateItem(token, { name, price: parseInt(price) || 0, note: note || undefined });
+      await portalCreateItem(token, {
+        name,
+        price: parseInt(price) || 0,
+        note: note || undefined,
+      });
       setName("");
       setPrice("");
       setNote("");
@@ -298,7 +326,9 @@ function ItemsCard({ token, data, onDone }: { token: string; data: PortalData; o
   }
 
   async function handleToggleAvailable(item: PortalItem) {
-    await portalUpdateItem(token, item.id, { available: !(item.available === 1) });
+    await portalUpdateItem(token, item.id, {
+      available: !(item.available === 1),
+    });
     onDone();
   }
 
@@ -312,7 +342,8 @@ function ItemsCard({ token, data, onDone }: { token: string; data: PortalData; o
     <div className={`${CARD} p-5 space-y-4`}>
       <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
         <i className="fa-solid fa-list-ul text-emerald-500 mr-2"></i>
-        Item {data.provider.category_type === "jasa" ? "jasa" : "menu"} (permanen)
+        Item {data.provider.category_type === "jasa" ? "jasa" : "menu"}{" "}
+        (permanen)
       </h4>
 
       <div className="space-y-1.5">
@@ -330,7 +361,9 @@ function ItemsCard({ token, data, onDone }: { token: string; data: PortalData; o
               <p className="font-semibold text-slate-800 dark:text-slate-100">
                 {item.name}{" "}
                 {item.available === 0 && (
-                  <span className="text-[10px] text-slate-400">(tidak tersedia)</span>
+                  <span className="text-[10px] text-slate-400">
+                    (tidak tersedia)
+                  </span>
                 )}
               </p>
               <p className="text-slate-500 dark:text-slate-400">
@@ -341,12 +374,16 @@ function ItemsCard({ token, data, onDone }: { token: string; data: PortalData; o
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 className={BTN_SECONDARY}
-                title={item.available ? "Tandai tidak tersedia" : "Tandai tersedia"}
+                title={
+                  item.available ? "Tandai tidak tersedia" : "Tandai tersedia"
+                }
                 onClick={() => handleToggleAvailable(item)}
               >
                 <i
                   className={`fa-solid ${
-                    item.available ? "fa-toggle-on text-emerald-600" : "fa-toggle-off"
+                    item.available
+                      ? "fa-toggle-on text-emerald-600"
+                      : "fa-toggle-off"
                   }`}
                 ></i>
               </button>
@@ -358,20 +395,39 @@ function ItemsCard({ token, data, onDone }: { token: string; data: PortalData; o
         ))}
       </div>
 
-      <form className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800" onSubmit={handleAdd}>
+      <form
+        className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800"
+        onSubmit={handleAdd}
+      >
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
             <span className={LABEL}>Nama item</span>
-            <input className={INPUT} value={name} onChange={(e) => setName(e.target.value)} placeholder="mis. Cuci AC 1 PK" />
+            <input
+              className={INPUT}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="mis. Cuci AC 1 PK"
+            />
           </label>
           <label className="block">
             <span className={LABEL}>Harga (Rp)</span>
-            <input className={INPUT} value={price} onChange={(e) => setPrice(e.target.value)} inputMode="numeric" placeholder="75000" />
+            <input
+              className={INPUT}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              inputMode="numeric"
+              placeholder="75000"
+            />
           </label>
         </div>
         <label className="block">
           <span className={LABEL}>Catatan (opsional)</span>
-          <input className={INPUT} value={note} onChange={(e) => setNote(e.target.value)} placeholder="mis. termasuk bahan" />
+          <input
+            className={INPUT}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="mis. termasuk bahan"
+          />
         </label>
         {error && <p className={ERROR_LINE}>{error}</p>}
         <button className={BTN_PRIMARY} type="submit" disabled={busy}>
@@ -384,7 +440,15 @@ function ItemsCard({ token, data, onDone }: { token: string; data: PortalData; o
 }
 
 // ---------- Kartu edit data usaha ----------
-function BusinessCard({ token, data, onDone }: { token: string; data: PortalData; onDone: () => void }) {
+function BusinessCard({
+  token,
+  data,
+  onDone,
+}: {
+  token: string;
+  data: PortalData;
+  onDone: () => void;
+}) {
   const { provider } = data;
   const [name, setName] = useState(provider.name);
   const [description, setDescription] = useState(provider.description ?? "");
@@ -423,7 +487,11 @@ function BusinessCard({ token, data, onDone }: { token: string; data: PortalData
 
       <label className="block">
         <span className={LABEL}>Nama</span>
-        <input className={INPUT} value={name} onChange={(e) => setName(e.target.value)} />
+        <input
+          className={INPUT}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </label>
 
       <label className="block">
@@ -439,7 +507,11 @@ function BusinessCard({ token, data, onDone }: { token: string; data: PortalData
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className="block">
           <span className={LABEL}>Kecamatan</span>
-          <select className={`${INPUT} w-full`} value={area} onChange={(e) => setArea(e.target.value)}>
+          <select
+            className={`${INPUT} w-full`}
+            value={area}
+            onChange={(e) => setArea(e.target.value)}
+          >
             <option value="">Pilih kecamatan</option>
             {KECAMATAN.map((k) => (
               <option key={k} value={k}>

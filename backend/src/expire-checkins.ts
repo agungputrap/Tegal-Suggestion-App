@@ -7,7 +7,7 @@ import { invalidateListingsCache } from "./cache";
 export async function expireYesterdayCheckins(env: Env) {
   const today = todayJakarta();
   await env.DB.prepare(
-    "UPDATE checkins SET is_active = 0 WHERE date != ? AND is_active = 1"
+    "UPDATE checkins SET is_active = 0 WHERE date != ? AND is_active = 1",
   )
     .bind(today)
     .run();

@@ -14,7 +14,7 @@ const FALLBACK_ICON = { jajanan: "🍽️", jasa: "🛠️" };
 // keluar dari wilayah layanan aplikasi.
 const TEGAL_BOUNDS = L.latLngBounds(
   [-7.25, 108.95], // barat daya
-  [-6.85, 109.25] // timur laut
+  [-6.85, 109.25], // timur laut
 );
 
 // Pin bentuk "tetesan" (rotate 45deg) dengan emoji di tengah, jadi tiap
@@ -97,7 +97,9 @@ export function MapView({ listings, categories, center }: Props) {
     for (const l of listings) {
       const category = categoryById.get(l.category_id);
       L.marker([l.checkin_lat, l.checkin_lng], { icon: iconFor(l) })
-        .bindPopup(`<strong>${l.name}</strong><br/>${category?.name ?? l.category_id}`)
+        .bindPopup(
+          `<strong>${l.name}</strong><br/>${category?.name ?? l.category_id}`,
+        )
         .addTo(markersRef.current);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

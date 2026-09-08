@@ -32,7 +32,7 @@ router.post("/providers", async (c) => {
   if (!body.name || !body.phone || !body.category_type || !body.category_id) {
     return c.json(
       { error: "name, phone, category_type, category_id wajib diisi" },
-      400
+      400,
     );
   }
 
@@ -50,7 +50,7 @@ router.post("/providers", async (c) => {
       (id, name, phone, category_type, category_id, description, base_lat,
        base_lng, service_radius_km, area, halal, approval_status,
        verify_code, owner_token)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
   )
     .bind(
       id,
@@ -65,7 +65,7 @@ router.post("/providers", async (c) => {
       body.area ?? null,
       body.category_type === "jajanan" && body.halal ? 1 : null,
       verifyCode,
-      ownerToken
+      ownerToken,
     )
     .run();
 
@@ -79,7 +79,7 @@ router.post("/providers", async (c) => {
 router.get("/providers/:id", async (c) => {
   const id = c.req.param("id");
   const provider = await c.env.DB.prepare(
-    `SELECT ${PUBLIC_PROVIDER_COLUMNS} FROM providers WHERE id = ?`
+    `SELECT ${PUBLIC_PROVIDER_COLUMNS} FROM providers WHERE id = ?`,
   )
     .bind(id)
     .first();
@@ -94,7 +94,7 @@ router.get("/providers/:id", async (c) => {
 router.get("/providers/:id/items", async (c) => {
   const id = c.req.param("id");
   const { results } = await c.env.DB.prepare(
-    "SELECT id, name, price, note, available, sort_order FROM items WHERE provider_id = ? ORDER BY sort_order, created_at"
+    "SELECT id, name, price, note, available, sort_order FROM items WHERE provider_id = ? ORDER BY sort_order, created_at",
   )
     .bind(id)
     .all<Item>();
@@ -113,10 +113,10 @@ router.post("/providers/:id/view", async (c) => {
     c.env.DB.prepare(
       `INSERT INTO provider_views (provider_id, date, views)
        VALUES (?, ?, 1)
-       ON CONFLICT(provider_id, date) DO UPDATE SET views = views + 1`
+       ON CONFLICT(provider_id, date) DO UPDATE SET views = views + 1`,
     )
       .bind(id, date)
-      .run()
+      .run(),
   );
 
   return c.json({ status: "ok" });
@@ -135,12 +135,12 @@ router.post("/providers/:id/photo", async (c) => {
   if (!ext) {
     return c.json(
       { error: "Format tidak didukung. Gunakan JPEG, PNG, atau WebP." },
-      400
+      400,
     );
   }
 
   const provider = await c.env.DB.prepare(
-    "SELECT id, photo_url FROM providers WHERE id = ?"
+    "SELECT id, photo_url FROM providers WHERE id = ?",
   )
     .bind(providerId)
     .first<{ id: string; photo_url: string | null }>();
@@ -155,7 +155,7 @@ router.post("/providers/:id/photo", async (c) => {
   if (body.byteLength > MAX_PHOTO_BYTES) {
     return c.json(
       { error: `Ukuran foto maksimal ${MAX_PHOTO_BYTES / 1024 / 1024}MB` },
-      413
+      413,
     );
   }
 

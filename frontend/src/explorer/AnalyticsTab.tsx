@@ -24,12 +24,14 @@ const POPULAR_DAYS: [string, string][] = [
 function KeyInsights({ places }: { places: Place[] }) {
   const insight = useMemo(() => {
     const counts = new Map<string, number>();
-    places.forEach((p) => counts.set(p.category, (counts.get(p.category) ?? 0) + 1));
+    places.forEach((p) =>
+      counts.set(p.category, (counts.get(p.category) ?? 0) + 1),
+    );
     const top2 = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2);
     const top2Sum = top2.reduce((acc, x) => acc + x[1], 0);
     const pct = places.length ? Math.round((top2Sum / places.length) * 100) : 0;
     const withOutdoor = places.filter((p) =>
-      JSON.stringify(p.about).toLowerCase().includes("terbuka")
+      JSON.stringify(p.about).toLowerCase().includes("terbuka"),
     ).length;
     const outdoorPct = places.length
       ? Math.round((withOutdoor / places.length) * 100)
@@ -47,15 +49,16 @@ function KeyInsights({ places }: { places: Place[] }) {
       <li className="flex items-start space-x-2">
         <i className="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
         <span>
-          <strong>Dominasi Kafe &amp; Resto:</strong> {insight.topLabel} membentuk ~
-          {insight.pct}% dari total titik kuliner.
+          <strong>Dominasi Kafe &amp; Resto:</strong> {insight.topLabel}{" "}
+          membentuk ~{insight.pct}% dari total titik kuliner.
         </span>
       </li>
       <li className="flex items-start space-x-2">
         <i className="fa-solid fa-circle-check text-emerald-500 mt-0.5"></i>
         <span>
           <strong>Jam Puncak:</strong> Kunjungan tertinggi terjadi pada pukul{" "}
-          <strong>19:00 - 21:00</strong> dengan hari Sabtu sebagai hari paling ramai.
+          <strong>19:00 - 21:00</strong> dengan hari Sabtu sebagai hari paling
+          ramai.
         </span>
       </li>
       <li className="flex items-start space-x-2">
@@ -92,7 +95,9 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
 
     // 1. Komposisi kategori (doughnut)
     const catCounts = new Map<string, number>();
-    places.forEach((p) => catCounts.set(p.category, (catCounts.get(p.category) ?? 0) + 1));
+    places.forEach((p) =>
+      catCounts.set(p.category, (catCounts.get(p.category) ?? 0) + 1),
+    );
     const topCats = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
     const catLabels = topCats.slice(0, 6).map((x) => x[0]);
     const catData = topCats.slice(0, 6).map((x) => x[1]);
@@ -133,7 +138,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
             },
           },
         } as ChartConfiguration<"doughnut">["options"],
-      })
+      }),
     );
 
     // 2. Distribusi rating (bar)
@@ -174,7 +179,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
             y: { ticks: { color: colors.text }, grid: { color: colors.grid } },
           },
         } as ChartConfiguration<"bar">["options"],
-      })
+      }),
     );
 
     // 3. Rentang harga (bar horizontal)
@@ -211,7 +216,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
             y: { ticks: { color: colors.text }, grid: { display: false } },
           },
         } as ChartConfiguration<"bar">["options"],
-      })
+      }),
     );
 
     // 4. Popular times (line) — port dari updatePopularTimesChart
@@ -228,10 +233,13 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
         }
       });
     });
-    const hourlyAvgs = hourlySums.map(
-      (sum, i) => (hourlyCounts[i] ? Math.round(sum / hourlyCounts[i]) : 0)
+    const hourlyAvgs = hourlySums.map((sum, i) =>
+      hourlyCounts[i] ? Math.round(sum / hourlyCounts[i]) : 0,
     );
-    const hoursLabels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
+    const hoursLabels = Array.from(
+      { length: 24 },
+      (_, i) => `${String(i).padStart(2, "0")}:00`,
+    );
 
     chartsRef.current.push(
       new Chart(popularCanvas.current!, {
@@ -260,10 +268,14 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
               ticks: { color: colors.text, maxTicksLimit: 8 },
               grid: { display: false },
             },
-            y: { ticks: { color: colors.text }, grid: { color: colors.grid }, min: 0 },
+            y: {
+              ticks: { color: colors.text },
+              grid: { color: colors.grid },
+              min: 0,
+            },
           },
         } as ChartConfiguration<"line">["options"],
-      })
+      }),
     );
 
     return () => {
@@ -278,7 +290,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
       [...places]
         .sort((a, b) => (b.review_count || 0) - (a.review_count || 0))
         .slice(0, 5),
-    [places]
+    [places],
   );
 
   const topRated = useMemo(
@@ -291,7 +303,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
           return (b.rating ?? 0) - (a.rating ?? 0);
         })
         .slice(0, 5),
-    [places]
+    [places],
   );
 
   return (
@@ -356,10 +368,12 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center">
-                <i className="fa-solid fa-users text-indigo-500 mr-2"></i> Kurva Jam
-                Sibuk (Popular Times)
+                <i className="fa-solid fa-users text-indigo-500 mr-2"></i> Kurva
+                Jam Sibuk (Popular Times)
               </h3>
-              <p className="text-xs text-slate-500">Indeks keramaian per jam (24 jam)</p>
+              <p className="text-xs text-slate-500">
+                Indeks keramaian per jam (24 jam)
+              </p>
             </div>
             <select
               value={popularDay}
@@ -383,8 +397,8 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
-            <i className="fa-solid fa-fire text-rose-500 mr-2"></i> Top 5 Terpopuler
-            (Paling Banyak Diulas)
+            <i className="fa-solid fa-fire text-rose-500 mr-2"></i> Top 5
+            Terpopuler (Paling Banyak Diulas)
           </h4>
           <div className="space-y-3">
             {topReviewed.map((p, idx) => (
@@ -401,14 +415,18 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
                     <div className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
                       {p.title}
                     </div>
-                    <div className="text-[10px] text-slate-400">{p.category}</div>
+                    <div className="text-[10px] text-slate-400">
+                      {p.category}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-slate-700 dark:text-slate-300">
                     {formatCount(p.review_count)}
                   </div>
-                  <div className="text-[10px] text-amber-500">★ {formatRating(p)}</div>
+                  <div className="text-[10px] text-amber-500">
+                    ★ {formatRating(p)}
+                  </div>
                 </div>
               </div>
             ))}
@@ -417,8 +435,8 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
 
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
-            <i className="fa-solid fa-award text-amber-500 mr-2"></i> Top 5 Rating
-            Tertinggi (Min. 100 Ulasan)
+            <i className="fa-solid fa-award text-amber-500 mr-2"></i> Top 5
+            Rating Tertinggi (Min. 100 Ulasan)
           </h4>
           <div className="space-y-3">
             {topRated.map((p, idx) => (
@@ -435,11 +453,15 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
                     <div className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
                       {p.title}
                     </div>
-                    <div className="text-[10px] text-slate-400">{p.category}</div>
+                    <div className="text-[10px] text-slate-400">
+                      {p.category}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-amber-500">★ {formatRating(p)}</div>
+                  <div className="font-bold text-amber-500">
+                    ★ {formatRating(p)}
+                  </div>
                   <div className="text-[10px] text-slate-400">
                     ({formatCount(p.review_count)} ulasan)
                   </div>
@@ -452,8 +474,8 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
-              <i className="fa-solid fa-lightbulb text-emerald-500 mr-2"></i> Temuan
-              Analisis Kunci
+              <i className="fa-solid fa-lightbulb text-emerald-500 mr-2"></i>{" "}
+              Temuan Analisis Kunci
             </h4>
             <KeyInsights places={places} />
           </div>

@@ -11,7 +11,7 @@ const router = new Hono<{ Bindings: Env }>();
 // ---------------------------------------------------------
 router.get("/places", async (c) => {
   const { results } = await c.env.DB.prepare(
-    `SELECT * FROM places ORDER BY review_count DESC`
+    `SELECT * FROM places ORDER BY review_count DESC`,
   ).all<PlaceRecord>();
   return c.json({ count: results.length, places: results });
 });

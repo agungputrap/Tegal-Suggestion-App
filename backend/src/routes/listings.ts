@@ -79,15 +79,16 @@ router.get("/listings", async (c) => {
       }))
       .filter((r) => (r.distance_km as number) <= radiusKm);
 
-    listings = sort === "trending"
-      ? listings.sort(
-          (a, b) =>
-            b.views - a.views ||
-            (a.distance_km as number) - (b.distance_km as number)
-        )
-      : listings.sort(
-          (a, b) => (a.distance_km as number) - (b.distance_km as number)
-        );
+    listings =
+      sort === "trending"
+        ? listings.sort(
+            (a, b) =>
+              b.views - a.views ||
+              (a.distance_km as number) - (b.distance_km as number),
+          )
+        : listings.sort(
+            (a, b) => (a.distance_km as number) - (b.distance_km as number),
+          );
   }
 
   return c.json({ date, count: listings.length, listings });

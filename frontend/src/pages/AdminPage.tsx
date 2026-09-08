@@ -167,7 +167,11 @@ function AdminLogin({ onSuccess }: { onSuccess: (token: string) => void }) {
 
         {error && <p className={ERROR_LINE}>{error}</p>}
 
-        <button className={`${BTN_PRIMARY} w-full`} type="submit" disabled={checking}>
+        <button
+          className={`${BTN_PRIMARY} w-full`}
+          type="submit"
+          disabled={checking}
+        >
           <i className="fa-solid fa-unlock"></i>
           <span>{checking ? "Memeriksa..." : "Masuk"}</span>
         </button>
@@ -182,7 +186,7 @@ function AdminLogin({ onSuccess }: { onSuccess: (token: string) => void }) {
 function StatsPanel({ token }: { token: string }) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading"
+    "loading",
   );
 
   useEffect(() => {
@@ -195,7 +199,11 @@ function StatsPanel({ token }: { token: string }) {
   }, [token]);
 
   if (status === "loading")
-    return <p className="text-xs text-slate-500 dark:text-slate-400 py-6 text-center">memuat...</p>;
+    return (
+      <p className="text-xs text-slate-500 dark:text-slate-400 py-6 text-center">
+        memuat...
+      </p>
+    );
   if (status === "error" || !stats)
     return <p className={ERROR_LINE}>Gagal memuat statistik</p>;
 
@@ -311,11 +319,11 @@ function StatsPanel({ token }: { token: string }) {
 function ProvidersPanel({ token }: { token: string }) {
   const [providers, setProviders] = useState<AdminProvider[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading"
+    "loading",
   );
   const [busyId, setBusyId] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<"semua" | "jajanan" | "jasa">(
-    "semua"
+    "semua",
   );
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "suspended" | "pending" | "approved" | "rejected"
@@ -362,7 +370,10 @@ function ProvidersPanel({ token }: { token: string }) {
     }
   }
 
-  async function handleApproval(p: AdminProvider, status: "approved" | "rejected") {
+  async function handleApproval(
+    p: AdminProvider,
+    status: "approved" | "rejected",
+  ) {
     setBusyId(p.id);
     try {
       await setProviderApproval(token, p.id, status);
@@ -463,9 +474,13 @@ function ProvidersPanel({ token }: { token: string }) {
       </div>
 
       {status === "loading" && (
-        <p className="text-xs text-slate-500 dark:text-slate-400 py-6 text-center">memuat...</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 py-6 text-center">
+          memuat...
+        </p>
       )}
-      {status === "error" && <p className={ERROR_LINE}>Gagal memuat provider</p>}
+      {status === "error" && (
+        <p className={ERROR_LINE}>Gagal memuat provider</p>
+      )}
       {status === "ready" && providers.length === 0 && (
         <p className="text-xs text-slate-500 dark:text-slate-400 py-6 text-center">
           Tidak ada provider yang cocok filter ini.
@@ -476,7 +491,10 @@ function ProvidersPanel({ token }: { token: string }) {
         providers.map((p) => {
           const photoSrc = resolvePhotoUrl(p.photo_url);
           return (
-            <div className={`${CARD} p-4 flex items-start space-x-3.5`} key={p.id}>
+            <div
+              className={`${CARD} p-4 flex items-start space-x-3.5`}
+              key={p.id}
+            >
               {photoSrc ? (
                 <img
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
@@ -516,7 +534,8 @@ function ProvidersPanel({ token }: { token: string }) {
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   <i className="fa-brands fa-whatsapp text-emerald-500 mr-1"></i>
-                  {p.phone} · <span className="capitalize">{p.category_type}</span>
+                  {p.phone} ·{" "}
+                  <span className="capitalize">{p.category_type}</span>
                 </p>
 
                 <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
@@ -586,7 +605,7 @@ function ProvidersPanel({ token }: { token: string }) {
 function CategoriesPanel({ token }: { token: string }) {
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading"
+    "loading",
   );
   const [form, setForm] = useState({
     id: "",
@@ -639,14 +658,21 @@ function CategoriesPanel({ token }: { token: string }) {
   return (
     <div className="space-y-5">
       {status === "loading" && (
-        <p className="text-xs text-slate-500 dark:text-slate-400 py-6 text-center">memuat...</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 py-6 text-center">
+          memuat...
+        </p>
       )}
-      {status === "error" && <p className={ERROR_LINE}>Gagal memuat kategori</p>}
+      {status === "error" && (
+        <p className={ERROR_LINE}>Gagal memuat kategori</p>
+      )}
 
       {status === "ready" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {categories.map((c) => (
-            <div className={`${CARD} p-4 flex items-center justify-between gap-3`} key={c.id}>
+            <div
+              className={`${CARD} p-4 flex items-center justify-between gap-3`}
+              key={c.id}
+            >
               <div className="flex items-center space-x-3 min-w-0">
                 <span className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xl flex-shrink-0">
                   {c.icon}

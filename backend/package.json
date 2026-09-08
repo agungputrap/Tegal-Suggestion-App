@@ -11,7 +11,9 @@
     "db:seed:places": "node scripts/seed-places.mjs && wrangler d1 execute jajan-jasa-db --local --file=./seed-places.sql",
     "db:seed:places:remote": "node scripts/seed-places.mjs && wrangler d1 execute jajan-jasa-db --remote --file=./seed-places.sql",
     "kv:create": "wrangler kv:namespace create ACTIVE_CACHE",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "hono": "^4.6.0"

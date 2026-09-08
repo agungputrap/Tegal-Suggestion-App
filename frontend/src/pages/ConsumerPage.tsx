@@ -6,7 +6,12 @@ import { ListingCard } from "../components/ListingCard";
 import { MapView } from "../components/MapView";
 import { ProviderDetailModal } from "../components/ProviderDetailModal";
 import { KECAMATAN } from "../data/kecamatan";
-import { ERROR_LINE, STATUS_LINE, pillClass, selectClass } from "../components/ui";
+import {
+  ERROR_LINE,
+  STATUS_LINE,
+  pillClass,
+  selectClass,
+} from "../components/ui";
 
 // Default: pusat kota Tegal, dipakai kalau geolocation browser ditolak
 const DEFAULT_CENTER = { lat: -6.8694, lng: 109.1402 };
@@ -28,7 +33,7 @@ export function ConsumerPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [center, setCenter] = useState(DEFAULT_CENTER);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading"
+    "loading",
   );
   const [detailId, setDetailId] = useState<string | null>(null);
 
@@ -41,7 +46,7 @@ export function ConsumerPage() {
       () => {
         /* diamkan; pakai DEFAULT_CENTER */
       },
-      { timeout: 5000 }
+      { timeout: 5000 },
     );
   }, []);
 
@@ -72,8 +77,8 @@ export function ConsumerPage() {
   }, [filter, area, halalOnly, trending, center]);
 
   const detailListing = useMemo(
-    () => (detailId ? listings.find((l) => l.id === detailId) ?? null : null),
-    [detailId, listings]
+    () => (detailId ? (listings.find((l) => l.id === detailId) ?? null) : null),
+    [detailId, listings],
   );
 
   const categoryById = useMemo(() => {
@@ -92,8 +97,8 @@ export function ConsumerPage() {
             Ini
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Jajanan &amp; jasa yang aktif di sekitarmu — sekarang, bukan
-            minggu lalu.
+            Jajanan &amp; jasa yang aktif di sekitarmu — sekarang, bukan minggu
+            lalu.
           </p>
         </div>
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-900">
@@ -143,7 +148,9 @@ export function ConsumerPage() {
       </div>
 
       {/* Daftar listing */}
-      {status === "loading" && <p className={STATUS_LINE}>memuat status hari ini...</p>}
+      {status === "loading" && (
+        <p className={STATUS_LINE}>memuat status hari ini...</p>
+      )}
 
       {status === "error" && (
         <p className={ERROR_LINE}>

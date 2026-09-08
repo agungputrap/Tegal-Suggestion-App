@@ -18,7 +18,11 @@ export function FullMap({ places, legend, onOpenPlace }: Props) {
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const onOpenPlaceRef = useRef(onOpenPlace);
-  onOpenPlaceRef.current = onOpenPlace;
+
+  // Ref hanya boleh ditulis di effect, bukan saat render
+  useEffect(() => {
+    onOpenPlaceRef.current = onOpenPlace;
+  }, [onOpenPlace]);
 
   // Init map sekali
   useEffect(() => {
@@ -126,7 +130,7 @@ export function FullMap({ places, legend, onOpenPlace }: Props) {
     else if (places.length > 0) {
       map.fitBounds(
         places.map((p): L.LatLngTuple => [p.latitude, p.longitude]),
-        { padding: [40, 40] }
+        { padding: [40, 40] },
       );
     }
   };
@@ -136,7 +140,9 @@ export function FullMap({ places, legend, onOpenPlace }: Props) {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center space-x-2">
           <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="text-sm font-bold">Peta Persebaran Lokasi F&amp;B</span>
+          <span className="text-sm font-bold">
+            Peta Persebaran Lokasi F&amp;B
+          </span>
           <span className="text-xs text-slate-500">
             ({places.length} Tempat Kuliner Terpetakan)
           </span>

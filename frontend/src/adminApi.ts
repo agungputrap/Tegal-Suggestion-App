@@ -57,14 +57,9 @@ export async function fetchAdminProviders(
   filters?: {
     type?: "jajanan" | "jasa";
     status?:
-      | "active"
-      | "suspended"
-      | "pending"
-      | "approved"
-      | "rejected"
-      | "all";
+      "active" | "suspended" | "pending" | "approved" | "rejected" | "all";
     q?: string;
-  }
+  },
 ): Promise<AdminProvider[]> {
   const qs = new URLSearchParams();
   if (filters?.type) qs.set("type", filters.type);
@@ -81,11 +76,11 @@ export async function fetchAdminProviders(
 
 export async function deactivateTodayCheckin(
   token: string,
-  id: string
+  id: string,
 ): Promise<void> {
   const res = await fetch(
     `${API_URL}/admin/providers/${id}/deactivate-checkin`,
-    { method: "POST", headers: authHeaders(token) }
+    { method: "POST", headers: authHeaders(token) },
   );
   if (!res.ok) throw new Error("Gagal menonaktifkan checkin");
 }
@@ -93,7 +88,7 @@ export async function deactivateTodayCheckin(
 export async function setProviderSuspended(
   token: string,
   id: string,
-  suspended: boolean
+  suspended: boolean,
 ): Promise<void> {
   const res = await fetch(`${API_URL}/admin/providers/${id}`, {
     method: "PATCH",
@@ -107,7 +102,7 @@ export async function setProviderSuspended(
 export async function setProviderApproval(
   token: string,
   id: string,
-  status: "approved" | "rejected"
+  status: "approved" | "rejected",
 ): Promise<void> {
   const res = await fetch(`${API_URL}/admin/providers/${id}/approval`, {
     method: "POST",
@@ -127,7 +122,7 @@ export async function deleteProvider(token: string, id: string): Promise<void> {
 
 export async function deleteProviderPhoto(
   token: string,
-  id: string
+  id: string,
 ): Promise<void> {
   const res = await fetch(`${API_URL}/admin/providers/${id}/photo`, {
     method: "DELETE",
@@ -144,7 +139,7 @@ export type AdminCategory = {
 };
 
 export async function fetchAdminCategories(
-  token: string
+  token: string,
 ): Promise<AdminCategory[]> {
   const res = await fetch(`${API_URL}/admin/categories`, {
     headers: authHeaders(token),
@@ -156,7 +151,7 @@ export async function fetchAdminCategories(
 
 export async function createCategory(
   token: string,
-  input: { id: string; name: string; type: "jajanan" | "jasa"; icon: string }
+  input: { id: string; name: string; type: "jajanan" | "jasa"; icon: string },
 ): Promise<void> {
   const res = await fetch(`${API_URL}/admin/categories`, {
     method: "POST",
@@ -164,7 +159,9 @@ export async function createCategory(
     body: JSON.stringify(input),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Gagal menambah kategori" }));
+    const err = await res
+      .json()
+      .catch(() => ({ error: "Gagal menambah kategori" }));
     throw new Error(err.error ?? "Gagal menambah kategori");
   }
 }
@@ -175,7 +172,9 @@ export async function deleteCategory(token: string, id: string): Promise<void> {
     headers: authHeaders(token),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: "Gagal menghapus kategori" }));
+    const err = await res
+      .json()
+      .catch(() => ({ error: "Gagal menghapus kategori" }));
     throw new Error(err.error ?? "Gagal menghapus kategori");
   }
 }

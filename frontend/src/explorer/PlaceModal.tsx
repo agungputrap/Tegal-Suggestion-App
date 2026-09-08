@@ -30,7 +30,10 @@ export function PlaceModal({
   const { dayIndo } = nowParts();
   const openStatus = isOpenNow(place, dayIndo, nowParts().hour, nowParts().min);
 
-  const ratingBreakdown = place.reviews_per_rating ?? {};
+  const ratingBreakdown = useMemo(
+    () => place.reviews_per_rating ?? {},
+    [place]
+  );
   const totalRatingSum = useMemo(() => {
     const sum = Object.values(ratingBreakdown).reduce((a, v) => a + v, 0);
     return sum || 1;
@@ -109,7 +112,9 @@ export function PlaceModal({
                       </span>
                     )}
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-black">{place.title}</h2>
+                  <h2 className="text-xl sm:text-2xl font-black">
+                    {place.title}
+                  </h2>
                   <p className="text-xs text-slate-200 line-clamp-1 mt-0.5">
                     <i className="fa-solid fa-location-dot mr-1"></i>
                     {place.address}
@@ -184,8 +189,8 @@ export function PlaceModal({
               {/* Jadwal jam buka */}
               <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
-                  <i className="fa-solid fa-clock text-emerald-500 mr-2"></i> Jadwal
-                  Jam Buka
+                  <i className="fa-solid fa-clock text-emerald-500 mr-2"></i>{" "}
+                  Jadwal Jam Buka
                 </h4>
                 <div className="space-y-1">
                   {daysIndo.map((day) => {
@@ -272,8 +277,8 @@ export function PlaceModal({
             {/* Ulasan */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
-                <i className="fa-solid fa-comments text-indigo-500 mr-2"></i> Ulasan
-                Pengunjung Terbaru ({place.user_reviews.length})
+                <i className="fa-solid fa-comments text-indigo-500 mr-2"></i>{" "}
+                Ulasan Pengunjung Terbaru ({place.user_reviews.length})
               </h4>
               <div className="space-y-3">
                 {place.user_reviews.length === 0 ? (

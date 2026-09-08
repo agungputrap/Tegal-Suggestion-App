@@ -1,11 +1,14 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { fetchPlaces } from "../api";
 import type { Place } from "../explorer/types";
-import {
-  extractHighlights,
-  isOpenNow,
-  nowParts,
-} from "./helpers";
+import { extractHighlights, isOpenNow, nowParts } from "./helpers";
 import { useDarkMode } from "../hooks/useDarkMode";
 import { DirectoryTab } from "./DirectoryTab";
 import { FavoritesTab } from "./FavoritesTab";
@@ -13,9 +16,11 @@ import { PlaceModal } from "./PlaceModal";
 
 // Tab berat di-code-split (#15): chart.js & leaflet hanya dimuat saat tab
 // pertama kali dibuka.
-const FullMap = lazy(() => import("./FullMap").then((m) => ({ default: m.FullMap })));
+const FullMap = lazy(() =>
+  import("./FullMap").then((m) => ({ default: m.FullMap })),
+);
 const AnalyticsTab = lazy(() =>
-  import("./AnalyticsTab").then((m) => ({ default: m.AnalyticsTab }))
+  import("./AnalyticsTab").then((m) => ({ default: m.AnalyticsTab })),
 );
 
 function TabFallback() {
@@ -45,7 +50,9 @@ function loadFavorites(): string[] {
   try {
     const raw = localStorage.getItem(FAV_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === "string") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((x) => typeof x === "string")
+      : [];
   } catch {
     return [];
   }
@@ -58,7 +65,9 @@ type Props = {
 
 export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
   const [places, setPlaces] = useState<Place[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
 
   const [tab, setTab] = useState<ExplorerTab>("directory");
   const [view, setView] = useState<DirectoryView>("grid");
@@ -117,11 +126,18 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
         const matchCat = p.category.toLowerCase().includes(q);
         const matchAddr = p.address.toLowerCase().includes(q);
         const matchAbout =
-          p.about.length > 0 && JSON.stringify(p.about).toLowerCase().includes(q);
+          p.about.length > 0 &&
+          JSON.stringify(p.about).toLowerCase().includes(q);
         const matchReview =
           p.user_reviews.length > 0 &&
           JSON.stringify(p.user_reviews).toLowerCase().includes(q);
-        if (!matchTitle && !matchCat && !matchAddr && !matchAbout && !matchReview) {
+        if (
+          !matchTitle &&
+          !matchCat &&
+          !matchAddr &&
+          !matchAbout &&
+          !matchReview
+        ) {
           return false;
         }
       }
@@ -138,7 +154,8 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
       if (minRating > 0 && (p.rating ?? 0) < minRating) return false;
 
       const aboutJson = JSON.stringify(p.about).toLowerCase();
-      if (quick.openNow && isOpenNow(p, dayIndo, hour, min) !== true) return false;
+      if (quick.openNow && isOpenNow(p, dayIndo, hour, min) !== true)
+        return false;
       if (quick.wifi) {
         if (
           !aboutJson.includes("laptop") &&
@@ -217,14 +234,23 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
 
   const categoriesWithCount = useMemo(() => {
     const counts = new Map<string, number>();
-    places.forEach((p) => counts.set(p.category, (counts.get(p.category) ?? 0) + 1));
+    places.forEach((p) =>
+      counts.set(p.category, (counts.get(p.category) ?? 0) + 1),
+    );
     return [...counts.entries()].sort((a, b) => b[1] - a[1]);
   }, [places]);
 
   // Legenda peta (bucketing sama dengan ref: Kafe 19, Restoran 17, Kedai Kopi
   // 16, Seafood 6, Indonesian 4, Lainnya = sisanya)
   const mapLegend = useMemo(() => {
-    const b = { kafe: 0, restoran: 0, kopi: 0, seafood: 0, indonesia: 0, lainnya: 0 };
+    const b = {
+      kafe: 0,
+      restoran: 0,
+      kopi: 0,
+      seafood: 0,
+      indonesia: 0,
+      lainnya: 0,
+    };
     places.forEach((p) => {
       const c = p.category.toLowerCase();
       if (c.includes("kafe")) b.kafe++;
@@ -261,11 +287,17 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
     setCategory("all");
     setMinRating(0);
     setSort("rating_desc");
-    setQuick({ openNow: false, wifi: false, outdoor: false, reservation: false, budget: false });
+    setQuick({
+      openNow: false,
+      wifi: false,
+      outdoor: false,
+      reservation: false,
+      budget: false,
+    });
   }, []);
 
   const modalPlace = modalPlaceId
-    ? places.find((p) => p.id === modalPlaceId) ?? null
+    ? (places.find((p) => p.id === modalPlaceId) ?? null)
     : null;
 
   // ----- Export (port dari exportData) -----
@@ -283,7 +315,7 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
         download(
           "data:text/json;charset=utf-8," +
             encodeURIComponent(JSON.stringify(filteredPlaces, null, 2)),
-          "tegal-fnb-filtered.json"
+          "tegal-fnb-filtered.json",
         );
         return;
       }
@@ -312,15 +344,15 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
             esc(p.city),
             esc(p.address),
             esc(p.link),
-          ].join(",")
+          ].join(","),
         );
       });
       download(
         "data:text/csv;charset=utf-8," + encodeURIComponent(csvRows.join("\n")),
-        "tegal-fnb-filtered.csv"
+        "tegal-fnb-filtered.csv",
       );
     },
-    [filteredPlaces]
+    [filteredPlaces],
   );
 
   return (
@@ -338,7 +370,8 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
           </div>
           <div className="flex items-center space-x-4 text-xs">
             <span>
-              <i className="fa-solid fa-store mr-1"></i> {kpis.totalPlaces} Tempat
+              <i className="fa-solid fa-store mr-1"></i> {kpis.totalPlaces}{" "}
+              Tempat
             </span>
             <span className="hidden sm:inline">
               <i className="fa-solid fa-star text-amber-300 mr-1"></i> Avg{" "}
@@ -640,13 +673,21 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
 
       {tab === "map" && (
         <Suspense fallback={<TabFallback />}>
-          <FullMap places={filteredPlaces} legend={mapLegend} onOpenPlace={setModalPlaceId} />
+          <FullMap
+            places={filteredPlaces}
+            legend={mapLegend}
+            onOpenPlace={setModalPlaceId}
+          />
         </Suspense>
       )}
 
       {tab === "analytics" && (
         <Suspense fallback={<TabFallback />}>
-          <AnalyticsTab places={places} dark={dark} onOpenPlace={setModalPlaceId} />
+          <AnalyticsTab
+            places={places}
+            dark={dark}
+            onOpenPlace={setModalPlaceId}
+          />
         </Suspense>
       )}
 
@@ -656,7 +697,9 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
           onClearAll={() => {
-            if (confirm("Yakin ingin mengosongkan semua daftar tempat tersimpan?")) {
+            if (
+              confirm("Yakin ingin mengosongkan semua daftar tempat tersimpan?")
+            ) {
               setFavorites([]);
               localStorage.removeItem(FAV_KEY);
             }

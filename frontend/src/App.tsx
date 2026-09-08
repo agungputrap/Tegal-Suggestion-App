@@ -8,7 +8,7 @@ import { AppShell, type CoreView } from "./components/AppShell";
 // Explorer (leaflet + markercluster + chart.js) di-code-split supaya entry
 // bundle app inti tetap kecil (#15). Fallback mengikuti gaya Explorer.
 const ExplorerApp = lazy(() =>
-  import("./explorer/ExplorerApp").then((m) => ({ default: m.ExplorerApp }))
+  import("./explorer/ExplorerApp").then((m) => ({ default: m.ExplorerApp })),
 );
 
 function RouteFallback() {
@@ -32,7 +32,9 @@ function parseInitialRoute(): { view: View; kelolaToken: string | null } {
   const params = new URLSearchParams(window.location.search);
   const kelolaParam = params.get("kelola");
 
-  const kelolaPath = window.location.pathname.match(/^\/kelola\/([A-Za-z0-9]+)\/?$/);
+  const kelolaPath = window.location.pathname.match(
+    /^\/kelola\/([A-Za-z0-9]+)\/?$/,
+  );
   if (kelolaPath) return { view: "kelola", kelolaToken: kelolaPath[1] };
   if (kelolaParam) return { view: "kelola", kelolaToken: kelolaParam };
 
