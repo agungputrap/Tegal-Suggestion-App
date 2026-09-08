@@ -7,6 +7,7 @@ import {
 } from "../api";
 import type { Category, Provider } from "../api";
 import { PhotoUpload } from "../components/PhotoUpload";
+import { KECAMATAN } from "../data/kecamatan";
 import {
   BTN_PRIMARY,
   BTN_SECONDARY,
@@ -42,6 +43,8 @@ type FormState = {
   category_id: string;
   description: string;
   service_radius_km: string;
+  area: string;
+  halal: boolean;
 };
 
 const EMPTY_FORM: FormState = {
@@ -51,6 +54,8 @@ const EMPTY_FORM: FormState = {
   category_id: "",
   description: "",
   service_radius_km: "2",
+  area: "",
+  halal: false,
 };
 
 export function ProviderPage() {
@@ -118,6 +123,8 @@ export function ProviderPage() {
           form.category_type === "jasa"
             ? parseFloat(form.service_radius_km) || 0
             : 0,
+        area: form.area || undefined,
+        halal: form.category_type === "jajanan" ? form.halal : undefined,
       });
 
       // owner_token & verify_code hanya dikembalikan SEKALI di respons ini
@@ -364,6 +371,36 @@ export function ProviderPage() {
               />
             </label>
           )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="block">
+              <span className={LABEL}>Kecamatan</span>
+              <select
+                className={`${INPUT} w-full`}
+                value={form.area}
+                onChange={(e) => setForm({ ...form, area: e.target.value })}
+              >
+                <option value="">Pilih kecamatan</option>
+                {KECAMATAN.map((k) => (
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {form.category_type === "jajanan" && (
+              <label className="flex items-end pb-2.5 space-x-2 text-xs font-medium text-slate-700 dark:text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={form.halal}
+                  onChange={(e) => setForm({ ...form, halal: e.target.checked })}
+                  className="accent-emerald-600"
+                />
+                <span>Berhalal</span>
+              </label>
+            )}
+          </div>
 
           <label className="block">
             <span className={LABEL}>Deskripsi singkat (opsional)</span>
