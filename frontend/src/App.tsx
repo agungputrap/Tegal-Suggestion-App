@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { AdminPage } from "./pages/AdminPage";
 import { ConsumerPage } from "./pages/ConsumerPage";
 import { OwnerPortalPage } from "./pages/OwnerPortalPage";
 import { ProviderPage } from "./pages/ProviderPage";
-import { ExplorerApp } from "./explorer/ExplorerApp";
 import { AppShell, type CoreView } from "./components/AppShell";
+
+// Explorer (leaflet + markercluster + chart.js) di-code-split supaya entry
+// bundle app inti tetap kecil (#15). Fallback mengikuti gaya Explorer.
+const ExplorerApp = lazy(() =>
+  import("./explorer/ExplorerApp").then((m) => ({ default: m.ExplorerApp }))
+);
+
+function RouteFallback() {
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        <i className="fa-solid fa-spinner fa-spin mr-2"></i>memuat halaman...
+      </p>
+    </div>
+  );
+}
 
 // 'explorer' = halaman utama (port ref Tegal F&B Explorer).
 // View lain = app inti (Hari Ini / Jasa Saya / Admin) dengan chrome
@@ -41,10 +56,12 @@ export default function App() {
 
   if (view === "explorer") {
     return (
-      <ExplorerApp
-        onOpenLegacyApp={() => setView("hari-ini")}
-        onOpenAdmin={() => setView("admin")}
-      />
+      <Suspense fallback={<RouteFallback />}>
+        <ExplorerApp
+          onOpenLegacyApp={() => setView("hari-ini")}
+          onOpenAdmin={() => setView("admin")}
+        />
+      </Suspense>
     );
   }
 

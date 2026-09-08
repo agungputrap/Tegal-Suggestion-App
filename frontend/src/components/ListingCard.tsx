@@ -1,5 +1,7 @@
 import type { Listing } from "../api";
 import { resolvePhotoUrl, waChatLink } from "../api";
+import { FALLBACK_IMAGE_MEDIUM } from "../explorer/helpers";
+import { photoErrorHandler } from "./photo";
 import { CARD } from "./ui";
 
 type Props = {
@@ -35,6 +37,7 @@ export function ListingCard({ listing, categoryName, categoryIcon, onOpenDetail 
             src={photoSrc}
             alt={listing.name}
             loading="lazy"
+            onError={photoErrorHandler(FALLBACK_IMAGE_MEDIUM)}
           />
         ) : (
           <div
