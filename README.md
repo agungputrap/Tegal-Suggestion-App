@@ -6,22 +6,37 @@ Suggestion map for Tegal residents & newcomers — **food** (snacks, meals, tren
 
 **Core mechanic:** a business only appears on the map when its owner opens it *today*. Buyers tap "Chat WhatsApp" — the order/booking happens entirely in WhatsApp. No in-app transactions.
 
-## Features (MVP)
+Dua wajah aplikasi:
 
-- Interactive map with clustered markers (to do — emoji markers per category done, clustering pending) + list view
-- Filter by category (food / service) and area (kecamatan) (to do — category filter done, area filter pending)
-- Business detail: items (menu / price-list) (to do), halal flag (to do), WhatsApp CTA
-- "Open today" status — owners open/close from a phone portal (to do — daily check-in ("open") done, close + `/kelola/{token}` portal pending)
-- Trending sort by views/likes for the day (to do)
-- Registration with WhatsApp verification (to do — registration form done, WA verify code + approval pending)
+1. **Tegal F&B Explorer** (halaman utama) — direktori & analisis 76 tempat kuliner Tegal hasil ekspor Google Maps: pencarian + filter, 4 mode tampilan (grid/list/tabel/split), peta ber-cluster, dashboard statistik (Chart.js), favorit + perbandingan, detail tempat (foto, jam buka, ulasan).
+2. **App inti check-in** — penyedia daftar sekali lalu check-in harian via GPS; konsumen hanya melihat yang buka hari ini, dan menghubungi via WhatsApp.
 
-Beyond the original list, the adopted codebase also ships: provider photo upload (R2), search-radius filtering, and an admin panel (stats, moderation, category management).
+## Features — sudah jadi
+
+- Peta interaktif dengan **marker ber-cluster** per kategori (emoji/color) + list/grid view (Explorer)
+- Filter kategori (jajanan/jasa, 17 kategori kuliner), filter wilayah & rating, quick-filter (buka sekarang, ramah laptop, outdoor, reservasi, budget) (Explorer)
+- Detail tempat lengkap: foto, jam buka, distribusi rating, ulasan, street view, link Google Maps (Explorer)
+- Dashboard analytics: komposisi kategori, distribusi rating, rentang harga, kurva jam sibuk, leaderboards (Explorer)
+- Favorit + tabel perbandingan berdampingan, ekspor JSON/CSV (Explorer)
+- Check-in harian via GPS ("open today") dengan lokasi terkini — idempotent per hari
+- Filter kategori (food/service) + pencarian + radius jarak (app inti)
+- **Chat WhatsApp CTA** di setiap listing
+- Registrasi penyedia + upload foto (R2) + admin panel (statistik, moderasi, kelola kategori)
+
+## Features — to do (lihat [`TASKS.md`](TASKS.md))
+
+- Filter **area (kecamatan)** + **halal flag** untuk makanan (#14)
+- Detail bisnis: **items (menu / daftar harga)** (#12/#13)
+- Portal pemilik **`/kelola/{token}`** untuk buka/tutup hari ini (#7) — saat ini tutup = lewat admin atau cron tengah malam WIB
+- **Trending sort** by views/likes per hari (#4b)
+- Registrasi dengan **verifikasi WhatsApp** + approval admin (#6)
+- Cluster markers di peta check-in (Hari Ini) — saat ini hanya di peta Explorer
 
 ## Tech stack
 
 | Layer | Choice |
 | ----- | ------ |
-| Frontend | React + Vite + TypeScript, custom CSS design tokens, Leaflet |
+| Frontend | React + Vite + TypeScript, Tailwind v4 (+ sedikit custom CSS), Leaflet + markercluster, Chart.js |
 | Backend | Hono on Cloudflare Workers (TypeScript) |
 | DB / cache / storage | Cloudflare D1 (SQLite) / KV / R2 |
 | Deploy | Cloudflare Pages (frontend) + Workers (API) |
@@ -33,6 +48,7 @@ Beyond the original list, the adopted codebase also ships: provider photo upload
 cd backend
 npm install
 npm run db:migrate:local          # schema + seeded categories (local D1)
+npm run db:seed:places            # seed 76 tempat F&B (dataset Google Maps) untuk Explorer
 cp .dev.vars.example .dev.vars    # set ADMIN_TOKEN for local admin login
 npm run dev                       # API at http://localhost:8787
 
