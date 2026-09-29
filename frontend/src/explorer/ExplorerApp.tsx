@@ -68,12 +68,14 @@ type Props = {
   onOpenLegacyApp: () => void;
   onOpenAdmin: () => void;
   onOpenProvider: (id: string) => void;
+  onClaimPlace: (placeId: string) => void;
 };
 
 export function ExplorerApp({
   onOpenLegacyApp,
   onOpenAdmin,
   onOpenProvider,
+  onClaimPlace,
 }: Props) {
   const [places, setPlaces] = useState<Place[]>([]);
   // Penyedia live "Buka Hari Ini" — lapisan kedua tab peta (opsi C, #21).
@@ -779,6 +781,7 @@ export function ExplorerApp({
           highlights={extractHighlights(modalPlace)}
           onClose={() => setModalPlaceId(null)}
           onOpenProvider={onOpenProvider}
+          onClaimPlace={onClaimPlace}
         />
       )}
 

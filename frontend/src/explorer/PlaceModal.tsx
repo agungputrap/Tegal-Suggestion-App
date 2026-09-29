@@ -17,6 +17,8 @@ type Props = {
   highlights: string[];
   onClose: () => void;
   onOpenProvider?: (id: string) => void;
+  // Klaim tanpa reload (tier 1 #36) — SPA navigate ke form registrasi
+  onClaimPlace?: (placeId: string) => void;
 };
 
 export function PlaceModal({
@@ -26,6 +28,7 @@ export function PlaceModal({
   highlights,
   onClose,
   onOpenProvider,
+  onClaimPlace,
 }: Props) {
   const [heroIdx, setHeroIdx] = useState(0);
   const images = place.images;
@@ -392,13 +395,27 @@ export function PlaceModal({
               <span className="font-semibold">Pemilik usaha ini?</span> Klaim
               biar bisa tampil sebagai "buka hari ini" &amp; terhubung WhatsApp.
             </p>
-            <a
-              href={`?view=saya&claim=${place.id}`}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center space-x-1.5"
-            >
-              <i className="fa-solid fa-certificate"></i>
-              <span>Klaim listing ini</span>
-            </a>
+            {/* Klaim tanpa reload (tier 1 #36): SPA navigate ke form —
+                dulu <a href> yang me-reload seluruh halaman. Fallback <a>
+                kalau callback tidak tersedia. */}
+            {onClaimPlace ? (
+              <button
+                type="button"
+                onClick={() => onClaimPlace(place.id)}
+                className="px-3.5 py-2 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center space-x-1.5"
+              >
+                <i className="fa-solid fa-certificate"></i>
+                <span>Klaim listing ini</span>
+              </button>
+            ) : (
+              <a
+                href={`?view=saya&claim=${place.id}`}
+                className="px-3.5 py-2 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center space-x-1.5"
+              >
+                <i className="fa-solid fa-certificate"></i>
+                <span>Klaim listing ini</span>
+              </a>
+            )}
           </div>
         )}
 

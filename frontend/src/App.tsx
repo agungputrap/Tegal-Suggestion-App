@@ -125,6 +125,17 @@ export default function App() {
     });
   }
 
+  // Klaim listing direktori (tier 1 #36) — SPA navigation, bukan <a href>
+  // yang me-reload seluruh halaman.
+  function claimPlace(placeId: string) {
+    navigate({
+      view: "saya",
+      kelolaToken: null,
+      providerId: null,
+      claimPlaceId: placeId,
+    });
+  }
+
   // Tombol back/forward browser → parse ulang URL
   useEffect(() => {
     const onPop = () => setRoute(parseInitialRoute());
@@ -143,6 +154,7 @@ export default function App() {
           onOpenLegacyApp={() => setView("hari-ini")}
           onOpenAdmin={() => setView("admin")}
           onOpenProvider={openProvider}
+          onClaimPlace={claimPlace}
         />
       </Suspense>
     );
