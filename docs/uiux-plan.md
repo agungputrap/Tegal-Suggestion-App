@@ -141,3 +141,76 @@ Semua tier melayani `docs/strategy.md`: **percaya** (timestamp + konfirmasi + fo
 - **Performa & realitas**: Ookla Indonesia 1H2025 (median 30,5 Mbps; p10 5,69 Mbps); web.dev Core Web Vitals; Google/SOASTA 53%-abandon & Deloitte "Milliseconds Make Millions" (+8,4%/0,1s); Web Almanac 2024 page weight; web.dev OLX Indonesia PWA (+250% re-engagement) & Twitter Lite; Leaflet vs Google Maps JS (42KB vs ~200KB); panduan `preferCanvas`/clustering.
 - **Konversi & trust**: Think with Google micro-moments (76%/28%); click-to-WhatsApp playbooks (ChatMaxima/Sova/Vybinex); WhatsApp click-to-chat FAQ; BrightLocal & statistik foto GBP (+42%/35%); Waze last-updated pattern; Google Business Profile verification docs; GoFood instant onboarding (Jakarta Post 2025); HubSpot/Brixon field-count (−7%/field); Baymard `inputmode`; studi skeleton CHI'18; NN/g empty states.
 - **Bahasa & a11y**: CSA Research "Can't Read, Won't Buy" (76%/60%); BPS/OGP disabilitas ~9%; WCAG 2.2 (2.5.8 ≥24px, 1.4.3 AA 4,5:1); survei dark mode Android ~82%; tone-of-voice Gojek/tiket.com (bahasa santai).
+
+---
+
+## 8. Status eksekusi (handoff)
+
+> Dieksekusi otomatis 2026-09-29 sesuai misi "Execute UI/UX Tier 0 + Tier 1".
+> Gates: frontend `typecheck`+`lint`+`build`+`test` (39 test: 18 lama + 13 open-hours + 8 freshness) & backend `typecheck`+`test` (33 test) — semua hijau. **Tidak ada verifikasi visual di lingkungan eksekusi** (lihat 8.4).
+
+### 8.1 Tier 0 — selesai semua (issue #34, PR #35, merge `574b6c4`)
+
+| Item | Commit | Catatan |
+|------|--------|---------|
+| Fix `isOpenNow` + WIB | `c1244da` | Semua rentang per hari didukung; `nowParts()` UTC+7 sejajar backend; +13 test `test/open-hours.test.ts` |
+| Salinan & error copy | `6ccb54a` | Lowokwaru→Margadana; komponen `ErrorState` (copy ramah + tombol Coba lagi yang benar-benar me-retry) di 4 halaman |
+| Meta + share preview | `f0d53f8` | description ID + OG + favicon SVG + theme-color; `og:image` **tidak dibuat** (tidak boleh fabrikasi aset biner) |
+| WA CTA di PlaceModal | `e3785d8` | Tombol hijau primer `wa.me` + prefill probe freshness; sembunyi jika tanpa nomor; `waChatLink()` dapat pesan opsional (backward compatible) |
+| Touch target ≥44px | `d227d83` | Pills, tab mobile, konfirmasi kartu, search-clear, view-switcher, ikon share/close modal |
+| Dark mode rapikan | `e4b8075`+`10a9638` | Tile CartoDB dark_all di 3 peta (ikut `.dark` via `useDarkClass`/MutationObserver), `ERROR_LINE` dark, overscroll body, kontras slate-500 |
+| Favorites & portal reachable | `4b1a6fb` | Tab Tersimpan di mobile, tombol Portal /kelola di dashboard owner, link balik di footer portal |
+| Modal a11y dasar | `b53d31e` | `role="dialog"`+`aria-modal`+fokus awal/restore; judul kartu jadi `<button>`; ring `:focus-visible` global |
+| Skeleton dataset | `7c456aa` | Skeleton kartu direktori; KPI tampil `--` sampai siap |
+| (bonus rencana) | `6e263f8` | `manifest.json` dasar — dari tabel Tier 0, tanpa service worker |
+
+### 8.2 Tier 1 — selesai semua (issue #36, PR #36)
+
+| Item | Commit | Catatan |
+|------|--------|---------|
+| Freshness timestamp | `55a05cd` | `last_checkin_at` dari /listings; "Buka · check-in X mnt lalu" di ListingCard + ProviderDetailPage; >4 jam badge memudar; +8 test |
+| Bot terlihat | `676d76e` | `VITE_BOT_NUMBER` dibake saat build; `BotHint` di portal & dashboard owner; **kosong = sembunyi total** |
+| Klaim tanpa reload | `ec8d44d` | Tombol klaim → SPA `navigate({view:"saya", claimPlaceId})`; fallback `<a>` jika callback tak ada |
+| Pending hidup | `303a310` | Poll `fetchProvider` tiap 15 dtk (stop saat unmount/approved) + status "Menunggu verifikasi admin" |
+| Registrasi 2 langkah | `259da45` | Langkah 1 = nama+WA+kategori → pending langsung terlihat; langkah 2 (kolaps, opsional, jalan selagi pending) = foto/kecamatan/halal/deskripsi/radius via portal endpoints; klaim prefill tetap jalan |
+| Bottom nav mobile | `8e1c9a6` | Jelajah·Peta·Tersimpan·Saya (Explorer) + tab inti (AppShell); `env(safe-area-inset-bottom)`; tab atas desktop tetap; Statistik admin tinggal di tab atas mobile |
+| Landing hero live | `0fb934f` | Hero "Yang buka sekarang di Tegal": hitungan live "X usaha · Y buka sekarang" + search + feed horizontal check-in hari ini; **jalur konservatif** (lihat 8.3) |
+
+### 8.3 Yang ditunda / tidak dikerjakan (dan kenapa)
+
+1. **Restrukturisasi IA penuh** (direktori analitik turun jadi tab sekunder) — dieksekusi jalur konservatif sesuai misi: hero + live count + feed live DI ATAS fold, tapi urutan tab & KPI band tidak dirombak. Alasan: hindari regresi mobile tanpa verifikasi visual. Sisa pekerjaan: demote Direktori jadi tab sekunder setelah hero terbukti (butuh cek manusia).
+2. **`og:image`** — tidak ada aset; tidak boleh fabrikasi. Sudah ada di backlog Tier 2/3 ("Story-card / OG image generation").
+3. **Hapus `alert()`/`confirm()` native** (FavoritesTab clear-all, portal hapus item, PlaceModal share) — butuh sistem toast/modal kecil bersama; di luar lingkup misi item 2 (error copy). Saran masuk Tier 2 (consolidate design system).
+4. **Focus-trap penuh di modal** — yang terpasang: fokus awal + restore + Escape. Trap penuh masuk Tier 2 (a11y sweep).
+5. **2 font tak terpakai** (Archivo Black, JetBrains Mono) masih dimuat — Tier 2 (consolidate design system).
+6. **AnalyticsTab** masih ada beberapa `text-slate-500` tanpa dark variant — sengaja: guardrail "jangan sentuh fitur analitik/admin" (hanya direlokasi, bukan diperbaiki).
+
+### 8.4 Perubahan backend (untuk review Arief + Budi — SHARED)
+
+- `backend/src/routes/listings.ts`: SELECT tambah **satu** kolom `ck.created_at as last_checkin_at` (satu-satunya perubahan backend yang diizinkan misi).
+- `backend/src/types.ts` (SHARED): `ActiveListing.last_checkin_at?: string`.
+- Tanpa migrasi, tanpa endpoint baru, tanpa perubahan kontrak lain (kolom opsional).
+- Catatan semantik: `created_at` check-in = waktu check-in PERTAMA hari itu (upsert harian tidak meng-updated-nya) — label "check-in X mnt lalu" artinya "sejak buka pertama hari ini".
+
+### 8.5 Yang perlu verifikasi visual manusia (tidak bisa dari build+test)
+
+1. Tile peta gelap tertukar benar saat toggle dark (3 peta) & tidak ada flash tile terang saat load dark.
+2. Filter bar dengan pill 44px tidak wrap jelek di layar 360px.
+3. Hero gradient + feed horizontal di layar kecil; bottom nav tidak menutupi footer (sudah diberi `pb-20` clearance) & tidak bentrok home-indicator iOS.
+4. PlaceModal: fokus masuk/keluar modal wajar; WA CTA tampil di atas tombol lain.
+5. Skeleton grid terlihat saat jaringan lambat.
+6. Verify meta OG via [OpenGraph check](https://www.opengraph.xyz/url/https%3A%2F%2Fjajan-jasa-web.pages.dev%2F) setelah deploy.
+
+### 8.6 Catatan ops (bukan kode)
+
+- `VITE_BOT_NUMBER` **belum diset** saat build deploy — UI bot otomatis tersembunyi sampai nomor bot resmi dipasang (device Fonnte + secrets, lihat runbook fase 1). Set `VITE_BOT_NUMBER=<nomor>` di build Pages saat sudah aktif; jangan hardcode.
+- Deploy backend diperlukan (kolom baru), lalu frontend dengan `VITE_API_URL` produksi.
+
+### 8.7 Handoff Tier 2/3 (belum dikerjakan, sesuai batas misi)
+
+- Dataset 1,5MB masih di critical path; `JSON.stringify(about/reviews)` masih per keystroke (search hero kini ikut memakainya) → precompute field pencarian (rencana Tier 2).
+- Deep-link PlaceModal → `/place/:id` + OG per place (Tier 2).
+- PWA/service worker + A2HS (Tier 2) — manifest dasar sudah ada.
+- Bottom-sheet place card di mobile, my-location FAB, hentikan `fitBounds` otomatis, satu tinggi peta, legend collapse (Tier 2).
+- A11y sweep penuh: focus-trap, `aria-live` status async, satu `h1`/view, kontras AA penuh (Tier 2).
+- Streak publik "🔥 N hari beruntun", ping personal, digest bot (Tier 3).
