@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { BottomNav } from "./BottomNav";
 
 // Chrome halaman app inti (Hari Ini / Jasa Saya / Admin) — mengikuti gaya
 // header Explorer (banner gradient + glass header + tab) supaya seluruh app
@@ -111,29 +112,24 @@ export function AppShell({
               </button>
             </div>
           </div>
-
-          {/* Tabs (mobile) — min-h 44px supaya nyaman ditap (tier 0 #34) */}
-          <div className="flex md:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
-            {TABS.map(({ id, icon, short }) => (
-              <button
-                key={id}
-                onClick={() => onTabChange(id)}
-                className={`inline-flex items-center px-3 py-2 min-h-[44px] text-xs rounded-lg whitespace-nowrap ${
-                  active === id
-                    ? "text-emerald-600 font-semibold"
-                    : "text-slate-600 dark:text-slate-400"
-                }`}
-              >
-                <i className={`fa-solid ${icon} mr-1`}></i> {short}
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-6 w-full flex-grow">
         {children}
       </main>
+
+      {/* Bottom nav mobile (tier 1 #36) — menggantikan tab atas mobile,
+          one-handed reach + safe-area */}
+      <BottomNav
+        items={TABS.map(({ id, icon, short }) => ({
+          key: id,
+          icon,
+          label: short,
+          active: active === id,
+          onClick: () => onTabChange(id),
+        }))}
+      />
 
       <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 px-4 text-center text-xs text-slate-500 dark:text-slate-400 mt-auto">
         Jajan+Jasa Tegal ·{" "}

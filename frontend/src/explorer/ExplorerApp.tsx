@@ -16,6 +16,7 @@ import {
 import type { Place } from "../explorer/types";
 import { extractHighlights, isOpenNow, nowParts } from "./helpers";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { BottomNav } from "../components/BottomNav";
 import { DirectoryTab } from "./DirectoryTab";
 import { FavoritesTab } from "./FavoritesTab";
 import { PlaceModal } from "./PlaceModal";
@@ -69,6 +70,7 @@ type Props = {
   onOpenAdmin: () => void;
   onOpenProvider: (id: string) => void;
   onClaimPlace: (placeId: string) => void;
+  onOpenSaya: () => void; // bottom nav "Saya" -> view Jasa Saya (tier 1 #36)
 };
 
 export function ExplorerApp({
@@ -76,6 +78,7 @@ export function ExplorerApp({
   onOpenAdmin,
   onOpenProvider,
   onClaimPlace,
+  onOpenSaya,
 }: Props) {
   const [places, setPlaces] = useState<Place[]>([]);
   // Penyedia live "Buka Hari Ini" — lapisan kedua tab peta (opsi C, #21).
@@ -354,14 +357,8 @@ export function ExplorerApp({
       ? ([["analytics", "fa-chart-pie", "Dashboard & Statistik"]] as const)
       : []),
   ];
-  // Tab Tersimpan ikut tampil di mobile (tier 0 #34) — favorit tidak lagi
-  // hanya bisa dijangkau dari nav desktop.
-  const mobileTabs: NavTab[] = [
-    ["directory", "fa-table-cells-large", "Direktori"],
-    ["map", "fa-map-location-dot", "Peta"],
-    ["favorites", "fa-heart", "Tersimpan"],
-    ...(isAdmin ? ([["analytics", "fa-chart-pie", "Statistik"]] as const) : []),
-  ];
+  // Bottom nav mobile (tier 1 #36): Jelajah · Peta · Tersimpan · Saya —
+  // Statistik admin tetap di tab atas mobile supaya nav bawah maksimal 4.
 
   // ----- Export (port dari exportData) -----
   const exportData = useCallback(
@@ -423,7 +420,42 @@ export function ExplorerApp({
   const kpiReady = status === "ready";
 
   return (
-    <div className="explorer bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+    <div className="explorer bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 pb-20 lg:pb-0">
+      {/* Bottom nav mobile (tier 1 #36) — one-handed reach */}
+      <BottomNav
+        hideAt="lg"
+        items={[
+          {
+            key: "directory",
+            icon: "fa-table-cells-large",
+            label: "Jelajah",
+            active: tab === "directory",
+            onClick: () => setTab("directory"),
+          },
+          {
+            key: "map",
+            icon: "fa-map-location-dot",
+            label: "Peta",
+            active: tab === "map",
+            onClick: () => setTab("map"),
+          },
+          {
+            key: "favorites",
+            icon: "fa-heart",
+            iconClass: "text-rose-500",
+            label: "Tersimpan",
+            active: tab === "favorites",
+            onClick: () => setTab("favorites"),
+          },
+          {
+            key: "saya",
+            icon: "fa-bullhorn",
+            label: "Saya",
+            onClick: onOpenSaya,
+          },
+        ]}
+      />
+
       {/* Top Meta Banner */}
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
@@ -585,27 +617,22 @@ export function ExplorerApp({
             </div>
           </div>
 
-          {/* Mobile Tabs Bar — min-h 44px supaya nyaman ditap (tier 0 #34) */}
-          <div className="flex lg:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
-            {mobileTabs.map(([id, icon, label]) => (
+          {/* Mobile tabs atas: sisa item yang tidak muat di bottom nav —
+              hanya Statistik admin (tier 1 #36) */}
+          {isAdmin && (
+            <div className="flex lg:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
               <button
-                key={id}
-                onClick={() => setTab(id)}
+                onClick={() => setTab("analytics")}
                 className={`inline-flex items-center px-3 py-2 min-h-[44px] text-xs rounded-lg whitespace-nowrap ${
-                  tab === id
+                  tab === "analytics"
                     ? "text-emerald-600 font-semibold"
                     : "text-slate-600 dark:text-slate-400"
                 }`}
               >
-                <i
-                  className={`fa-solid ${icon} mr-1 ${
-                    id === "favorites" ? "text-rose-500" : ""
-                  }`}
-                ></i>{" "}
-                {label}
+                <i className="fa-solid fa-chart-pie mr-1"></i> Statistik
               </button>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </header>
 
