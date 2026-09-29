@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Place } from "./types";
 import { waChatLink } from "../api";
 import {
@@ -29,6 +29,15 @@ export function PlaceModal({
 }: Props) {
   const [heroIdx, setHeroIdx] = useState(0);
   const images = place.images;
+
+  // A11y dasar modal (tier 0 #34): fokus pindah ke dialog saat dibuka &
+  // kembali ke elemen pemicu saat ditutup. (Focus-trap penuh menyusul Tier 2.)
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const trigger = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+    return () => trigger?.focus?.();
+  }, []);
 
   const { dayIndo } = nowParts();
   const openStatus = isOpenNow(place, dayIndo, nowParts().hour, nowParts().min);
@@ -65,7 +74,14 @@ export function PlaceModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden relative">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={place.title}
+        tabIndex={-1}
+        className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden relative focus:outline-none"
+      >
         {/* Modal Header (Close & share) — tombol 44px touch target (#34) */}
         <div className="absolute top-4 right-4 z-20 flex items-center space-x-2">
           <button

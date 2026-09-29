@@ -49,6 +49,19 @@ a {
   color: inherit;
 }
 
+/* Ring fokus keyboard global (tier 0 #34): siapa pun yang navigasi pakai
+   Tab selalu melihat elemen aktif — sebelumnya tidak ada focus-visible sama
+   sekali. :focus-visible saja tidak muncul untuk klik mouse. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
 /* ---------- Pin peta (Leaflet divIcon) ---------- */
 .map-pin-wrapper {
   background: transparent !important;

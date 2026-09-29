@@ -399,12 +399,13 @@ function GridView({
             <div className="p-4 flex-grow flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <h3
+                  <button
+                    type="button"
                     onClick={() => onOpenPlace(p.id)}
-                    className="font-bold text-slate-900 dark:text-white text-base hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition line-clamp-1"
+                    className="block w-full text-left font-bold text-slate-900 dark:text-white text-base hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition line-clamp-1"
                   >
                     {p.title}
-                  </h3>
+                  </button>
                 </div>
 
                 <div className="flex items-center space-x-2 text-xs mb-2">
@@ -585,12 +586,13 @@ function TableView({
                   className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
                 >
                   <td className="p-3">
-                    <div
-                      className="font-bold text-slate-900 dark:text-white cursor-pointer hover:text-emerald-600"
+                    <button
+                      type="button"
+                      className="font-bold text-left text-slate-900 dark:text-white cursor-pointer hover:text-emerald-600"
                       onClick={() => onOpenPlace(p.id)}
                     >
                       {p.title}
-                    </div>
+                    </button>
                     <div className="text-xs text-slate-400">{p.category}</div>
                   </td>
                   <td className="p-3 whitespace-nowrap">
