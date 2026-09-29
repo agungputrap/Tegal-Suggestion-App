@@ -36,6 +36,10 @@ export function FullMap({
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const liveLayerRef = useRef<L.LayerGroup | null>(null);
   const tilesRef = useRef<L.TileLayer | null>(null);
+  const userMarkerRef = useRef<L.CircleMarker | null>(null);
+  // Auto fitBounds berhenti setelah pengguna memindahkan peta sendiri
+  // (tier 2 #36) — jangan tarik viewport kembali saat data berubah.
+  const userMovedRef = useRef(false);
   const onOpenPlaceRef = useRef(onOpenPlace);
   const onOpenProviderRef = useRef(onOpenProvider);
   const dark = useDarkClass();
@@ -43,6 +47,11 @@ export function FullMap({
   // Kontrol lapisan live — milik FullMap saja (tidak memengaruhi tab lain)
   const [liveType, setLiveType] = useState<LiveTypeFilter>("semua");
   const [liveOnly, setLiveOnly] = useState(false);
+  // Legenda jadi chip collapse (tier 2 #36) — default terbuka di layar lebar
+  const [legendOpen, setLegendOpen] = useState(
+    () => typeof window !== "undefined" && window.innerWidth >= 640,
+  );
+  const [locating, setLocating] = useState(false);
 
   const filteredLive = useMemo(
     () => filterLiveListings(liveListings, liveType),
@@ -79,7 +88,12 @@ export function FullMap({
   useEffect(() => {
     if (!mapElRef.current || mapRef.current) return;
 
-    const map = L.map(mapElRef.current).setView([-6.87, 109.13], 12);
+    // preferCanvas (tier 2 #36): lapisan vektor dirender di canvas —
+    // pin divIcon tetap DOM, tapi siap kalau nanti ada polyline/circle.
+    const map = L.map(mapElRef.current, { preferCanvas: true }).setView(
+      [-6.87, 109.13],
+      12,
+    );
     tilesRef.current = L.tileLayer(tilesForTheme(dark), {
       attribution: tileAttributionForTheme(dark),
     }).addTo(map);
@@ -96,6 +110,13 @@ export function FullMap({
     map.createPane("live").style.zIndex = "650";
     liveLayerRef.current = L.layerGroup([], { pane: "live" }).addTo(map);
 
+    // Gestur pengguna (drag/zoom pin/scroll) menghentikan auto fitBounds.
+    // zoomstart juga dipicu fitBounds programatik — flag di bawah yang
+    // membedakan (lihat fitAll).
+    map.on("dragstart", () => {
+      userMovedRef.current = true;
+    });
+
     mapRef.current = map;
     clusterRef.current = cluster;
 
@@ -110,6 +131,7 @@ export function FullMap({
       clusterRef.current = null;
       liveLayerRef.current = null;
       tilesRef.current = null;
+      userMarkerRef.current = null;
     };
     // dark hanya nilai awal tile — update tema lewat effect [dark] di bawah
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -247,9 +269,13 @@ export function FullMap({
 
   // fitBounds atas gabungan kedua lapisan — provider live di luar bbox
   // direktori (finge kabupaten) tetap masuk pandangan awal.
+  // Tier 2 #36: berhenti setelah pengguna memindahkan peta sendiri —
+  // dragstart hanya berasal dari gestur pengguna (fitBounds tidak pernah
+  // memicunya), jadi cukup jadi penanda.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+    if (userMovedRef.current) return;
 
     const coords: L.LatLngTuple[] = [
       ...places.map((p): L.LatLngTuple => [p.latitude, p.longitude]),
@@ -261,6 +287,37 @@ export function FullMap({
       map.fitBounds(coords, { padding: [40, 40] });
     }
   }, [places, liveListings]);
+
+  // FAB lokasi saya (tier 2 #36): GPS browser → setView + pin titik biru.
+  // Gagal/ditolak = diam (peta tetap di posisi semula), tanpa toast.
+  const locateMe = () => {
+    const map = mapRef.current;
+    if (!map || locating) return;
+    if (!("geolocation" in navigator)) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        userMovedRef.current = true; // pilihan pengguna — jangan di-fit ulang
+        const latlng: L.LatLngTuple = [pos.coords.latitude, pos.coords.longitude];
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLatLng(latlng);
+        } else {
+          userMarkerRef.current = L.circleMarker(latlng, {
+            radius: 8,
+            color: "#2563eb",
+            weight: 3,
+            fillColor: "#3b82f6",
+            fillOpacity: 0.6,
+          });
+          liveLayerRef.current?.addLayer(userMarkerRef.current);
+        }
+        map.setView(latlng, 15, { animate: true });
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60_000 },
+    );
+  };
 
   const centerOn = (target: "tegal" | "brebes" | "all") => {
     const map = mapRef.current;
@@ -336,44 +393,84 @@ export function FullMap({
         </div>
       </div>
 
-      <div className="flex-grow w-full min-h-[550px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative">
+      {/* Tinggi peta konsisten di semua tampilan (tier 2 #36):
+          420px mobile / 550px desktop — sama dengan SplitView & MapView. */}
+      <div className="h-[420px] lg:h-[550px] w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative">
         {/* absolute inset-0: height:100% tidak reliable di sini karena rantai
             tinggi parent tidak eksplisit (beda dengan ref yang set html.h-full) */}
         <div ref={mapElRef} className="absolute inset-0"></div>
 
-        {/* Floating Map Legend — dua grup: direktori & live */}
-        <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 dark:bg-slate-900/95 p-3 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 text-xs backdrop-blur-md max-w-xs">
-          <div className="font-bold text-slate-700 dark:text-slate-300 mb-2">
-            Direktori (Google Maps):
-          </div>
-          <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-            {legend.map(({ label, color, count }) => (
-              <div key={label} className="flex items-center space-x-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${color}`}></span>
-                <span>
-                  {label} ({count})
+        {/* FAB lokasi saya (tier 2 #36) */}
+        <button
+          onClick={locateMe}
+          aria-label="Lokasi saya"
+          title="Lokasi saya"
+          className="absolute bottom-4 right-4 z-[1000] w-11 h-11 rounded-full bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-slate-800 transition"
+        >
+          <i
+            className={`fa-solid ${locating ? "fa-spinner fa-spin" : "fa-location-crosshairs"}`}
+          ></i>
+        </button>
+
+        {/* Legenda jadi chip collapse (tier 2 #36) — sebelumnya panel yang
+            selalu terbuka menutupi peta di layar 360px */}
+        <div className="absolute bottom-4 left-4 z-[1000]">
+          {legendOpen ? (
+            <div className="bg-white/95 dark:bg-slate-900/95 p-3 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 text-xs backdrop-blur-md max-w-xs">
+              <div className="flex items-center justify-between gap-4 mb-2">
+                <span className="font-bold text-slate-700 dark:text-slate-300">
+                  Legenda
                 </span>
+                <button
+                  onClick={() => setLegendOpen(false)}
+                  aria-label="Tutup legenda"
+                  className="w-7 h-7 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center"
+                >
+                  <i className="fa-solid fa-chevron-down"></i>
+                </button>
               </div>
-            ))}
-          </div>
-          <div className="font-bold text-slate-700 dark:text-slate-300 mt-3 mb-2">
-            Buka Hari Ini (live):
-          </div>
-          <div className="grid grid-cols-1 gap-1.5 text-[11px]">
-            {liveLegend.map(({ label, color, count }) => (
-              <div key={label} className="flex items-center space-x-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${color}`}></span>
-                <span>
-                  {label} ({count})
-                </span>
+              <div className="font-bold text-slate-700 dark:text-slate-300 mb-2">
+                Direktori (Google Maps):
               </div>
-            ))}
-            {liveListings.length === 0 && (
-              <span className="text-slate-400">
-                belum ada yang check-in hari ini
-              </span>
-            )}
-          </div>
+              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                {legend.map(({ label, color, count }) => (
+                  <div key={label} className="flex items-center space-x-1.5">
+                    <span className={`w-2.5 h-2.5 rounded-full ${color}`}></span>
+                    <span>
+                      {label} ({count})
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="font-bold text-slate-700 dark:text-slate-300 mt-3 mb-2">
+                Buka Hari Ini (live):
+              </div>
+              <div className="grid grid-cols-1 gap-1.5 text-[11px]">
+                {liveLegend.map(({ label, color, count }) => (
+                  <div key={label} className="flex items-center space-x-1.5">
+                    <span className={`w-2.5 h-2.5 rounded-full ${color}`}></span>
+                    <span>
+                      {label} ({count})
+                    </span>
+                  </div>
+                ))}
+                {liveListings.length === 0 && (
+                  <span className="text-slate-400">
+                    belum ada yang check-in hari ini
+                  </span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setLegendOpen(true)}
+              aria-expanded={false}
+              className="bg-white/95 dark:bg-slate-900/95 px-3 py-2 rounded-full shadow-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 backdrop-blur-md flex items-center space-x-1.5"
+            >
+              <i className="fa-solid fa-palette"></i>
+              <span>Legenda</span>
+            </button>
+          )}
         </div>
       </div>
     </section>

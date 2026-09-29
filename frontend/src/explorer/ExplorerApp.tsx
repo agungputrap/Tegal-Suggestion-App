@@ -77,6 +77,9 @@ type Props = {
   onOpenProvider: (id: string) => void;
   onClaimPlace: (placeId: string) => void;
   onOpenSaya: () => void; // bottom nav "Saya" -> view Jasa Saya (tier 1 #36)
+  // Deep-link /place/:id (tier 2 #36) — modal place dibuka otomatis saat
+  // dataset siap (fetch per-place bila masih ringkasan).
+  initialPlaceId?: string | null;
 };
 
 export function ExplorerApp({
@@ -85,6 +88,7 @@ export function ExplorerApp({
   onOpenProvider,
   onClaimPlace,
   onOpenSaya,
+  initialPlaceId,
 }: Props) {
   const [places, setPlaces] = useState<Place[]>([]);
   // Penyedia live "Buka Hari Ini" — lapisan kedua tab peta (opsi C, #21).
@@ -150,6 +154,13 @@ export function ExplorerApp({
   useEffect(() => {
     loadPlaces();
   }, [loadPlaces]);
+
+  // Deep-link /place/:id (tier 2 #36): begitu data siap, buka modal place.
+  // Jika id tidak ada di ringkasan (place dihapus), diam — jangan error.
+  useEffect(() => {
+    if (!initialPlaceId || status !== "ready") return;
+    setModalPlaceId((prev) => prev ?? initialPlaceId);
+  }, [initialPlaceId, status]);
 
   // Lapisan live: penyedia yang check-in hari ini. Radius 20 km mencakup
   // Kota + Kab. Tegal + Brebes (default endpoint = 5 km, wajib eksplisit).

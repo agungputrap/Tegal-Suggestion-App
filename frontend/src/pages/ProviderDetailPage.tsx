@@ -202,10 +202,10 @@ export function ProviderDetailPage({ id, onBack }: Props) {
 
         {/* Items / daftar harga */}
         <div>
-          <h4 className={`${LABEL} flex items-center`}>
+          <h3 className={`${LABEL} flex items-center`}>
             <i className="fa-solid fa-list-ul text-emerald-500 mr-2"></i>
             {isJajanan ? "Menu hari ini" : "Daftar jasa & harga"}
-          </h4>
+          </h3>
           {items === null ? (
             <p className="text-xs text-slate-500 dark:text-slate-400">memuat item...</p>
           ) : availableItems.length === 0 ? (

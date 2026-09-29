@@ -33,11 +33,13 @@ type RouteState = {
   kelolaToken: string | null;
   providerId: string | null;
   claimPlaceId: string | null; // klaim listing direktori (fase 3 #31)
+  placeId: string | null; // deep-link modal direktori (tier 2 #36)
 };
 
 // Deep-link: ?view=hari-ini|saya|admin, ?kelola=<token>, path /kelola/<token>,
-// path /provider/<id> — id penyedia berbentuk UUID (ada "-"), atau
-// ?claim=<place_id> (prefill registrasi dari klaim listing).
+// path /provider/<id> — id penyedia berbentuk UUID (ada "-"), path
+// /place/<id> (tier 2 #36), atau ?claim=<place_id> (prefill registrasi
+// dari klaim listing).
 // (Cloudflare Pages SPA fallback melayani path apa pun ke index.html).
 function parseInitialRoute(): RouteState {
   const params = new URLSearchParams(window.location.search);
@@ -52,6 +54,7 @@ function parseInitialRoute(): RouteState {
       kelolaToken: kelolaPath[1],
       providerId: null,
       claimPlaceId: null,
+      placeId: null,
     };
   if (kelolaParam)
     return {
@@ -59,6 +62,7 @@ function parseInitialRoute(): RouteState {
       kelolaToken: kelolaParam,
       providerId: null,
       claimPlaceId: null,
+      placeId: null,
     };
 
   const providerPath = window.location.pathname.match(
@@ -70,6 +74,20 @@ function parseInitialRoute(): RouteState {
       kelolaToken: null,
       providerId: providerPath[1],
       claimPlaceId: null,
+      placeId: null,
+    };
+
+  // Deep-link place (tier 2 #36): /place/:id membuka PlaceModal langsung.
+  // Catatan: OG preview per place tidak mungkin di Cloudflare Pages statis —
+  // link yang di-share tetap memakai OG app-level (lihat uiux-plan §8).
+  const placePath = window.location.pathname.match(/^\/place\/([A-Za-z0-9-]+)\/?$/);
+  if (placePath)
+    return {
+      view: "explorer",
+      kelolaToken: null,
+      providerId: null,
+      claimPlaceId: null,
+      placeId: placePath[1],
     };
 
   const v = params.get("view");
@@ -79,9 +97,10 @@ function parseInitialRoute(): RouteState {
       kelolaToken: null,
       providerId: null,
       claimPlaceId: params.get("claim"),
+      placeId: null,
     };
   }
-  return { view: "explorer", kelolaToken: null, providerId: null, claimPlaceId: null };
+  return { view: "explorer", kelolaToken: null, providerId: null, claimPlaceId: null, placeId: null };
 }
 
 // URL yang merepresentasikan sebuah route state — dipakai pushState saat
@@ -91,6 +110,7 @@ function urlFor(route: RouteState): string {
     return `/provider/${route.providerId}`;
   if (route.view === "kelola" && route.kelolaToken)
     return `/kelola/${route.kelolaToken}`;
+  if (route.view === "explorer" && route.placeId) return `/place/${route.placeId}`;
   if (route.view === "explorer") return "/";
   if (route.view === "hari-ini" || route.view === "saya" || route.view === "admin")
     return `?view=${route.view}`;
@@ -99,7 +119,7 @@ function urlFor(route: RouteState): string {
 
 export default function App() {
   const [route, setRoute] = useState<RouteState>(parseInitialRoute);
-  const { view, kelolaToken, providerId, claimPlaceId } = route;
+  const { view, kelolaToken, providerId, claimPlaceId, placeId } = route;
 
   function navigate(next: RouteState) {
     history.pushState(null, "", urlFor(next));
@@ -113,6 +133,7 @@ export default function App() {
       providerId: null,
       claimPlaceId:
         view === "saya" ? route.claimPlaceId : null,
+      placeId: null,
     });
   }
 
@@ -122,6 +143,7 @@ export default function App() {
       kelolaToken: null,
       providerId: id,
       claimPlaceId: null,
+      placeId: null,
     });
   }
 
@@ -133,6 +155,7 @@ export default function App() {
       kelolaToken: null,
       providerId: null,
       claimPlaceId: placeId,
+      placeId: null,
     });
   }
 
@@ -156,6 +179,7 @@ export default function App() {
           onOpenProvider={openProvider}
           onClaimPlace={claimPlace}
           onOpenSaya={() => setView("saya")}
+          initialPlaceId={placeId}
         />
       </Suspense>
     );

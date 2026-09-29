@@ -396,10 +396,10 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
       {/* Row 3: Leaderboards & Insights */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
             <i className="fa-solid fa-fire text-rose-500 mr-2"></i> Top 5
             Terpopuler (Paling Banyak Diulas)
-          </h4>
+          </h3>
           <div className="space-y-3">
             {topReviewed.map((p, idx) => (
               <div
@@ -434,10 +434,10 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
             <i className="fa-solid fa-award text-amber-500 mr-2"></i> Top 5
             Rating Tertinggi (Min. 100 Ulasan)
-          </h4>
+          </h3>
           <div className="space-y-3">
             {topRated.map((p, idx) => (
               <div
@@ -473,10 +473,10 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
 
         <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
               <i className="fa-solid fa-lightbulb text-emerald-500 mr-2"></i>{" "}
               Temuan Analisis Kunci
-            </h4>
+            </h3>
             <KeyInsights places={places} />
           </div>
           <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400">

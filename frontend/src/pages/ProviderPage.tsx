@@ -269,8 +269,13 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
       <div className="max-w-md mx-auto space-y-4 py-6">
         <div className="text-center space-y-2">
           {/* Status jelas + hidup (tier 1 #36): listing sudah terlihat
-              sebagai menunggu, layar otomatis maju saat disetujui */}
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+              sebagai menunggu, layar otomatis maju saat disetujui.
+              aria-live (sweep a11y tier 2 #36): perubahan status diumumkan
+              screen reader tanpa fokus pindah. */}
+          <span
+            role="status"
+            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900"
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5"></span>
             Menunggu verifikasi admin
           </span>
@@ -651,7 +656,9 @@ function ProfileCompletionCard({ provider }: { provider: Provider }) {
         </button>
 
         {checkinStatus === "error" && (
-          <p className={ERROR_LINE}>{checkinError}</p>
+          <p className={ERROR_LINE} role="alert">
+            {checkinError}
+          </p>
         )}
 
         <BotHint />

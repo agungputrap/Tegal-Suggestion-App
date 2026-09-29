@@ -144,13 +144,16 @@ export function ConsumerPage({ onOpenDetail }: Props) {
       </div>
 
       {/* Peta */}
-      <div className="relative h-[360px] sm:h-[440px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
+      {/* Tinggi peta konsisten dengan Explorer (tier 2 #36): 420/550 */}
+      <div className="relative h-[420px] lg:h-[550px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
         <MapView listings={listings} categories={categories} center={center} />
       </div>
 
       {/* Daftar listing */}
       {status === "loading" && (
-        <p className={STATUS_LINE}>memuat status hari ini...</p>
+        <p className={STATUS_LINE} role="status">
+          memuat status hari ini...
+        </p>
       )}
 
       {status === "error" && <ErrorState onRetry={load} />}

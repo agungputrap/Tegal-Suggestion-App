@@ -98,9 +98,10 @@ export function OwnerPortalPage({ token }: Props) {
           <>
             {/* Status hari ini */}
             <div className="text-center space-y-2">
-              <h2 className="text-xl font-black text-slate-900 dark:text-white">
+              {/* h1 satu-satunya di halaman portal (sweep a11y tier 2 #36) */}
+              <h1 className="text-xl font-black text-slate-900 dark:text-white">
                 {data.provider.name}
-              </h2>
+              </h1>
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                   data.today.open
@@ -345,11 +346,11 @@ function ItemsCard({
 
   return (
     <div className={`${CARD} p-5 space-y-4`}>
-      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
         <i className="fa-solid fa-list-ul text-emerald-500 mr-2"></i>
         Item {data.provider.category_type === "jasa" ? "jasa" : "menu"}{" "}
         (permanen)
-      </h4>
+      </h3>
 
       <div className="space-y-1.5">
         {data.items.length === 0 && (
@@ -486,9 +487,9 @@ function BusinessCard({
 
   return (
     <form className={`${CARD} p-5 space-y-4`} onSubmit={handleSave}>
-      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
         <i className="fa-solid fa-pen text-blue-500 mr-2"></i> Data usaha
-      </h4>
+      </h3>
 
       <label className="block">
         <span className={LABEL}>Nama</span>

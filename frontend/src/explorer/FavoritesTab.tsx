@@ -112,7 +112,7 @@ export function FavoritesTab({
                     href={p.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-slate-400 hover:text-slate-600"
+                    className="text-xs text-slate-500 hover:text-slate-600"
                   >
                     <i className="fa-solid fa-map-location-dot mr-1"></i>Maps
                   </a>
@@ -145,10 +145,10 @@ function ComparisonTable({ places }: { places: Place[] }) {
 
   return (
     <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-      <h4 className="text-sm font-bold mb-4 flex items-center">
+      <h3 className="text-sm font-bold mb-4 flex items-center">
         <i className="fa-solid fa-code-compare text-emerald-500 mr-2"></i> Tabel
         Komparasi Berdampingan
-      </h4>
+      </h3>
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-xs text-left border-collapse">
           <thead>

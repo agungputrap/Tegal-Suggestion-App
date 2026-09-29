@@ -33,14 +33,50 @@ export function PlaceModal({
   const [heroIdx, setHeroIdx] = useState(0);
   const images = place.images;
 
-  // A11y dasar modal (tier 0 #34): fokus pindah ke dialog saat dibuka &
-  // kembali ke elemen pemicu saat ditutup. (Focus-trap penuh menyusul Tier 2.)
+  // A11y modal (tier 0 #34 + tier 2 #36): fokus pindah ke dialog saat
+  // dibuka, kembali ke elemen pemicu saat ditutup, Tab terjebak di dalam
+  // dialog (focus-trap penuh), dan Escape menutup.
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const trigger = document.activeElement as HTMLElement | null;
     dialogRef.current?.focus();
     return () => trigger?.focus?.();
   }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      // Elemen fokusable di dalam dialog — urutan DOM = urutan Tab.
+      const focusables = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      } else if (!dialog.contains(document.activeElement)) {
+        // Fokus lolos keluar (mis. klik area gelap) — tarik kembali.
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [onClose]);
 
   const { dayIndo } = nowParts();
   const openStatus = isOpenNow(place, dayIndo, nowParts().hour, nowParts().min);
@@ -55,7 +91,10 @@ export function PlaceModal({
   }, [ratingBreakdown]);
 
   const sharePlace = () => {
-    const url = place.link || window.location.href;
+    // Deep-link dalam app (tier 2 #36): share /place/:id agar penerima dibuka
+    // di app kita, bukan keluar ke Google Maps. OG preview memakai OG
+    // app-level (Pages statis — limitasi didokumentasikan di uiux-plan §8).
+    const url = `${window.location.origin}/place/${place.id}`;
     if (navigator.share) {
       navigator
         .share({
@@ -173,7 +212,7 @@ export function PlaceModal({
                 </div>
                 <div className="text-base font-extrabold text-amber-500 flex items-center mt-0.5">
                   ★ {formatRating(place)}
-                  <span className="text-xs text-slate-400 font-normal ml-1">
+                  <span className="text-xs text-slate-500 font-normal ml-1">
                     / 5.0
                   </span>
                 </div>
@@ -210,10 +249,10 @@ export function PlaceModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Jadwal jam buka */}
               <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
                   <i className="fa-solid fa-clock text-emerald-500 mr-2"></i>{" "}
                   Jadwal Jam Buka
-                </h4>
+                </h3>
                 <div className="space-y-1">
                   {daysIndo.map((day) => {
                     const isToday = day === dayIndo;
@@ -246,10 +285,10 @@ export function PlaceModal({
 
               {/* Distribusi bintang */}
               <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
                   <i className="fa-solid fa-star-half-stroke text-amber-500 mr-2"></i>{" "}
                   Distribusi Bintang Ulasan
-                </h4>
+                </h3>
                 <div className="space-y-1.5 text-xs">
                   {[5, 4, 3, 2, 1].map((stars) => {
                     const count = ratingBreakdown[String(stars)] ?? 0;
@@ -265,7 +304,7 @@ export function PlaceModal({
                             style={{ width: `${pct}%` }}
                           ></div>
                         </div>
-                        <span className="w-10 text-right text-[11px] text-slate-400 font-medium">
+                        <span className="w-10 text-right text-[11px] text-slate-500 font-medium">
                           {count}
                         </span>
                       </div>
@@ -278,10 +317,10 @@ export function PlaceModal({
             {/* Fasilitas & layanan */}
             {highlights.length > 0 && (
               <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
                   <i className="fa-solid fa-list-check text-blue-500 mr-2"></i>{" "}
                   Fasilitas &amp; Layanan
-                </h4>
+                </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {highlights.map((h) => (
                     <span
@@ -298,13 +337,13 @@ export function PlaceModal({
 
             {/* Ulasan */}
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
                 <i className="fa-solid fa-comments text-indigo-500 mr-2"></i>{" "}
                 Ulasan Pengunjung Terbaru ({place.user_reviews.length})
-              </h4>
+              </h3>
               <div className="space-y-3">
                 {place.user_reviews.length === 0 ? (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Belum ada rincian ulasan teks untuk tempat ini.
                   </p>
                 ) : (
