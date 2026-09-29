@@ -11,6 +11,8 @@
 
 ## Done
 
+- [x] #36 UI/UX Tier 2: dataset off critical path (`GET /places/summary` — **backend+frontend, SHARED types.ts+tech-spec, kedua owner mohon review**), blob pencarian precompute, SW offline-first vanilla, peta standar 2025 (preferCanvas+clustering+FAB+fitBounds-stop+tinggi konsisten+legenda chip), deep-link `/place/:id`, sweep a11y (focus-trap+Escape, heading ladder, aria-live, kontras), konsolidasi design system (CARD/pillClass, 2 font dipangkas), ConfirmDialog/Toast pengganti dialog native, IA direktori didemosi (tab default = Peta) — **frontend area Budi + endpoint ringan backend; PR #39–#43** (fix tile a96ddc2, A 6574d43, B bf0a40a, C 5b4a686, D 2189b00)
+
 - [x] #36 UI/UX Tier 1: freshness timestamp (`last_checkin_at` — **backend+frontend, SHARED types.ts, kedua owner mohon review**), bot visible via `VITE_BOT_NUMBER`, klaim tanpa reload (SPA), pending poll 15 detik, registrasi 2 langkah (3 field → profil opsional), bottom nav mobile (safe-area), hero live "X usaha · Y buka sekarang" — **frontend area Budi** (PR terkait issue #36)
 - [x] #34 UI/UX Tier 0: fix bug trust `isOpenNow` (jam pecah + WIB, +13 test), error copy + tombol Coba lagi (4 halaman), meta/OG/favicon share preview, CTA WhatsApp di PlaceModal, touch target ≥44px, dark mode (tile peta/overscroll/kontras), reachability (tab Tersimpan mobile, Portal /kelola, link balik portal), a11y dasar (dialog + fokus, judul kartu button, focus-visible), skeleton dataset — **frontend area Budi, mohon review** (PR #35)
 
