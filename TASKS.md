@@ -7,9 +7,11 @@
 
 ## Active
 
-- [ ] #4a-lanjutan Provider detail sebagai halaman penuh (saat ini modal dari ListingCard) — Budi
+- [ ] _kosong — semua task aktif selesai_
 
 ## Done
+
+- [x] #4a-lanjutan Provider detail sebagai halaman penuh `/provider/<id>` (pengganti modal, deep-link + back/refresh via pushState) — 8434204 — Budi's area, PR ditandai untuk review
 
 - [x] #15 Frontend polish: code-split bundle (entry 628KB → 210KB), styles.css dipangkas, retry foto — Budi
 - [x] #14 Filter by area (kecamatan, dropdown statis) + halal flag (food-only) — Arief + Budi

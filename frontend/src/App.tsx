@@ -1,7 +1,8 @@
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { AdminPage } from "./pages/AdminPage";
 import { ConsumerPage } from "./pages/ConsumerPage";
 import { OwnerPortalPage } from "./pages/OwnerPortalPage";
+import { ProviderDetailPage } from "./pages/ProviderDetailPage";
 import { ProviderPage } from "./pages/ProviderPage";
 import { AppShell, type CoreView } from "./components/AppShell";
 
@@ -24,33 +25,79 @@ function RouteFallback() {
 // 'explorer' = halaman utama (port ref Tegal F&B Explorer).
 // View lain = app inti (Hari Ini / Jasa Saya / Admin) dengan chrome
 // bergaya sama lewat AppShell. 'kelola' = portal pemilik via magic-link.
-type View = CoreView | "explorer" | "kelola";
+// 'provider' = detail penyedia halaman penuh (#4a).
+type View = CoreView | "explorer" | "kelola" | "provider";
 
-// Deep-link: ?view=hari-ini|saya|admin, ?kelola=<token>, atau path /kelola/<token>
+type RouteState = {
+  view: View;
+  kelolaToken: string | null;
+  providerId: string | null;
+};
+
+// Deep-link: ?view=hari-ini|saya|admin, ?kelola=<token>, path /kelola/<token>,
+// atau path /provider/<id> — id penyedia berbentuk UUID (ada "-").
 // (Cloudflare Pages SPA fallback melayani path apa pun ke index.html).
-function parseInitialRoute(): { view: View; kelolaToken: string | null } {
+function parseInitialRoute(): RouteState {
   const params = new URLSearchParams(window.location.search);
   const kelolaParam = params.get("kelola");
 
   const kelolaPath = window.location.pathname.match(
     /^\/kelola\/([A-Za-z0-9]+)\/?$/,
   );
-  if (kelolaPath) return { view: "kelola", kelolaToken: kelolaPath[1] };
-  if (kelolaParam) return { view: "kelola", kelolaToken: kelolaParam };
+  if (kelolaPath)
+    return { view: "kelola", kelolaToken: kelolaPath[1], providerId: null };
+  if (kelolaParam)
+    return { view: "kelola", kelolaToken: kelolaParam, providerId: null };
+
+  const providerPath = window.location.pathname.match(
+    /^\/provider\/([A-Za-z0-9-]+)\/?$/,
+  );
+  if (providerPath)
+    return { view: "provider", kelolaToken: null, providerId: providerPath[1] };
 
   const v = params.get("view");
   if (v === "hari-ini" || v === "saya" || v === "admin") {
-    return { view: v, kelolaToken: null };
+    return { view: v, kelolaToken: null, providerId: null };
   }
-  return { view: "explorer", kelolaToken: null };
+  return { view: "explorer", kelolaToken: null, providerId: null };
+}
+
+// URL yang merepresentasikan sebuah route state — dipakai pushState saat
+// pindah view supaya refresh & tombol back browser tetap benar (#4a).
+function urlFor(route: RouteState): string {
+  if (route.view === "provider" && route.providerId)
+    return `/provider/${route.providerId}`;
+  if (route.view === "kelola" && route.kelolaToken)
+    return `/kelola/${route.kelolaToken}`;
+  if (route.view === "explorer") return "/";
+  if (route.view === "hari-ini" || route.view === "saya" || route.view === "admin")
+    return `?view=${route.view}`;
+  return "/";
 }
 
 export default function App() {
-  const [{ view, kelolaToken }, setRoute] = useState(parseInitialRoute);
+  const [route, setRoute] = useState<RouteState>(parseInitialRoute);
+  const { view, kelolaToken, providerId } = route;
+
+  function navigate(next: RouteState) {
+    history.pushState(null, "", urlFor(next));
+    setRoute(next);
+  }
 
   function setView(view: View) {
-    setRoute({ view, kelolaToken });
+    navigate({ view, kelolaToken: null, providerId: null });
   }
+
+  function openProvider(id: string) {
+    navigate({ view: "provider", kelolaToken: null, providerId: id });
+  }
+
+  // Tombol back/forward browser → parse ulang URL
+  useEffect(() => {
+    const onPop = () => setRoute(parseInitialRoute());
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   if (view === "kelola" && kelolaToken) {
     return <OwnerPortalPage token={kelolaToken} />;
@@ -67,7 +114,11 @@ export default function App() {
     );
   }
 
-  const coreView: CoreView = view === "kelola" ? "hari-ini" : view;
+  // Detail penyedia ditampilkan di bawah tab Hari Ini (sumber masuknya).
+  const coreView: CoreView =
+    view === "hari-ini" || view === "saya" || view === "admin"
+      ? view
+      : "hari-ini";
 
   return (
     <AppShell
@@ -75,7 +126,13 @@ export default function App() {
       onTabChange={setView}
       onBackToExplorer={() => setView("explorer")}
     >
-      {view === "hari-ini" && <ConsumerPage />}
+      {view === "hari-ini" && <ConsumerPage onOpenDetail={openProvider} />}
+      {view === "provider" && providerId && (
+        <ProviderDetailPage
+          id={providerId}
+          onBack={() => setView("hari-ini")}
+        />
+      )}
       {view === "saya" && <ProviderPage />}
       {view === "admin" && <AdminPage />}
     </AppShell>
