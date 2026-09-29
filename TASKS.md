@@ -11,7 +11,8 @@
 
 ## Done
 
-- [x] #34 UI/UX Tier 0: fix bug trust `isOpenNow` (jam pecah + WIB, +13 test), error copy + tombol Coba lagi (4 halaman), meta/OG/favicon share preview, CTA WhatsApp di PlaceModal, touch target ≥44px, dark mode (tile peta/overscroll/kontras), reachability (tab Tersimpan mobile, Portal /kelola, link balik portal), a11y dasar (dialog + fokus, judul kartu button, focus-visible), skeleton dataset — **frontend area Budi, mohon review** (PR terkait issue #34)
+- [x] #36 UI/UX Tier 1: freshness timestamp (`last_checkin_at` — **backend+frontend, SHARED types.ts, kedua owner mohon review**), bot visible via `VITE_BOT_NUMBER`, klaim tanpa reload (SPA), pending poll 15 detik, registrasi 2 langkah (3 field → profil opsional), bottom nav mobile (safe-area), hero live "X usaha · Y buka sekarang" — **frontend area Budi** (PR terkait issue #36)
+- [x] #34 UI/UX Tier 0: fix bug trust `isOpenNow` (jam pecah + WIB, +13 test), error copy + tombol Coba lagi (4 halaman), meta/OG/favicon share preview, CTA WhatsApp di PlaceModal, touch target ≥44px, dark mode (tile peta/overscroll/kontras), reachability (tab Tersimpan mobile, Portal /kelola, link balik portal), a11y dasar (dialog + fokus, judul kartu button, focus-visible), skeleton dataset — **frontend area Budi, mohon review** (PR #35)
 
 - [x] #31 Fase 3 strategi (#26): claim-and-verify — `providers.place_id` (migrasi 0005), registrasi+409 anti-hijack, `GET /places/:id`, PlaceModal badge "terverifikasi/buka hari ini" + tombol klaim → form ter-prefill — **backend+frontend, kedua owner mohon review** (PR #32)
 - [x] #29 Fase 1 strategi (#26): bot WhatsApp — webhook `BUKA`/`TUTUP`/`STATUS`/pencarian bebas (sisi demand terbuka) + pencatatan lead (migrasi 0004) + ping harian cron 06:00 WIB + adapter Fonnte (NOOP tanpa token) — **area backend Arief, mohon review; pasang device Fonnte + secrets = langkah ops tim** (PR #30)

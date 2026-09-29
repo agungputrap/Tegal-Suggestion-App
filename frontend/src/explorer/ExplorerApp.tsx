@@ -16,6 +16,7 @@ import {
 import type { Place } from "../explorer/types";
 import { extractHighlights, isOpenNow, nowParts } from "./helpers";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { BottomNav } from "../components/BottomNav";
 import { DirectoryTab } from "./DirectoryTab";
 import { FavoritesTab } from "./FavoritesTab";
 import { PlaceModal } from "./PlaceModal";
@@ -68,12 +69,16 @@ type Props = {
   onOpenLegacyApp: () => void;
   onOpenAdmin: () => void;
   onOpenProvider: (id: string) => void;
+  onClaimPlace: (placeId: string) => void;
+  onOpenSaya: () => void; // bottom nav "Saya" -> view Jasa Saya (tier 1 #36)
 };
 
 export function ExplorerApp({
   onOpenLegacyApp,
   onOpenAdmin,
   onOpenProvider,
+  onClaimPlace,
+  onOpenSaya,
 }: Props) {
   const [places, setPlaces] = useState<Place[]>([]);
   // Penyedia live "Buka Hari Ini" — lapisan kedua tab peta (opsi C, #21).
@@ -352,14 +357,8 @@ export function ExplorerApp({
       ? ([["analytics", "fa-chart-pie", "Dashboard & Statistik"]] as const)
       : []),
   ];
-  // Tab Tersimpan ikut tampil di mobile (tier 0 #34) — favorit tidak lagi
-  // hanya bisa dijangkau dari nav desktop.
-  const mobileTabs: NavTab[] = [
-    ["directory", "fa-table-cells-large", "Direktori"],
-    ["map", "fa-map-location-dot", "Peta"],
-    ["favorites", "fa-heart", "Tersimpan"],
-    ...(isAdmin ? ([["analytics", "fa-chart-pie", "Statistik"]] as const) : []),
-  ];
+  // Bottom nav mobile (tier 1 #36): Jelajah · Peta · Tersimpan · Saya —
+  // Statistik admin tetap di tab atas mobile supaya nav bawah maksimal 4.
 
   // ----- Export (port dari exportData) -----
   const exportData = useCallback(
@@ -421,7 +420,42 @@ export function ExplorerApp({
   const kpiReady = status === "ready";
 
   return (
-    <div className="explorer bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+    <div className="explorer bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 pb-20 lg:pb-0">
+      {/* Bottom nav mobile (tier 1 #36) — one-handed reach */}
+      <BottomNav
+        hideAt="lg"
+        items={[
+          {
+            key: "directory",
+            icon: "fa-table-cells-large",
+            label: "Jelajah",
+            active: tab === "directory",
+            onClick: () => setTab("directory"),
+          },
+          {
+            key: "map",
+            icon: "fa-map-location-dot",
+            label: "Peta",
+            active: tab === "map",
+            onClick: () => setTab("map"),
+          },
+          {
+            key: "favorites",
+            icon: "fa-heart",
+            iconClass: "text-rose-500",
+            label: "Tersimpan",
+            active: tab === "favorites",
+            onClick: () => setTab("favorites"),
+          },
+          {
+            key: "saya",
+            icon: "fa-bullhorn",
+            label: "Saya",
+            onClick: onOpenSaya,
+          },
+        ]}
+      />
+
       {/* Top Meta Banner */}
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
@@ -583,29 +617,109 @@ export function ExplorerApp({
             </div>
           </div>
 
-          {/* Mobile Tabs Bar — min-h 44px supaya nyaman ditap (tier 0 #34) */}
-          <div className="flex lg:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
-            {mobileTabs.map(([id, icon, label]) => (
+          {/* Mobile tabs atas: sisa item yang tidak muat di bottom nav —
+              hanya Statistik admin (tier 1 #36) */}
+          {isAdmin && (
+            <div className="flex lg:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
               <button
-                key={id}
-                onClick={() => setTab(id)}
+                onClick={() => setTab("analytics")}
                 className={`inline-flex items-center px-3 py-2 min-h-[44px] text-xs rounded-lg whitespace-nowrap ${
-                  tab === id
+                  tab === "analytics"
                     ? "text-emerald-600 font-semibold"
                     : "text-slate-600 dark:text-slate-400"
                 }`}
               >
-                <i
-                  className={`fa-solid ${icon} mr-1 ${
-                    id === "favorites" ? "text-rose-500" : ""
-                  }`}
-                ></i>{" "}
-                {label}
+                <i className="fa-solid fa-chart-pie mr-1"></i> Statistik
               </button>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </header>
+
+      {/* Hero "yang buka sekarang" (tier 1 #36) — produk inti di atas fold:
+          hitungan live + pencarian + feed check-in hari ini. Direktori F&B
+          tetap ada di bawah (tidak dihapus), peta 1 tap lewat bottom nav. */}
+      <section className="bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black">
+                Yang buka sekarang di Tegal
+              </h2>
+              <p className="text-xs sm:text-sm text-emerald-100 mt-1">
+                Status langsung dari pemiliknya — check-in hari ini, bukan data
+                basi.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-semibold">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/15">
+                <i className="fa-solid fa-store mr-1.5"></i>
+                {kpiReady ? kpis.totalPlaces : "--"} usaha
+              </span>
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white text-emerald-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
+                {liveListings.length} buka sekarang
+              </span>
+            </div>
+          </div>
+
+          {/* Pencarian mengikat ke filter direktori di bawah */}
+          <div className="relative max-w-xl">
+            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari makanan & jasa buka sekarang..."
+              className="w-full pl-10 pr-4 py-3 min-h-[44px] rounded-xl bg-white text-slate-800 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-300 shadow-lg"
+            />
+          </div>
+
+          {/* Feed live: kartu horizontal yang baru check-in hari ini */}
+          {liveListings.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-100">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse inline-block mr-1.5"></span>
+                  Baru check-in hari ini
+                </p>
+                <button
+                  onClick={() => setTab("map")}
+                  className="text-xs font-semibold text-white underline decoration-emerald-300 underline-offset-2 min-h-[44px] inline-flex items-center"
+                >
+                  Lihat di peta →
+                </button>
+              </div>
+              <div className="flex gap-3 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1">
+                {liveListings.slice(0, 8).map((l) => (
+                  <button
+                    key={l.id}
+                    onClick={() => onOpenProvider(l.id)}
+                    className="flex-shrink-0 w-52 text-left bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl p-3 transition"
+                  >
+                    <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-100">
+                      <span>{l.category_type === "jajanan" ? "🍜" : "🛠️"}</span>
+                      <span>
+                        {l.category_type === "jajanan" ? "Jajanan" : "Jasa"}
+                      </span>
+                      {l.area && (
+                        <span className="text-white/60">· {l.area}</span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm font-bold line-clamp-1">
+                      {l.name}
+                    </p>
+                    <p className="text-[11px] text-emerald-100 mt-0.5">
+                      <i className="fa-brands fa-whatsapp mr-1"></i>
+                      Chat langsung
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Hero KPI Metric Cards */}
       <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-4 px-4 sm:px-6 lg:px-8 shadow-sm">
@@ -779,6 +893,7 @@ export function ExplorerApp({
           highlights={extractHighlights(modalPlace)}
           onClose={() => setModalPlaceId(null)}
           onOpenProvider={onOpenProvider}
+          onClaimPlace={onClaimPlace}
         />
       )}
 

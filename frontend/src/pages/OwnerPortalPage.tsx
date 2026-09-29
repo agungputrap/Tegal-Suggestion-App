@@ -12,6 +12,7 @@ import {
 } from "../api";
 import { KECAMATAN } from "../data/kecamatan";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { BotHint } from "../components/BotHint";
 import { ErrorState } from "../components/ErrorState";
 import {
   BTN_DANGER,
@@ -122,6 +123,7 @@ export function OwnerPortalPage({ token }: Props) {
             </div>
 
             <OpenCloseCard token={token} data={data} onDone={reload} />
+            <BotHint />
             <ItemsCard token={token} data={data} onDone={reload} />
             <BusinessCard token={token} data={data} onDone={reload} />
           </>

@@ -27,7 +27,8 @@ router.get("/listings", async (c) => {
            p.service_radius_km, p.suspended, p.area, p.halal,
            p.approval_status, p.created_at,
            COALESCE(pv.views, 0) as views,
-           ck.lat as checkin_lat, ck.lng as checkin_lng
+           ck.lat as checkin_lat, ck.lng as checkin_lng,
+           ck.created_at as last_checkin_at
     FROM checkins ck
     JOIN providers p ON p.id = ck.provider_id
     LEFT JOIN provider_views pv ON pv.provider_id = p.id AND pv.date = ?

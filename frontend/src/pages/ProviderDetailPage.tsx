@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchCategories,
+  fetchListings,
   fetchProvider,
   fetchProviderItems,
   resolvePhotoUrl,
@@ -10,7 +11,11 @@ import {
   type Item,
   type Provider,
 } from "../api";
-import { FALLBACK_IMAGE_LARGE } from "../explorer/helpers";
+import {
+  FALLBACK_IMAGE_LARGE,
+  isStaleCheckin,
+  relativeCheckinLabel,
+} from "../explorer/helpers";
 import { ErrorState } from "../components/ErrorState";
 import { BTN_SECONDARY, CARD, LABEL, STATUS_LINE } from "../components/ui";
 
@@ -31,6 +36,9 @@ export function ProviderDetailPage({ id, onBack }: Props) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
+  // Freshness (tier 1 #36): data check-in cuma ada di /listings — ambil
+  // sekali dengan radius luas, lalu cari provider ini di dalamnya.
+  const [checkinAt, setCheckinAt] = useState<string | null>(null);
 
   // Fetch detail — callback supaya tombol "Coba lagi" bisa memuat ulang
   // saat koneksi putus (tier 0 #34).
@@ -61,6 +69,26 @@ export function ProviderDetailPage({ id, onBack }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Freshness "check-in X mnt lalu" (tier 1 #36) — gagal load tidak fatal.
+  useEffect(() => {
+    if (!provider) return;
+    const lat = provider.base_lat ?? -6.87; // pusat Tegal sebagai fallback
+    const lng = provider.base_lng ?? 109.13;
+    let cancelled = false;
+    fetchListings({ lat, lng, radius: 60 })
+      .then((rows) => {
+        if (cancelled) return;
+        const row = rows.find((r) => r.id === id);
+        if (row?.last_checkin_at) setCheckinAt(row.last_checkin_at);
+      })
+      .catch(() => {
+        /* freshness tidak wajib */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [provider, id]);
 
   if (status === "loading") {
     return <p className={STATUS_LINE}>memuat detail penyedia...</p>;
@@ -96,6 +124,8 @@ export function ProviderDetailPage({ id, onBack }: Props) {
     categories.find((c) => c.id === provider.category_id)?.name ??
     provider.category_id;
   const availableItems = (items ?? []).filter((i) => i.available === 1);
+  const stale = isStaleCheckin(checkinAt ?? undefined);
+  const checkinLabel = relativeCheckinLabel(checkinAt ?? undefined);
 
   return (
     <div className="space-y-5">
@@ -146,6 +176,20 @@ export function ProviderDetailPage({ id, onBack }: Props) {
             )}
           </div>
           <h2 className="text-xl sm:text-2xl font-black">{provider.name}</h2>
+          {checkinLabel && (
+            <p
+              className={`inline-flex items-center mt-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-sm ${
+                stale ? "bg-slate-500/70 text-white/70" : "bg-emerald-600/90 text-white"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full bg-white mr-1.5 ${
+                  stale ? "" : "animate-pulse"
+                }`}
+              ></span>
+              Buka · check-in {checkinLabel}
+            </p>
+          )}
         </div>
       </div>
 
