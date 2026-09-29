@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
 import type { Category, Listing } from "../api";
+import {
+  buildPinIcon,
+  FALLBACK_PIN_EMOJI,
+  PIN_COLOR,
+} from "./mapPins";
 
 type Props = {
   listings: Listing[];
@@ -8,30 +13,12 @@ type Props = {
   center: { lat: number; lng: number };
 };
 
-const FALLBACK_ICON = { jajanan: "🍽️", jasa: "🛠️" };
-
 // Batas area Tegal (kota + kabupaten) supaya peta tidak bisa di-pan
 // keluar dari wilayah layanan aplikasi.
 const TEGAL_BOUNDS = L.latLngBounds(
   [-7.25, 108.95], // barat daya
   [-6.85, 109.25], // timur laut
 );
-
-// Pin bentuk "tetesan" (rotate 45deg) dengan emoji di tengah, jadi tiap
-// kategori punya ikon sendiri alih-alih titik warna generik.
-function buildPinIcon(emoji: string, color: string): L.DivIcon {
-  return L.divIcon({
-    className: "map-pin-wrapper",
-    html: `
-      <div class="map-pin" style="background:${color}">
-        <span class="map-pin__emoji">${emoji}</span>
-      </div>
-    `,
-    iconSize: [34, 34],
-    iconAnchor: [17, 32],
-    popupAnchor: [0, -30],
-  });
-}
 
 export function MapView({ listings, categories, center }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,8 +36,7 @@ export function MapView({ listings, categories, center }: Props) {
   const iconCache = useMemo(() => {
     const cache = new Map<string, L.DivIcon>();
     categories.forEach((cat) => {
-      const color = cat.type === "jajanan" ? "#f59e0b" : "#059669";
-      cache.set(cat.id, buildPinIcon(cat.icon, color));
+      cache.set(cat.id, buildPinIcon(cat.icon, PIN_COLOR[cat.type]));
     });
     return cache;
   }, [categories]);
@@ -58,9 +44,7 @@ export function MapView({ listings, categories, center }: Props) {
   function iconFor(listing: Listing): L.DivIcon {
     const cached = iconCache.get(listing.category_id);
     if (cached) return cached;
-    // Fallback kalau kategori belum termuat / tidak dikenal
-    const color = listing.category_type === "jajanan" ? "#f59e0b" : "#059669";
-    return buildPinIcon(FALLBACK_ICON[listing.category_type], color);
+    return buildPinIcon(FALLBACK_PIN_EMOJI[listing.category_type], PIN_COLOR[listing.category_type]);
   }
 
   // Init map sekali

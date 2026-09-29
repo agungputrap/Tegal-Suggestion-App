@@ -93,3 +93,40 @@
 .explorer .leaflet-bottom {
   z-index: 500;
 }
+
+/* ---------- Pin live "Buka Hari Ini" (#21, opsi C fase 1) ----------
+   Ring pulsing di belakang pin (buildLivePinIcon di components/mapPins)
+   supaya lapisan live jelas beda dari pin direktori yang bisa basi. */
+.explorer .map-pin-wrapper--live {
+  position: absolute;
+}
+
+.explorer .map-pin-live__ring {
+  position: absolute;
+  left: 17px;
+  top: 17px;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.4);
+  animation: map-pin-live-pulse 1.6s ease-out infinite;
+}
+
+@keyframes map-pin-live-pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explorer .map-pin-live__ring {
+    animation: none;
+    opacity: 0.5;
+  }
+}
