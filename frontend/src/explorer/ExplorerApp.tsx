@@ -6,7 +6,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { fetchPlaces } from "../api";
+import { fetchListings, fetchPlaces } from "../api";
+import type { Listing } from "../api";
 import {
   clearStoredAdminToken,
   getStoredAdminToken,
@@ -66,10 +67,18 @@ function loadFavorites(): string[] {
 type Props = {
   onOpenLegacyApp: () => void;
   onOpenAdmin: () => void;
+  onOpenProvider: (id: string) => void;
 };
 
-export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
+export function ExplorerApp({
+  onOpenLegacyApp,
+  onOpenAdmin,
+  onOpenProvider,
+}: Props) {
   const [places, setPlaces] = useState<Place[]>([]);
+  // Penyedia live "Buka Hari Ini" — lapisan kedua tab peta (opsi C, #21).
+  // Gagal load tidak fatal: direktori tetap tampil penuh.
+  const [liveListings, setLiveListings] = useState<Listing[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
@@ -106,6 +115,18 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
         setStatus("ready");
       })
       .catch(() => setStatus("error"));
+  }, []);
+
+  // Lapisan live: penyedia yang check-in hari ini. Radius 20 km mencakup
+  // Kota + Kab. Tegal + Brebes (default endpoint = 5 km, wajib eksplisit).
+  // lat/lng = pusat Tegal, bukan geolocation — Explorer adalah direktori
+  // tingkat kota, bukan "sekitarku".
+  useEffect(() => {
+    fetchListings({ lat: -6.87, lng: 109.13, radius: 20 })
+      .then(setLiveListings)
+      .catch(() => {
+        /* live layer gagal — direktori tetap jalan */
+      });
   }, []);
 
   // ----- Sesi admin: token tersimpan diverifikasi ringan agar menu
@@ -698,7 +719,9 @@ export function ExplorerApp({ onOpenLegacyApp, onOpenAdmin }: Props) {
           <FullMap
             places={filteredPlaces}
             legend={mapLegend}
+            liveListings={liveListings}
             onOpenPlace={setModalPlaceId}
+            onOpenProvider={onOpenProvider}
           />
         </Suspense>
       )}

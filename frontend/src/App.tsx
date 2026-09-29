@@ -109,6 +109,7 @@ export default function App() {
         <ExplorerApp
           onOpenLegacyApp={() => setView("hari-ini")}
           onOpenAdmin={() => setView("admin")}
+          onOpenProvider={openProvider}
         />
       </Suspense>
     );
