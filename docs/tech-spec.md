@@ -151,6 +151,7 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 | GET | `/photos/*` | serve photo from R2 (Cache-Control 1 year, immutable) |
 | POST | `/checkins` | daily checkin **`{provider_id, owner_token, lat, lng}`** — upsert per day, invalidates KV cache. Fase 0 (#27): `owner_token` wajib (403 jika salah); GPS divalidasi terhadap base (422 jika > max(service_radius_km, 25 km)); rate limit 10/IP/10 menit |
 | POST | `/providers/:id/confirm-open` | **baru (fase 0 #27)** — konfirmasi publik "✓ Masih buka"; dedupe 1× per pengunjung/hari (hash IP+tanggal) → `{confirm_count}`; rate limit 30/IP/jam |
+| POST | `/bot/webhook` | **baru (fase 1 #29)** — bot WhatsApp; header `X-Bot-Token: <BOT_WEBOOK_TOKEN>` wajib; payload `{sender, message}` (JSON atau form); balasan dikirim via adapter (`FONNTE_TOKEN`), teks balasan juga ada di respons |
 | GET | `/listings?type=&category=&lat=&lng=&radius=` | today's active providers; bounding-box prefilter + haversine, sorted by distance; ikutkan **`streak_days`** (check-in beruntun berakhir hari ini) & **`confirm_count`** (konfirmasi hari ini) |
 | GET | `/places` | all 63 reference F&B places (Explorer dataset); JSON columns returned as strings, client-side filter/sort |
 
@@ -173,6 +174,7 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 - **Admin auth is one shared token** (`ADMIN_TOKEN` Worker secret). Multi-admin roles are Phase 2.
 - **No payments/chat/orders in-app.** Everything routes to WhatsApp via `wa.me` links.
 - **Daily checkin is the freshness signal.** `/listings` filters on `checkins.date = today (Jakarta) AND is_active = 1`. Cron expires old checkins at midnight WIB. Sejak fase 0 (#27): histori check-in dibaca jadi **`streak_days`** (hari beruntun) dan dikawal **`confirm_count`** (konfirmasi pelanggan, tabel `confirm_opens` — migrasi 0003). Rate limit tulisan publik bersifat in-memory per isolate (best-effort).
+- **Bot WhatsApp (fase 1 #29).** Owner interface via chat: `BUKA` (check-in dari koordinat dasar), `TUTUP`, `STATUS` (status + streak + lead 7 hari), `BANTUAN`; teks bebas = pencarian penyedia live (maks 3, **dicatat sebagai `leads`** — tabel migrasi 0004, basis metrik "N orang tanya minggu ini"). Cron kedua `0 23 * * *` (06:00 WIB) kirim ping "Buka hari ini?" ke semua provider approved + log `bot_pings` (basis metrik retensi). Secrets opsional: `BOT_WEBHOOK_TOKEN` (auth webhook), `FONNTE_TOKEN` (adapter kirim Fonnte — tanpa ini bot NOOP dan tidak mengganggu app); adapter BSP resmi menyusul.
 - **KV is cache only.** D1 is the source of truth; writes delete cache keys instead of writing to KV.
 
 ## Gaps vs PRD — selesai (2026-09-08)

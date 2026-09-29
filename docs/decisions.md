@@ -91,3 +91,11 @@
 - **Ripple:** seed demo (`db:seed:demo`) kini menyimpan `owner_token` ke `backend/seed-demo-tokens.json` (**gitignored**) dan mengirimnya saat refresh check-in; token demo lama dipulihkan dari D1 sekali. Test suite menyimulasikan klien berbeda via header `CF-Connecting-IP` acak supaya tidak saling memakan kuota rate limit.
 - **Why:** satu-satunya pembeda produk ("open today") harus tidak bisa dipalsukan sebelum dibangun jadi panel liveness — langkah pertama rencana fase 0 strategi.
 - **Review note:** menyentuh file bersama `backend/src/types.ts` + `docs/tech-spec.md` + kontrak API — **kedua owner wajib review sebelum merge**. Breaking change: pemanggil lama `POST /checkins` tanpa token akan 400.
+
+## 2026-09-29 — Fase 1 strategi: bot WhatsApp (webhook + ping harian + lead)
+
+- **Decision:** lapisan bot WhatsApp sebagai antarmuka utama (`docs/strategy.md` fase 1): `POST /bot/webhook` (auth header `X-Bot-Token` = secret `BOT_WEBHOOK_TOKEN`; payload `{sender, message}` JSON/form) dengan perintah owner `BUKA` (check-in dari koordinat dasar), `TUTUP`, `STATUS`, `BANTUAN`; **teks bebas = pencarian penyedia live yang terbuka untuk nomor tak terdaftar** (sisi demand) dan setiap hasil dicatat sebagai `leads` (migrasi **0004_bot_whatsapp**: tabel `leads` + `bot_pings`). Cron kedua `0 23 * * *` (06:00 WIB) mengirim ping "Buka hari ini?" ke semua provider approved + log `bot_pings` — basis metrik konversi ping→BUKA (kill criteria strategi).
+- **Adapter kirim pluggable** (`src/whatsapp.ts`): Fonnte (gateway unofficial) jika secret `FONNTE_TOKEN` diset; **tanpa token = NOOP** — bot mati dengan rapi, app tidak terpengaruh. BSP resmi (Meta Cloud API) menyusul bila tim mau verifikasi bisnis.
+- **Ripple:** `Env` bertambah binding opsional; cron trigger kedua di `wrangler.toml`; test suite +10 kasus bot (29 total). Tidak ada perubahan endpoint existing.
+- **Why:** retensi check-in adalah titik mati kategori ini (Temuan 1 strategi) — check-in harus jadi satu reply WhatsApp dengan imbalan lead yang terlihat, bukan kewajiban buka portal.
+- **Review note:** area backend (Arief) — mohon review; file bersama hanya `docs/tech-spec.md` (kontrak baru tercatat di sana).

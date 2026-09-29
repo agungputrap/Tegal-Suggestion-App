@@ -1,2 +1,8 @@
 # Token admin untuk dev lokal (salin file ini ke .dev.vars, jangan commit .dev.vars)
 ADMIN_TOKEN=ganti-dengan-token-rahasia
+
+# Bot WhatsApp (fase 1 #29) — opsional; kosong = bot mati dengan rapi
+# BOT_WEBHOOK_TOKEN: auth webhook dari gateway WA (Fonnte dkk.)
+BOT_WEBHOOK_TOKEN=ganti-dengan-token-acak
+# FONNTE_TOKEN: token device Fonnte (https://fonnte.com) — tanpa ini balasan tidak terkirim
+FONNTE_TOKEN=

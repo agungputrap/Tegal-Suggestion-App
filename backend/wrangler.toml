@@ -19,9 +19,9 @@ id = "789f5cb14b8942eb9e245670c731b3d3"
 binding = "PHOTOS"
 bucket_name = "jajan-jasa-photos"
 
-# --- Cron: auto-expire checkin tiap tengah malam WIB (17:00 UTC) ---
+# --- Cron: 17:00 UTC (00:00 WIB) expire checkin kemarin; 23:00 UTC (06:00 WIB) ping harian bot ---
 [triggers]
-crons = ["0 17 * * *"]
+crons = ["0 17 * * *", "0 23 * * *"]
 
 [vars]
 ENVIRONMENT = "development"
