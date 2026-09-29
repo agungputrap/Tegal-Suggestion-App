@@ -46,6 +46,10 @@ export type Place = {
   about: AboutSection[];
   user_reviews: UserReview[];
   reviews_per_rating: Record<string, number> | null;
+  // Klaim listing (fase 3 #31) — diisi backend via join providers/checkins
+  claimed_provider_id?: string | null;
+  claimed_name?: string | null;
+  claimed_open?: number;
 };
 
 // Bentuk mentah dari GET /places — kolom JSON dikirim sebagai string
@@ -122,5 +126,8 @@ export function toPlace(row: PlaceRecord): Place {
       row.reviews_per_rating,
       null,
     ),
+    claimed_provider_id: row.claimed_provider_id ?? null,
+    claimed_name: row.claimed_name ?? null,
+    claimed_open: row.claimed_open ?? 0,
   };
 }

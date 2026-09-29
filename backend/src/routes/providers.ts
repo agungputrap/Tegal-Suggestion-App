@@ -55,29 +55,56 @@ router.post("/providers", async (c) => {
   const ownerToken = generateOwnerToken();
   const verifyCode = generateVerifyCode();
 
-  await c.env.DB.prepare(
-    `INSERT INTO providers
-      (id, name, phone, category_type, category_id, description, base_lat,
-       base_lng, service_radius_km, area, halal, approval_status,
-       verify_code, owner_token)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
-  )
-    .bind(
-      id,
-      body.name,
-      phone,
-      body.category_type,
-      body.category_id,
-      body.description ?? null,
-      body.base_lat ?? null,
-      body.base_lng ?? null,
-      body.service_radius_km ?? 0,
-      body.area ?? null,
-      body.category_type === "jajanan" && body.halal ? 1 : null,
-      verifyCode,
-      ownerToken,
+  // Klaim listing direktori (fase 3 #31): registrasi boleh membawa
+  // place_id — place harus ada, dan satu place hanya boleh satu pemilik
+  // (unique partial index; baru "aktif" setelah approve admin).
+  let placeId: string | null = null;
+  if (body.place_id) {
+    const place = await c.env.DB.prepare("SELECT id FROM places WHERE id = ?")
+      .bind(body.place_id)
+      .first<{ id: string }>();
+    if (!place) {
+      return c.json({ error: "place_id tidak ditemukan" }, 400);
+    }
+    placeId = body.place_id;
+  }
+
+  try {
+    await c.env.DB.prepare(
+      `INSERT INTO providers
+        (id, name, phone, category_type, category_id, description, base_lat,
+         base_lng, service_radius_km, area, halal, approval_status,
+         verify_code, owner_token, place_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
     )
-    .run();
+      .bind(
+        id,
+        body.name,
+        phone,
+        body.category_type,
+        body.category_id,
+        body.description ?? null,
+        body.base_lat ?? null,
+        body.base_lng ?? null,
+        body.service_radius_km ?? 0,
+        body.area ?? null,
+        body.category_type === "jajanan" && body.halal ? 1 : null,
+        verifyCode,
+        ownerToken,
+        placeId,
+      )
+      .run();
+  } catch (err) {
+    const msg = String(err);
+    if (msg.includes("UNIQUE")) {
+      // D1 menyebut kolom yang bertabrakan, bukan nama index
+      if (msg.includes("place_id")) {
+        return c.json({ error: "Tempat ini sudah diklaim pemilik lain." }, 409);
+      }
+      return c.json({ error: "Nomor WhatsApp sudah terdaftar." }, 409);
+    }
+    throw err;
+  }
 
   return c.json({ id, owner_token: ownerToken, verify_code: verifyCode }, 201);
 });

@@ -107,6 +107,7 @@ export async function createProvider(input: {
   service_radius_km?: number;
   area?: string;
   halal?: boolean;
+  place_id?: string; // klaim listing direktori (fase 3 #31)
 }): Promise<RegistrationResult> {
   const res = await fetch(`${API_URL}/providers`, {
     method: "POST",
@@ -219,6 +220,15 @@ export async function fetchPlaces(): Promise<Place[]> {
   if (!res.ok) throw new Error("Gagal memuat data places");
   const data = await res.json();
   return (data.places ?? []).map(toPlace);
+}
+
+// Satu place (klaim listing fase 3 #31) — untuk prefill form registrasi
+// tanpa memuat seluruh dataset ~1.5MB.
+export async function fetchPlace(id: string): Promise<Place> {
+  const res = await fetch(`${API_URL}/places/${id}`);
+  if (!res.ok) throw new Error("Place tidak ditemukan");
+  const data = await res.json();
+  return toPlace(data.place);
 }
 
 export function waChatLink(phone: string, providerName: string): string {

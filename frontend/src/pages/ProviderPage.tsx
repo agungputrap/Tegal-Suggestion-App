@@ -3,9 +3,10 @@ import {
   checkin,
   createProvider,
   fetchCategories,
+  fetchPlace,
   fetchProvider,
 } from "../api";
-import type { Category, Provider } from "../api";
+import type { Category, Place, Provider } from "../api";
 import { PhotoUpload } from "../components/PhotoUpload";
 import { KECAMATAN } from "../data/kecamatan";
 import {
@@ -58,13 +59,14 @@ const EMPTY_FORM: FormState = {
   halal: false,
 };
 
-export function ProviderPage() {
+export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null }) {
   const [loadingProvider, setLoadingProvider] = useState(true);
   const [provider, setProvider] = useState<Provider | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [formError, setFormError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [claimPlace, setClaimPlace] = useState<Place | null>(null);
 
   const [checkinStatus, setCheckinStatus] = useState<
     "idle" | "locating" | "sending" | "error"
@@ -77,6 +79,22 @@ export function ProviderPage() {
     fetchCategories()
       .then(setCategories)
       .catch(() => {});
+
+    // Klaim listing (fase 3 #31): prefill form dari place direktori.
+    // Prioritas di atas provider tersimpan — pemilik mengikuti alur klaim.
+    if (claimPlaceId) {
+      setLoadingProvider(false);
+      fetchPlace(claimPlaceId)
+        .then((place) => {
+          setClaimPlace(place);
+          setForm((f) => ({
+            ...f,
+            name: f.name || place.title,
+          }));
+        })
+        .catch(() => setClaimPlace(null));
+      return;
+    }
 
     const storedId = getStoredProviderId();
     if (!storedId) {
@@ -96,7 +114,7 @@ export function ProviderPage() {
       })
       .catch(() => {})
       .finally(() => setLoadingProvider(false));
-  }, []);
+  }, [claimPlaceId]);
 
   const categoryOptions = categories.filter(
     (c) => c.type === form.category_type,
@@ -125,6 +143,10 @@ export function ProviderPage() {
             : 0,
         area: form.area || undefined,
         halal: form.category_type === "jajanan" ? form.halal : undefined,
+        // koordinat dasar dari place yang diklaim (fase 3 #31)
+        base_lat: claimPlace?.latitude,
+        base_lng: claimPlace?.longitude,
+        place_id: claimPlace?.id,
       });
 
       // owner_token & verify_code hanya dikembalikan SEKALI di respons ini
@@ -304,6 +326,19 @@ export function ProviderPage() {
             kamu buka.
           </p>
         </div>
+
+        {claimPlace && (
+          <div className="px-4 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 text-xs">
+            <p className="font-bold text-emerald-700 dark:text-emerald-300">
+              <i className="fa-solid fa-certificate mr-1.5"></i>
+              Klaim listing: {claimPlace.title}
+            </p>
+            <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+              Lengkapi data di bawah — setelah admin menyetujui, listing ini
+              jadi milikmu &amp; terhubung ke status buka hari ini.
+            </p>
+          </div>
+        )}
 
         <form
           className={`${CARD} p-5 sm:p-6 space-y-4`}

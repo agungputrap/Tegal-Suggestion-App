@@ -762,6 +762,7 @@ export function ExplorerApp({
           onToggleFavorite={toggleFavorite}
           highlights={extractHighlights(modalPlace)}
           onClose={() => setModalPlaceId(null)}
+          onOpenProvider={onOpenProvider}
         />
       )}
 

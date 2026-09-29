@@ -11,6 +11,7 @@
 
 ## Done
 
+- [x] #31 Fase 3 strategi (#26): claim-and-verify — `providers.place_id` (migrasi 0005), registrasi+409 anti-hijack, `GET /places/:id`, PlaceModal badge "terverifikasi/buka hari ini" + tombol klaim → form ter-prefill — **backend+frontend, kedua owner mohon review** (PR #32)
 - [x] #29 Fase 1 strategi (#26): bot WhatsApp — webhook `BUKA`/`TUTUP`/`STATUS`/pencarian bebas (sisi demand terbuka) + pencatatan lead (migrasi 0004) + ping harian cron 06:00 WIB + adapter Fonnte (NOOP tanpa token) — **area backend Arief, mohon review; pasang device Fonnte + secrets = langkah ops tim** (PR #30)
 
 - [x] #27 Fase 0 strategi (#26): check-in wajib owner_token + GPS sanity (422) + rate limit tulisan publik + konfirmasi publik "masih buka" (migrasi 0003) + `streak_days`/`confirm_count` di listing + kartu/peta ikut tampil — **BREAKING: POST /checkins kontrak baru** — **backend+frontend, kedua owner mohon review** (PR #28)

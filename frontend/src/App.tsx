@@ -32,10 +32,12 @@ type RouteState = {
   view: View;
   kelolaToken: string | null;
   providerId: string | null;
+  claimPlaceId: string | null; // klaim listing direktori (fase 3 #31)
 };
 
 // Deep-link: ?view=hari-ini|saya|admin, ?kelola=<token>, path /kelola/<token>,
-// atau path /provider/<id> — id penyedia berbentuk UUID (ada "-").
+// path /provider/<id> — id penyedia berbentuk UUID (ada "-"), atau
+// ?claim=<place_id> (prefill registrasi dari klaim listing).
 // (Cloudflare Pages SPA fallback melayani path apa pun ke index.html).
 function parseInitialRoute(): RouteState {
   const params = new URLSearchParams(window.location.search);
@@ -45,21 +47,41 @@ function parseInitialRoute(): RouteState {
     /^\/kelola\/([A-Za-z0-9]+)\/?$/,
   );
   if (kelolaPath)
-    return { view: "kelola", kelolaToken: kelolaPath[1], providerId: null };
+    return {
+      view: "kelola",
+      kelolaToken: kelolaPath[1],
+      providerId: null,
+      claimPlaceId: null,
+    };
   if (kelolaParam)
-    return { view: "kelola", kelolaToken: kelolaParam, providerId: null };
+    return {
+      view: "kelola",
+      kelolaToken: kelolaParam,
+      providerId: null,
+      claimPlaceId: null,
+    };
 
   const providerPath = window.location.pathname.match(
     /^\/provider\/([A-Za-z0-9-]+)\/?$/,
   );
   if (providerPath)
-    return { view: "provider", kelolaToken: null, providerId: providerPath[1] };
+    return {
+      view: "provider",
+      kelolaToken: null,
+      providerId: providerPath[1],
+      claimPlaceId: null,
+    };
 
   const v = params.get("view");
   if (v === "hari-ini" || v === "saya" || v === "admin") {
-    return { view: v, kelolaToken: null, providerId: null };
+    return {
+      view: v,
+      kelolaToken: null,
+      providerId: null,
+      claimPlaceId: params.get("claim"),
+    };
   }
-  return { view: "explorer", kelolaToken: null, providerId: null };
+  return { view: "explorer", kelolaToken: null, providerId: null, claimPlaceId: null };
 }
 
 // URL yang merepresentasikan sebuah route state — dipakai pushState saat
@@ -77,7 +99,7 @@ function urlFor(route: RouteState): string {
 
 export default function App() {
   const [route, setRoute] = useState<RouteState>(parseInitialRoute);
-  const { view, kelolaToken, providerId } = route;
+  const { view, kelolaToken, providerId, claimPlaceId } = route;
 
   function navigate(next: RouteState) {
     history.pushState(null, "", urlFor(next));
@@ -85,11 +107,22 @@ export default function App() {
   }
 
   function setView(view: View) {
-    navigate({ view, kelolaToken: null, providerId: null });
+    navigate({
+      view,
+      kelolaToken: null,
+      providerId: null,
+      claimPlaceId:
+        view === "saya" ? route.claimPlaceId : null,
+    });
   }
 
   function openProvider(id: string) {
-    navigate({ view: "provider", kelolaToken: null, providerId: id });
+    navigate({
+      view: "provider",
+      kelolaToken: null,
+      providerId: id,
+      claimPlaceId: null,
+    });
   }
 
   // Tombol back/forward browser → parse ulang URL
@@ -134,7 +167,7 @@ export default function App() {
           onBack={() => setView("hari-ini")}
         />
       )}
-      {view === "saya" && <ProviderPage />}
+      {view === "saya" && <ProviderPage claimPlaceId={claimPlaceId} />}
       {view === "admin" && <AdminPage />}
     </AppShell>
   );
