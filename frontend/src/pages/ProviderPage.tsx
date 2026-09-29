@@ -202,6 +202,25 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
     );
   }
 
+  // Pending terasa hidup (tier 1 #36): poll tiap 15 detik — begitu admin
+  // menyetujui, layar otomatis maju tanpa perlu re-visit. Berhenti saat
+  // unmount atau status bukan pending lagi.
+  useEffect(() => {
+    if (provider?.approval_status !== "pending") return;
+    const storedId = getStoredProviderId();
+    if (!storedId) return;
+    const timer = setInterval(() => {
+      fetchProvider(storedId)
+        .then((p) => {
+          if (p && p.approval_status !== "pending") setProvider(p);
+        })
+        .catch(() => {
+          /* poll gagal sekali — coba lagi di tick berikutnya */
+        });
+    }, 15_000);
+    return () => clearInterval(timer);
+  }, [provider?.approval_status]);
+
   function handleGantiAkun() {
     clearStoredProvider();
     setProvider(null);
@@ -251,13 +270,20 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
 
     return (
       <div className="max-w-md mx-auto space-y-4 py-6">
-        <div className="text-center">
+        <div className="text-center space-y-2">
+          {/* Status jelas + hidup (tier 1 #36): listing sudah terlihat
+              sebagai menunggu, layar otomatis maju saat disetujui */}
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5"></span>
+            Menunggu verifikasi admin
+          </span>
           <h2 className="text-lg font-black text-slate-900 dark:text-white">
-            Menunggu Persetujuan Admin
+            "Hampir jadi!"
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Kirim kode verifikasi di bawah ke admin via WhatsApp. Setelah
-            disetujui, akunmu bisa checkin &amp; tampil di peta.
+            "{provider.name}" sudah masuk antrean verifikasi. Kirim kode di
+            bawah ke admin via WhatsApp — setelah disetujui, layar ini
+            otomatis jadi dashboard.
           </p>
         </div>
 
