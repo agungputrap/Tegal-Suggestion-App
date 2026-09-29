@@ -4,7 +4,6 @@ import type { Category, Listing } from "../api";
 import { CategoryFilter } from "../components/CategoryFilter";
 import { ListingCard } from "../components/ListingCard";
 import { MapView } from "../components/MapView";
-import { ProviderDetailModal } from "../components/ProviderDetailModal";
 import { KECAMATAN } from "../data/kecamatan";
 import {
   ERROR_LINE,
@@ -24,7 +23,9 @@ function todayLong(): string {
   });
 }
 
-export function ConsumerPage() {
+type Props = { onOpenDetail: (id: string) => void };
+
+export function ConsumerPage({ onOpenDetail }: Props) {
   const [filter, setFilter] = useState<"semua" | "jajanan" | "jasa">("semua");
   const [area, setArea] = useState("");
   const [halalOnly, setHalalOnly] = useState(false);
@@ -35,7 +36,6 @@ export function ConsumerPage() {
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
-  const [detailId, setDetailId] = useState<string | null>(null);
 
   // Ambil lokasi user kalau diizinkan
   useEffect(() => {
@@ -75,11 +75,6 @@ export function ConsumerPage() {
       })
       .catch(() => setStatus("error"));
   }, [filter, area, halalOnly, trending, center]);
-
-  const detailListing = useMemo(
-    () => (detailId ? (listings.find((l) => l.id === detailId) ?? null) : null),
-    [detailId, listings],
-  );
 
   const categoryById = useMemo(() => {
     const map = new Map<string, Category>();
@@ -188,21 +183,11 @@ export function ConsumerPage() {
                   categoryById.get(l.category_id)?.name ?? l.category_id
                 }
                 categoryIcon={categoryById.get(l.category_id)?.icon}
-                onOpenDetail={() => setDetailId(l.id)}
+                onOpenDetail={() => onOpenDetail(l.id)}
               />
             ))}
           </div>
         </>
-      )}
-      {detailListing && (
-        <ProviderDetailModal
-          listing={detailListing}
-          categoryName={
-            categoryById.get(detailListing.category_id)?.name ??
-            detailListing.category_id
-          }
-          onClose={() => setDetailId(null)}
-        />
       )}
     </div>
   );
