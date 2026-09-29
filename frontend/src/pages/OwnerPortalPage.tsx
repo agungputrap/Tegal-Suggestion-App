@@ -14,6 +14,7 @@ import { KECAMATAN } from "../data/kecamatan";
 import { useDarkMode } from "../hooks/useDarkMode";
 import { BotHint } from "../components/BotHint";
 import { ErrorState } from "../components/ErrorState";
+import { ConfirmDialog } from "../components/dialogs";
 import {
   BTN_DANGER,
   BTN_PRIMARY,
@@ -338,10 +339,19 @@ function ItemsCard({
     onDone();
   }
 
+  // Hapus item via ConfirmDialog (tier 2 #36) — pengganti confirm() native
+  const [pendingDelete, setPendingDelete] = useState<PortalItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   async function handleDelete(item: PortalItem) {
-    if (!confirm(`Hapus item "${item.name}"?`)) return;
-    await portalDeleteItem(token, item.id);
-    onDone();
+    setDeleting(true);
+    try {
+      await portalDeleteItem(token, item.id);
+      setPendingDelete(null);
+      onDone();
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
@@ -393,13 +403,25 @@ function ItemsCard({
                   }`}
                 ></i>
               </button>
-              <button className={BTN_DANGER} onClick={() => handleDelete(item)}>
+              <button
+                className={BTN_DANGER}
+                onClick={() => setPendingDelete(item)}
+              >
                 <i className="fa-solid fa-trash"></i>
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Hapus item ini?"
+        message={`"${pendingDelete?.name ?? ""}" akan dihapus permanen dari daftarmu.`}
+        confirmLabel={deleting ? "Menghapus..." : "Ya, hapus"}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => pendingDelete && handleDelete(pendingDelete)}
+      />
 
       <form
         className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800"

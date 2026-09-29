@@ -22,6 +22,7 @@ import {
   placeThumbnail,
 } from "./helpers";
 import type { DirectoryView, QuickFilters, SortOption } from "./ExplorerApp";
+import { CARD, pillClass } from "../components/ui";
 
 type Filters = {
   search: string;
@@ -92,7 +93,7 @@ export function DirectoryTab({
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
       {/* Filter & Controls */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm mb-6">
+      <div className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm mb-6`}>
         <div className="flex flex-col md:flex-row gap-3 items-center justify-between mb-4">
           <div className="relative w-full md:w-1/2">
             <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
@@ -183,9 +184,7 @@ export function DirectoryTab({
                     [key]: !filters.quick[key],
                   })
                 }
-                className={`qf-btn inline-flex items-center px-3.5 py-2 min-h-[44px] rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-500 transition ${
-                  filters.quick[key] ? "active" : ""
-                }`}
+                className={pillClass(filters.quick[key])}
               >
                 {label}
               </button>
@@ -287,7 +286,7 @@ function GridSkeleton({ count = 6 }: { count?: number }) {
       {Array.from({ length: count }, (_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm animate-pulse"
+          className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm animate-pulse`}
         >
           <div className="h-48 bg-slate-200 dark:bg-slate-800" />
           <div className="p-4 space-y-3">
@@ -365,7 +364,7 @@ function GridView({
         return (
           <div
             key={p.id}
-            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group"
+            className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group`}
           >
             <div
               className="relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-800 cursor-pointer"
@@ -513,7 +512,7 @@ function ListView({
       {places.map((p) => (
         <div
           key={p.id}
-          className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          className={`${CARD} p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}
         >
           <div
             className="flex items-center space-x-3.5 flex-grow cursor-pointer"
@@ -586,7 +585,7 @@ function TableView({
   onOpenPlace: (id: string) => void;
 }) {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+    <div className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm`}>
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-left text-xs sm:text-sm">
           <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase text-[11px] tracking-wider">
@@ -757,7 +756,7 @@ function SplitView({
         {places.map((p) => (
           <div
             key={p.id}
-            className="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500 cursor-pointer transition"
+            className={`${CARD} p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500 cursor-pointer transition`}
             onClick={() => selectPlace(p)}
           >
             <div className="flex justify-between items-start">

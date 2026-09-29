@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import type { ReactNode } from "react";
 import type { Place } from "./types";
 import { extractHighlights, formatCount, formatRating } from "./helpers";
+import { CARD } from "../components/ui";
 
 type Props = {
   places: Place[];
@@ -27,7 +28,7 @@ export function FavoritesTab({
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-6">
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3`}>
         <div>
           <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center">
             <i className="fa-solid fa-heart text-rose-500 mr-2"></i> Tempat
@@ -69,7 +70,7 @@ export function FavoritesTab({
           favPlaces.map((p) => (
             <div
               key={p.id}
-              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col justify-between"
+              className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col justify-between`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -144,7 +145,7 @@ function ComparisonTable({ places }: { places: Place[] }) {
   );
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+    <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm`}>
       <h3 className="text-sm font-bold mb-4 flex items-center">
         <i className="fa-solid fa-code-compare text-emerald-500 mr-2"></i> Tabel
         Komparasi Berdampingan
