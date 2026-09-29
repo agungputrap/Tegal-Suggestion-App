@@ -111,6 +111,8 @@ export function FullMap({
       liveLayerRef.current = null;
       tilesRef.current = null;
     };
+    // dark hanya nilai awal tile — update tema lewat effect [dark] di bawah
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Tile ikut tema gelap/terang (tier 0 #34)
