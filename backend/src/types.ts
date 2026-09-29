@@ -4,6 +4,11 @@ export type Env = {
   PHOTOS: R2Bucket;
   ENVIRONMENT: string;
   ADMIN_TOKEN: string; // set lewat `wrangler secret put ADMIN_TOKEN`, bukan di wrangler.toml
+  // Bot WhatsApp (fase 1 strategi #29) — semua opsional: tanpa token bot
+  // mati dengan rapi (webhook 503 / ping dilewati), tanpa mempengaruhi app.
+  BOT_WEBHOOK_TOKEN?: string; // secret — auth webhook dari gateway
+  FONNTE_TOKEN?: string; // secret — adapter kirim (gateway unofficial)
+  BOT_NUMBER?: string; // var — nomor bot untuk ditampilkan di UI/docs
 };
 
 export type Provider = {

@@ -15,6 +15,11 @@ export default defineConfig({
         bindings: {
           ENVIRONMENT: "test",
           ADMIN_TOKEN: "test-admin-token",
+          // Bot (fase 1 #29): webhook terkonfigurasi, adapter kirim NOOP
+          // (FONNTE_TOKEN sengaja kosong — balasan bot divalidasi lewat
+          // respons webhook, bukan outbound fetch).
+          BOT_WEBHOOK_TOKEN: "test-bot-token",
+          FONNTE_TOKEN: "",
           TEST_MIGRATIONS: migrations,
         },
         kvNamespaces: ["ACTIVE_CACHE"],

@@ -136,3 +136,24 @@ Skills are the same content in each folder — copy on change, or symlink if you
 - `master` is a release snapshot; the daily loop is `development` only.
 - To update `master`: open a PR **`development` → `master`** (same as a GitLab MR) and merge. GitHub does not delete `development` on merge.
 - If the PR says "No commits between master and development", the branches are in sync — nothing to release.
+
+## Bot WhatsApp (fase 1 #29)
+
+Semua opsional — tanpa secrets bot mati rapi, app tetap jalan.
+
+1. Buat device di [fonnte.com](https://fonnte.com) (gateway unofficial, scan QR dari HP yang jadi nomor bot), ambil tokennya.
+2. Set secrets produksi:
+   ```bash
+   cd backend
+   npx wrangler secret put BOT_WEBHOOK_TOKEN   # token acak — sama yang diisi di webhook Fonnte
+   npx wrangler secret put FONNTE_TOKEN        # token device Fonnte
+   ```
+   Di dashboard Fonnte: set Webhook URL `https://<worker>/bot/webhook` — pesan masuk diteruskan ke situ; auth dicek dari header `X-Bot-Token`.
+3. Lokal: salin `BOT_WEBHOOK_TOKEN` / `FONNTE_TOKEN` ke `.dev.vars` (lihat `.dev.vars.example`).
+4. Tes lokal (ping harian butuh trigger manual):
+   ```bash
+   curl "http://127.0.0.1:8787/cdn-cgi/local/scheduled"   # trigger cron (dev)
+   curl -X POST http://localhost:8787/bot/webhook -H "Content-Type: application/json"      -H "X-Bot-Token: <token>" -d '{"sender":"62812xxx","message":"STATUS"}'
+   ```
+
+Perintah owner: `BUKA` / `TUTUP` / `STATUS` / `BANTUAN`. Chat bebas dari siapa pun = pencarian penyedia live, tercatat sebagai lead (muncul di `STATUS` owner: "N orang tanya minggu ini").

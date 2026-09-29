@@ -44,7 +44,7 @@ Satu kalimat: **setiap usaha informal di Tegal bisa ditemukan sebagai "open now"
 ### Fase 0 — Integritas sinyal (hari; kode)
 - `POST /checkins` wajib `owner_token`; validasi GPS terhadap base + radius; rate-limit tulisan publik; tabel konfirmasi publik ("✓ Masih buka" oleh pelanggan, dedupe per pengunjung/hari); **streak freshness** di listing ("Buka 24 hari beruntun") — bacaan pertama dari data moat.
 
-### Fase 1 — WhatsApp-native (2–4 minggu; kode + ops)
+### Fase 1 — WhatsApp-native (2–4 minggu; kode + ops) — **backend SHIPPED (#29)**; tinggal pasang device Fonnte + secrets (lihat runbook)
 - Bot WhatsApp (API unofficial murah dulu, BSP resmi belakangan) jadi antarmuka utama **dua sisi**:
   - **Owner:** reply "BUKA" ke ping harian = check-in — satu tap di app yang sudah mereka tinggali, menggantikan kewajiban buka portal web.
   - **Pelanggan:** tanya "tukang AC buka sekarang?" → daftar live + tap-to-chat.
