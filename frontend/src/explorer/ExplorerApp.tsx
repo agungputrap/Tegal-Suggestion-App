@@ -416,6 +416,10 @@ export function ExplorerApp({
     [filteredPlaces],
   );
 
+  // KPI ditampilkan "--" sampai dataset siap (tier 0 #34) — jangan tampilkan
+  // nol palsu yang terbaca "tidak ada data".
+  const kpiReady = status === "ready";
+
   return (
     <div className="explorer bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
       {/* Top Meta Banner */}
@@ -431,16 +435,17 @@ export function ExplorerApp({
           </div>
           <div className="flex items-center space-x-4 text-xs">
             <span>
-              <i className="fa-solid fa-store mr-1"></i> {kpis.totalPlaces}{" "}
-              Tempat
+              <i className="fa-solid fa-store mr-1"></i>{" "}
+              {kpiReady ? kpis.totalPlaces : "--"} Tempat
             </span>
             <span className="hidden sm:inline">
               <i className="fa-solid fa-star text-amber-300 mr-1"></i> Avg{" "}
-              {kpis.avgRating}★
+              {kpiReady ? kpis.avgRating : "--"}★
             </span>
             <span className="hidden md:inline">
               <i className="fa-solid fa-comments mr-1"></i>{" "}
-              {kpis.totalReviews.toLocaleString("id-ID")}+ Ulasan
+              {kpiReady ? kpis.totalReviews.toLocaleString("id-ID") : "--"}+{" "}
+              Ulasan
             </span>
           </div>
         </div>
@@ -612,7 +617,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-emerald-950 dark:text-emerald-200">
-                {kpis.totalPlaces}
+                {kpiReady ? kpis.totalPlaces : "--"}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Total Tempat
@@ -626,7 +631,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-amber-950 dark:text-amber-200">
-                {kpis.avgRating} ★
+                {kpiReady ? kpis.avgRating : "--"} ★
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Rata-rata Rating
@@ -640,7 +645,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-blue-950 dark:text-blue-200">
-                {kpis.totalReviews.toLocaleString("id-ID")}
+                {kpiReady ? kpis.totalReviews.toLocaleString("id-ID") : "--"}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Total Ulasan
@@ -654,7 +659,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-purple-950 dark:text-purple-200">
-                {kpis.totalCategories}
+                {kpiReady ? kpis.totalCategories : "--"}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Kategori Kuliner
@@ -682,7 +687,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-teal-950 dark:text-teal-200">
-                {kpis.photoCount}+
+                {kpiReady ? kpis.photoCount : "--"}+
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Galeri Foto
