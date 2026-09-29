@@ -5,6 +5,7 @@ import {
   fetchCategories,
   fetchPlace,
   fetchProvider,
+  portalUpdateBusiness,
 } from "../api";
 import type { Category, Place, Provider } from "../api";
 import { BotHint } from "../components/BotHint";
@@ -132,18 +133,14 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
 
     setSubmitting(true);
     try {
+      // Langkah 1 saja (tier 1 #36): 3 data inti — sisanya menyusul di
+      // langkah 2 (opsional, setelah listing pending terlihat). Klaim
+      // place tetap dibawa supaya prefill & link listing tetap jalan.
       const result = await createProvider({
         name: form.name,
         phone: form.phone,
         category_type: form.category_type,
         category_id: form.category_id,
-        description: form.description || undefined,
-        service_radius_km:
-          form.category_type === "jasa"
-            ? parseFloat(form.service_radius_km) || 0
-            : 0,
-        area: form.area || undefined,
-        halal: form.category_type === "jajanan" ? form.halal : undefined,
         // koordinat dasar dari place yang diklaim (fase 3 #31)
         base_lat: claimPlace?.latitude,
         base_lng: claimPlace?.longitude,
@@ -330,6 +327,10 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
           </div>
         )}
 
+        {/* Langkah 2 (tier 1 #36): profil dilengkapi belakangan — tetap
+            jalan selagi pending, tanpa menunda pendaftaran */}
+        <ProfileCompletionCard provider={provider} />
+
         <div className="text-center">
           <button className={BTN_SECONDARY} onClick={handleGantiAkun}>
             Daftar dengan akun lain
@@ -430,65 +431,9 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
             </select>
           </label>
 
-          {form.category_type === "jasa" && (
-            <label className="block">
-              <span className={LABEL}>Radius jangkauan (km)</span>
-              <input
-                className={INPUT}
-                type="number"
-                min="1"
-                max="20"
-                value={form.service_radius_km}
-                onChange={(e) =>
-                  setForm({ ...form, service_radius_km: e.target.value })
-                }
-              />
-            </label>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="block">
-              <span className={LABEL}>Kecamatan</span>
-              <select
-                className={`${INPUT} w-full`}
-                value={form.area}
-                onChange={(e) => setForm({ ...form, area: e.target.value })}
-              >
-                <option value="">Pilih kecamatan</option>
-                {KECAMATAN.map((k) => (
-                  <option key={k} value={k}>
-                    {k}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {form.category_type === "jajanan" && (
-              <label className="flex items-end pb-2.5 space-x-2 text-xs font-medium text-slate-700 dark:text-slate-200">
-                <input
-                  type="checkbox"
-                  checked={form.halal}
-                  onChange={(e) =>
-                    setForm({ ...form, halal: e.target.checked })
-                  }
-                  className="accent-emerald-600"
-                />
-                <span>Berhalal</span>
-              </label>
-            )}
-          </div>
-
-          <label className="block">
-            <span className={LABEL}>Deskripsi singkat (opsional)</span>
-            <input
-              className={INPUT}
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-              placeholder="mis. buka jam 6 pagi, khusus wilayah Margadana"
-            />
-          </label>
+          {/* Langkah 1 sengaja cuma 3 data inti (tier 1 #36, riset: -7%
+              konversi per field tambahan). Foto, kecamatan, halal,
+              deskripsi & radius menyusul di langkah 2 setelah daftar. */}
 
           {formError && <p className={ERROR_LINE}>{formError}</p>}
 
@@ -500,12 +445,166 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
             <i className="fa-solid fa-circle-check"></i>
             <span>{submitting ? "Mendaftarkan..." : "Daftar Sekarang"}</span>
           </button>
+
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center">
+            Data lengkap (foto, area, deskripsi) bisa diisi belakangan —
+            pendaftaran tetap berjalan dulu.
+          </p>
         </form>
       </div>
     );
   }
 
-  // ---------- Sudah daftar: dashboard checkin + foto ----------
+  // ---------- Kartu langkah 2 (tier 1 #36) ----------
+// Profil dilengkapi BELAKANGAN, tetap bisa selagi pending: foto via
+// upload foto (owner_token), sisanya via portalUpdateBusiness. Kolaps
+// default — yang penting dulu daftarnya masuk.
+function ProfileCompletionCard({ provider }: { provider: Provider }) {
+  const ownerToken = getStoredOwnerToken();
+  const [open, setOpen] = useState(false);
+  const [area, setArea] = useState(provider.area ?? "");
+  const [halal, setHalal] = useState(provider.halal === 1);
+  const [description, setDescription] = useState(provider.description ?? "");
+  const [radius, setRadius] = useState(
+    String(provider.service_radius_km || 2),
+  );
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!ownerToken) return null;
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setSaved(false);
+    setError("");
+    try {
+      await portalUpdateBusiness(ownerToken!, {
+        description: description || undefined,
+        area: area || undefined,
+        halal:
+          provider.category_type === "jajanan" ? halal : undefined,
+        service_radius_km:
+          provider.category_type === "jasa"
+            ? parseFloat(radius) || undefined
+            : undefined,
+      });
+      setSaved(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menyimpan");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className={`${CARD} p-5 space-y-3`}>
+      <button
+        type="button"
+        className="w-full flex items-center justify-between text-left"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="text-sm font-bold text-slate-900 dark:text-white">
+          <i className="fa-solid fa-camera text-emerald-500 mr-2"></i>
+          Lengkapi profil usaha{" "}
+          <span className="font-normal text-slate-400">(opsional)</span>
+        </span>
+        <i
+          className={`fa-solid fa-chevron-down text-xs text-slate-400 transition ${
+            open ? "rotate-180" : ""
+          }`}
+        ></i>
+      </button>
+
+      {open && (
+        <form className="space-y-4 pt-2" onSubmit={handleSave}>
+          <div>
+            <p className={LABEL}>
+              Foto {provider.category_type === "jasa" ? "portofolio" : "jajanan"}
+            </p>
+            <PhotoUpload
+              providerId={provider.id}
+              onUploaded={(photoUrl) =>
+                setProvider((prev) =>
+                  prev ? { ...prev, photo_url: photoUrl } : prev,
+                )
+              }
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="block">
+              <span className={LABEL}>Kecamatan</span>
+              <select
+                className={`${INPUT} w-full`}
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+              >
+                <option value="">Pilih kecamatan</option>
+                {KECAMATAN.map((k) => (
+                  <option key={k} value={k}>
+                    {k}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {provider.category_type === "jasa" && (
+              <label className="block">
+                <span className={LABEL}>Radius jangkauan (km)</span>
+                <input
+                  className={INPUT}
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={radius}
+                  onChange={(e) => setRadius(e.target.value)}
+                />
+              </label>
+            )}
+
+            {provider.category_type === "jajanan" && (
+              <label className="flex items-end pb-2.5 space-x-2 text-xs font-medium text-slate-700 dark:text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={halal}
+                  onChange={(e) => setHalal(e.target.checked)}
+                  className="accent-emerald-600"
+                />
+                <span>Berhalal</span>
+              </label>
+            )}
+          </div>
+
+          <label className="block">
+            <span className={LABEL}>Deskripsi singkat</span>
+            <input
+              className={INPUT}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="mis. buka jam 6 pagi, khusus wilayah Margadana"
+            />
+          </label>
+
+          {error && <p className={ERROR_LINE}>{error}</p>}
+          {saved && (
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">
+              <i className="fa-solid fa-circle-check mr-1"></i> Tersimpan
+            </p>
+          )}
+
+          <button className={BTN_PRIMARY} type="submit" disabled={busy}>
+            <i className="fa-solid fa-floppy-disk"></i>
+            <span>{busy ? "Menyimpan..." : "Simpan info usaha"}</span>
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+// ---------- Sudah daftar: dashboard checkin + foto ----------
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       <div className="text-center">
