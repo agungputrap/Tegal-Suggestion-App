@@ -31,17 +31,20 @@ export const daysIndo = [
   "Minggu",
 ];
 
-// Waktu saat ini dalam komponen Jakarta-relevan (hari Indonesia + jam/menit)
+// Waktu saat ini dalam komponen Jakarta-relevan (hari Indonesia + jam/menit).
+// Wajib WIB (UTC+7), bukan timezone browser — sama dengan todayJakarta()
+// di backend/src/geo.ts, kalau tidak badge "buka sekarang" bisa meleset
+// berjam-jam untuk pengunjung dari timezone lain.
 export function nowParts(): {
   dayIndo: string;
   hour: number;
   min: number;
 } {
-  const now = new Date();
+  const now = new Date(Date.now() + 7 * 60 * 60 * 1000);
   return {
-    dayIndo: dayNameMap[now.getDay()],
-    hour: now.getHours(),
-    min: now.getMinutes(),
+    dayIndo: dayNameMap[now.getUTCDay()],
+    hour: now.getUTCHours(),
+    min: now.getUTCMinutes(),
   };
 }
 
@@ -52,7 +55,9 @@ export function parseTimeString(str: string): number | null {
   return null;
 }
 
-// null = jadwal tidak diketahui (badge "buka/tutup" disembunyikan)
+// null = jadwal tidak diketahui (badge "buka/tutup" disembunyikan).
+// Satu hari bisa punya beberapa rentang (jam pecah, mis. 07-10 & 16-21) —
+// buka selama ADA SATU rentang yang memuat waktu sekarang.
 export function isOpenNow(
   place: Place,
   dayIndo: string,
@@ -63,25 +68,33 @@ export function isOpenNow(
   const hoursList = place.open_hours[dayIndo];
   if (!Array.isArray(hoursList) || hoursList.length === 0) return null;
 
-  const timeStr = hoursList[0].toLowerCase();
-  if (timeStr.includes("tutup") || timeStr.includes("closed")) return false;
-  if (timeStr.includes("24 jam") || timeStr.includes("24 hours")) return true;
+  const current = hour * 60 + min;
+  let known = false; // minimal satu entri berhasil dibaca
 
-  const parts = timeStr.split(/[–—-]/);
-  if (parts.length === 2) {
+  for (const raw of hoursList) {
+    const timeStr = String(raw ?? "").toLowerCase();
+    if (!timeStr) continue;
+    if (timeStr.includes("tutup") || timeStr.includes("closed")) {
+      known = true; // hari libur yang sah — status "tutup"
+      continue;
+    }
+    if (timeStr.includes("24 jam") || timeStr.includes("24 hours")) return true;
+
+    const parts = timeStr.split(/[–—-]/);
+    if (parts.length !== 2) continue;
     const start = parseTimeString(parts[0]);
     const end = parseTimeString(parts[1]);
-    const current = hour * 60 + min;
+    if (start === null || end === null) continue;
 
-    if (start !== null && end !== null) {
-      if (end > start) {
-        return current >= start && current <= end;
-      } else {
-        return current >= start || current <= end;
-      }
-    }
+    known = true;
+    const inRange =
+      end > start
+        ? current >= start && current <= end
+        : current >= start || current <= end; // rentang lintas tengah malam
+    if (inRange) return true;
   }
-  return null;
+
+  return known ? false : null;
 }
 
 export function placeThumbnail(place: Place): string {
