@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { uploadProviderPhoto } from "../api";
+import { getStoredOwnerToken } from "../storage";
 import { BTN_SECONDARY } from "./ui";
 
 type Props = {
@@ -31,7 +32,14 @@ export function PhotoUpload({ providerId, onUploaded }: Props) {
 
     setStatus("uploading");
     try {
-      const photoUrl = await uploadProviderPhoto(providerId, file);
+      // Fase 0 (#27): upload foto terikat owner_token — hanya pemilik usaha
+      const token = getStoredOwnerToken();
+      if (!token) {
+        setStatus("error");
+        setErrorMsg("Sesi tidak ditemukan. Daftar ulang atau buka link kelola.");
+        return;
+      }
+      const photoUrl = await uploadProviderPhoto(providerId, file, token);
       onUploaded(photoUrl);
       setStatus("idle");
     } catch (err) {

@@ -58,6 +58,9 @@ export type ActiveListing = Provider & {
   checkin_lat: number;
   checkin_lng: number;
   distance_km?: number;
+  // Fase 0 strategi (#27): sinyal kepercayaan dari data historis
+  streak_days?: number; // hari beruntun check-in aktif berakhir hari ini
+  confirm_count?: number; // konfirmasi pelanggan "masih buka" hari ini
 };
 
 // Satu baris tabel `places` — dataset F&B Tegal dari Google Maps.

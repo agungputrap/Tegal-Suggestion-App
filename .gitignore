@@ -76,3 +76,6 @@ backend/seed-places.sql
 
 # Reference material (lokal saja; dataset hidup di backend/seeds/)
 ref/
+
+# Owner token demo-provider (fase 0 #27) — credential, jangan commit
+backend/seed-demo-tokens.json

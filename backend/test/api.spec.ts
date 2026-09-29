@@ -25,13 +25,24 @@ function randomPhone(): string {
   return `0812${Math.floor(Math.random() * 1e8).toString().padStart(8, "0")}`;
 }
 
+// Rate limiter (fase 0 #27) menghitung per IP — test menyimulasikan
+// klien berbeda supaya tidak saling memakan kuota.
+function randomIp(): string {
+  return `10.${Math.floor(Math.random() * 255)}.${Math.floor(
+    Math.random() * 255,
+  )}.${Math.floor(Math.random() * 255)}`;
+}
+
 async function registerProvider(
   overrides: Record<string, unknown> = {}
 ): Promise<ProviderRow> {
   const phone = randomPhone();
   const res = await SELF.fetch("http://x/providers", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "CF-Connecting-IP": randomIp(),
+    },
     body: JSON.stringify({
       name: "Warung Test",
       phone,
@@ -113,32 +124,165 @@ describe("POST /providers", () => {
   });
 });
 
-// ---------- Checkin (#6/#14) ----------
+// ---------- Checkin (#6/#14; fase 0 #27: wajib owner_token + GPS sanity) ----------
 describe("POST /checkins", () => {
+  async function postCheckin(body: Record<string, unknown>) {
+    return SELF.fetch("http://x/checkins", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "CF-Connecting-IP": randomIp(),
+      },
+      body: JSON.stringify(body),
+    });
+  }
+
   it("403 kalau provider belum approved", async () => {
     const p = await registerProvider();
-    const res = await SELF.fetch("http://x/checkins", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ provider_id: p.id, lat: -6.87, lng: 109.14 }),
+    const res = await postCheckin({
+      provider_id: p.id,
+      owner_token: p.owner_token,
+      lat: -6.87,
+      lng: 109.14,
     });
     expect(res.status).toBe(403);
+  });
+
+  it("403 kalau owner_token salah / tidak dikirim (fase 0)", async () => {
+    const p = await registerProvider();
+    await approve(p.id);
+
+    const noToken = await postCheckin({
+      provider_id: p.id,
+      lat: -6.87,
+      lng: 109.14,
+    });
+    expect(noToken.status).toBe(400);
+
+    const wrongToken = await postCheckin({
+      provider_id: p.id,
+      owner_token: "bukan-token-pemilik",
+      lat: -6.87,
+      lng: 109.14,
+    });
+    expect(wrongToken.status).toBe(403);
+  });
+
+  it("422 kalau check-in jauh dari lokasi dasar usaha (fase 0)", async () => {
+    // registerProvider default tanpa base_lat/base_lng -> latih dengan base
+    const p = await registerProvider({
+      base_lat: -6.87,
+      base_lng: 109.14,
+      service_radius_km: 0,
+    });
+    await approve(p.id);
+
+    // 109.5 vs 109.14 = ±36 km — di luar batas bawah 25 km
+    const far = await postCheckin({
+      provider_id: p.id,
+      owner_token: p.owner_token,
+      lat: -6.87,
+      lng: 109.5,
+    });
+    expect(far.status).toBe(422);
+
+    const near = await postCheckin({
+      provider_id: p.id,
+      owner_token: p.owner_token,
+      lat: -6.87,
+      lng: 109.16,
+    });
+    expect(near.status).toBe(200);
   });
 
   it("idempotent per hari: checkin ulang tidak membuat baris kedua", async () => {
     const p = await registerProvider();
     await approve(p.id);
     for (const lng of [109.14, 109.15]) {
-      const res = await SELF.fetch("http://x/checkins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider_id: p.id, lat: -6.87, lng }),
+      const res = await postCheckin({
+        provider_id: p.id,
+        owner_token: p.owner_token,
+        lat: -6.87,
+        lng,
       });
       expect(res.status).toBe(200);
     }
     const data = await fetchListings();
     const mine = data.listings.filter((l) => l.id === p.id);
     expect(mine.length).toBe(1);
+  });
+
+  it("streak: listing ikutkan streak_days (fase 0)", async () => {
+    const p = await registerProvider();
+    await approve(p.id);
+    await postCheckin({
+      provider_id: p.id,
+      owner_token: p.owner_token,
+      lat: -6.87,
+      lng: 109.14,
+    });
+
+    const data = await fetchListings();
+    const mine = data.listings.find((l) => l.id === p.id);
+    expect(mine).toBeDefined();
+    expect((mine as unknown as { streak_days: number }).streak_days).toBe(1);
+    expect(
+      (mine as unknown as { confirm_count: number }).confirm_count,
+    ).toBe(0);
+  });
+});
+
+// ---------- Konfirmasi publik "masih buka" (fase 0 #27) ----------
+describe("POST /providers/:id/confirm-open", () => {
+  it("menghitung pengunjung berbeda, dedupe pengunjung sama", async () => {
+    const p = await registerProvider();
+    await approve(p.id);
+    await ownerOpen(p.owner_token);
+
+    const first = await SELF.fetch(`http://x/providers/${p.id}/confirm-open`, {
+      method: "POST",
+      headers: { "CF-Connecting-IP": "203.0.113.10" },
+    });
+    expect(first.status).toBe(200);
+    expect(((await first.json()) as { confirm_count: number }).confirm_count).toBe(1);
+
+    // Pengunjung sama di hari yang sama -> tetap 1 (UNIQUE dedupe)
+    const same = await SELF.fetch(`http://x/providers/${p.id}/confirm-open`, {
+      method: "POST",
+      headers: { "CF-Connecting-IP": "203.0.113.10" },
+    });
+    expect(((await same.json()) as { confirm_count: number }).confirm_count).toBe(1);
+
+    // Pengunjung berbeda -> 2
+    const other = await SELF.fetch(`http://x/providers/${p.id}/confirm-open`, {
+      method: "POST",
+      headers: { "CF-Connecting-IP": "203.0.113.11" },
+    });
+    expect(((await other.json()) as { confirm_count: number }).confirm_count).toBe(2);
+  });
+
+  it("404 provider tidak dikenal", async () => {
+    const res = await SELF.fetch("http://x/providers/tidak-ada/confirm-open", {
+      method: "POST",
+      headers: { "CF-Connecting-IP": "203.0.113.99" },
+    });
+    expect(res.status).toBe(404);
+  });
+
+  it("confirm_count ikut di listing (fase 0)", async () => {
+    const p = await registerProvider();
+    await approve(p.id);
+    await ownerOpen(p.owner_token);
+    await SELF.fetch(`http://x/providers/${p.id}/confirm-open`, {
+      method: "POST",
+      headers: { "CF-Connecting-IP": "203.0.113.20" },
+    });
+
+    const data = await fetchListings();
+    const mine = data.listings.find((l) => l.id === p.id) as unknown as {
+      confirm_count: number;
+    };
+    expect(mine.confirm_count).toBe(1);
   });
 });
 

@@ -69,6 +69,58 @@ router.get("/listings", async (c) => {
 
   let listings = results;
 
+  // ---- Streak freshness & konfirmasi publik (fase 0 #27) ----
+  // streak_days = berapa hari beruntun (berakhir hari ini) provider
+  // check-in aktif — bacaan pertama dari data historis checkins.
+  // confirm_count = berapa pelanggan menegaskan "masih buka" hari ini.
+  if (listings.length > 0) {
+    const ids = listings.map((l) => l.id);
+    const placeholders = ids.map(() => "?").join(",");
+
+    const hist = await c.env.DB.prepare(
+      `SELECT provider_id, date FROM checkins
+       WHERE provider_id IN (${placeholders})
+         AND is_active = 1 AND date >= date(?, '-60 days')
+       ORDER BY date DESC`,
+    )
+      .bind(...ids, date)
+      .all<{ provider_id: string; date: string }>();
+
+    const streakByProvider = new Map<string, number>();
+    for (const row of hist.results) {
+      // results terurut tanggal DESC; hitung rentetan yang tersambung
+      // mulai hari ini (atau kemarin — check-in kemarin masih "beruntun"
+      // sampai hari ini benar-benar lewat tanpa kabar)
+      const streak = streakByProvider.get(row.provider_id);
+      if (streak === undefined) {
+        if (row.date === date || row.date === minusDays(date, 1)) {
+          streakByProvider.set(row.provider_id, 1);
+        }
+        continue;
+      }
+      const lastDate = minusDays(date, streak - 1);
+      if (row.date === minusDays(lastDate, 1)) {
+        streakByProvider.set(row.provider_id, streak + 1);
+      }
+    }
+
+    const confirms = await c.env.DB.prepare(
+      `SELECT provider_id, COUNT(*) as count FROM confirm_opens
+       WHERE date = ? GROUP BY provider_id`,
+    )
+      .bind(date)
+      .all<{ provider_id: string; count: number }>();
+    const confirmByProvider = new Map(
+      confirms.results.map((r) => [r.provider_id, r.count]),
+    );
+
+    listings = listings.map((l) => ({
+      ...l,
+      streak_days: streakByProvider.get(l.id) ?? 0,
+      confirm_count: confirmByProvider.get(l.id) ?? 0,
+    }));
+  }
+
   // Hitung jarak presisi & filter radius sebenarnya (bbox itu kotak, bukan lingkaran).
   // Trending tetap diurutkan by views; jarak hanya tiebreak.
   if (!isNaN(lat) && !isNaN(lng)) {
@@ -93,5 +145,12 @@ router.get("/listings", async (c) => {
 
   return c.json({ date, count: listings.length, listings });
 });
+
+// YYYY-MM-DD minus n hari (WIB-agnostic: input sudah tanggal Jakarta)
+function minusDays(date: string, n: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().slice(0, 10);
+}
 
 export const listingsRoutes = router;
