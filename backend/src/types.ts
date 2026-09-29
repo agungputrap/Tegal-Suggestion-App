@@ -26,6 +26,7 @@ export type Provider = {
   area: string | null; // kecamatan (dropdown statis di frontend)
   halal: number | null; // 1 = halal; NULL untuk jasa
   approval_status: "pending" | "approved" | "rejected";
+  place_id: string | null; // klaim listing direktori (fase 3 #31); NULL = daftar mandiri
   created_at: string;
 };
 
@@ -34,7 +35,7 @@ export type Provider = {
 export const PUBLIC_PROVIDER_COLUMNS =
   "id, name, phone, category_type, category_id, description, photo_url, " +
   "base_lat, base_lng, service_radius_km, suspended, area, halal, " +
-  "approval_status, created_at";
+  "approval_status, place_id, created_at";
 
 // Item menu (jajanan) / jasa (daftar harga) — satu bentuk untuk dua vertikal.
 export type Item = {

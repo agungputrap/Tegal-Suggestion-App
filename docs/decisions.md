@@ -99,3 +99,11 @@
 - **Ripple:** `Env` bertambah binding opsional; cron trigger kedua di `wrangler.toml`; test suite +10 kasus bot (29 total). Tidak ada perubahan endpoint existing.
 - **Why:** retensi check-in adalah titik mati kategori ini (Temuan 1 strategi) — check-in harus jadi satu reply WhatsApp dengan imbalan lead yang terlihat, bukan kewajiban buka portal.
 - **Review note:** area backend (Arief) — mohon review; file bersama hanya `docs/tech-spec.md` (kontrak baru tercatat di sana).
+
+## 2026-09-29 — Fase 3 strategi: claim-and-verify (klaim listing direktori)
+
+- **Decision (skema — SHARED migrations):** migrasi **0005_claim_place** — `providers.place_id` (nullable) + unique partial index (satu place = satu pemilik) + index places. Provider ber-place_id = lahir dari klaim listing direktori.
+- **Decision (API contract):** registrasi menerima `place_id` opsional (place harus ada → 400; sudah diklaim → **409**); `GET /places` & `GET /places/:id` (endpoint baru) mengembalikan `claimed_provider_id`/`claimed_name`/`claimed_open` (join providers + checkin hari ini); `place_id` masuk `PUBLIC_PROVIDER_COLUMNS` (bukan rahasia). **Anti-hijack:** klaim baru berdampak setelah approve admin (Flow B) — alur verifikasi tidak berubah.
+- **Frontend:** PlaceModal menampilkan badge terverifikasi/"buka hari ini" + tombol ke `/provider/<id>` (place terklaim) atau tombol "Klaim listing ini" → `?view=saya&claim=<place_id>` (form registrasi ter-prefill nama + koordinat place). `GET /places/:id` sengaja dibuat supaya prefill tidak perlu memuat dataset 1.5MB.
+- **Why:** menghubungkan dataset scrape (read-only) dengan suplai live — jalur akuisisi suplai berbiaya rendah sekaligus langkah menuju panel liveness (strategi fase 3).
+- **Review note:** file bersama `backend/migrations/`, `backend/src/types.ts`, `docs/tech-spec.md` — **kedua owner wajib review**; area backend (Arief) & frontend (Budi) sama-sama tersentuh.

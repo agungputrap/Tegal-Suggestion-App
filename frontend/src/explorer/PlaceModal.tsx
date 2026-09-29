@@ -15,6 +15,7 @@ type Props = {
   onToggleFavorite: (id: string) => void;
   highlights: string[];
   onClose: () => void;
+  onOpenProvider?: (id: string) => void;
 };
 
 export function PlaceModal({
@@ -23,6 +24,7 @@ export function PlaceModal({
   onToggleFavorite,
   highlights,
   onClose,
+  onOpenProvider,
 }: Props) {
   const [heroIdx, setHeroIdx] = useState(0);
   const images = place.images;
@@ -343,6 +345,45 @@ export function PlaceModal({
             </div>
           </div>
         </div>
+
+        {/* Klaim listing (fase 3 #31) */}
+        {place.claimed_provider_id ? (
+          <div className="mx-4 mb-2 px-4 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900 flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs">
+              <p className="font-bold text-emerald-700 dark:text-emerald-300">
+                {place.claimed_open
+                  ? "✓ Terverifikasi & sedang buka hari ini"
+                  : "✓ Terverifikasi pemilik usaha"}
+              </p>
+              <p className="text-slate-500 dark:text-slate-400 mt-0.5">
+                {place.claimed_name ?? "Usaha ini"} terhubung ke Buka Hari Ini.
+              </p>
+            </div>
+            {onOpenProvider && (
+              <button
+                onClick={() => onOpenProvider(place.claimed_provider_id!)}
+                className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center space-x-1.5"
+              >
+                <i className="fa-solid fa-store"></i>
+                <span>Halaman Usaha</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="mx-4 mb-2 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              <span className="font-semibold">Pemilik usaha ini?</span> Klaim
+              biar bisa tampil sebagai "buka hari ini" &amp; terhubung WhatsApp.
+            </p>
+            <a
+              href={`?view=saya&claim=${place.id}`}
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center space-x-1.5"
+            >
+              <i className="fa-solid fa-certificate"></i>
+              <span>Klaim listing ini</span>
+            </a>
+          </div>
+        )}
 
         {/* Modal Footer (action buttons) */}
         <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">

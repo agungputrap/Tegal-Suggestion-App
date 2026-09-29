@@ -145,7 +145,7 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 | Method | Path | Purpose |
 | ------ | ---- | ------- |
 | GET | `/categories` | all categories (with icons) |
-| POST | `/providers` | register provider `{name, phone, category_type, category_id, description?, base_lat?, base_lng?, service_radius_km?}` → `{id}` — rate limit 5/IP/jam |
+| POST | `/providers` | register provider `{name, phone, category_type, category_id, description?, base_lat?, base_lng?, service_radius_km?, place_id?}` → `{id}` — rate limit 5/IP/jam; `place_id` = klaim listing direktori (fase 3 #31), duplikat → 409 |
 | GET | `/providers/:id` | provider detail |
 | POST | `/providers/:id/photo` | upload photo — raw image bytes (not multipart), `Content-Type: image/jpeg|png|webp`, max 5MB, **header `X-Owner-Token` wajib** (fase 0 #27), rate limit 10/IP/jam |
 | GET | `/photos/*` | serve photo from R2 (Cache-Control 1 year, immutable) |
@@ -153,7 +153,8 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 | POST | `/providers/:id/confirm-open` | **baru (fase 0 #27)** — konfirmasi publik "✓ Masih buka"; dedupe 1× per pengunjung/hari (hash IP+tanggal) → `{confirm_count}`; rate limit 30/IP/jam |
 | POST | `/bot/webhook` | **baru (fase 1 #29)** — bot WhatsApp; header `X-Bot-Token: <BOT_WEBOOK_TOKEN>` wajib; payload `{sender, message}` (JSON atau form); balasan dikirim via adapter (`FONNTE_TOKEN`), teks balasan juga ada di respons |
 | GET | `/listings?type=&category=&lat=&lng=&radius=` | today's active providers; bounding-box prefilter + haversine, sorted by distance; ikutkan **`streak_days`** (check-in beruntun berakhir hari ini) & **`confirm_count`** (konfirmasi hari ini) |
-| GET | `/places` | all 63 reference F&B places (Explorer dataset); JSON columns returned as strings, client-side filter/sort |
+| GET | `/places` | all 63 reference F&B places (Explorer dataset); JSON columns returned as strings, client-side filter/sort; ikutkan `claimed_provider_id`/`claimed_name`/`claimed_open` untuk place yang diklaim (fase 3 #31) |
+| GET | `/places/:id` | **baru (fase 3 #31)** — satu place + status klaim (untuk prefill form klaim tanpa memuat dataset penuh) |
 
 ### Admin (header `Authorization: Bearer <ADMIN_TOKEN>`)
 
