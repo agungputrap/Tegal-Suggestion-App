@@ -22,6 +22,9 @@ Dua wajah aplikasi:
 - Filter kategori (food/service) + pencarian + radius jarak (app inti)
 - **Chat WhatsApp CTA** di setiap listing
 - Registrasi penyedia + upload foto (R2) + admin panel (statistik, moderasi, kelola kategori)
+- **Detail penyedia sebagai halaman penuh** `/provider/<id>` (#4a/#19) — deep-link, back/refresh via pushState
+- **"Satu peta" berlapis (#21/#22)** — tab Peta Explorer: direktori (scrape) + lapisan live "Buka Hari Ini" dari check-in (jajanan + jasa), popup live → `/provider/<id>`
+- **Seed penyedia demo** `npm run db:seed:demo` (#23/#24) — 18 bisnis campuran food+jasa, idempoten, re-run refresh check-in hari ini
 
 ## Features — to do
 
@@ -34,15 +37,15 @@ Tidak ada untuk MVP — semua item semula "to do" sudah selesai (fase 0–6, lih
 - ~~Registrasi dengan verifikasi WhatsApp (kode 6 digit + approval admin)~~ (#6)
 - ~~Cluster markers di peta check-in~~ — cluster penuh di peta Explorer; peta check-in menyusul jika dibutuhkan
 
-Rencana berikutnya (post-hackathon): test coverage lebih luas, provider detail sebagai halaman penuh, custom domain `.id`.
+Rencana berikutnya (post-hackathon): test coverage lebih luas, **claim-and-verify** direktori ↔ provider (fase 3 [`docs/proposals/unified-map.md`](docs/proposals/unified-map.md)), evaluasi **Overture Maps** sebagai sumber direktori bersih-lisensi (5.457 POI Tegal terukur, CDLA-Permissive), custom domain `.id`.
 
 ## Known gaps — F&B vs jasa
 
-App ini didesain untuk **kuliner + jasa rumah tangga** (lihat [`docs/prd.md`](docs/prd.md)), tapi saat ini baru F&B yang "hidup" di halaman depan:
+App ini didesain untuk **kuliner + jasa rumah tangga** (lihat [`docs/prd.md`](docs/prd.md)). Status setelah peta berlapis (#21/#22) & seed demo (#23/#24):
 
-- **Explorer (halaman utama) hanya F&B** — dataset `places` (63 tempat) sumbernya ekspor Google Maps khusus kuliner Tegal; belum ada sumber data setara untuk jasa.
-- **Jasa lengkap di app inti ("Buka Hari Ini")** — kategori jasa sudah ter-seed (servis AC, tukang bangunan, bersih tandon, laundry panggilan, tukang ledeng, penjahit), dan alurnya berfungsi end-to-end: registrasi → verifikasi admin → check-in harian via GPS → listing + chat WhatsApp. **Tapi** database masih berisi data uji dari test suite — belum ada satu pun penyedia jasa nyata (PRD menyebut target demo 15–20 bisnis campuran food + service; belum diisi).
-- **"Satu peta" belum menyatu** — peta Explorer (kuliner, read-only dari scrape) dan peta check-in jasa (app inti, realtime) masih dua halaman terpisah. Penyatuan butuh keputusan sumber data (scrape Google Maps untuk jasa vs murni check-in realtime) + desain halaman — perlu didiskusikan sebelum demo day.
+- ~~**"Satu peta" belum menyatu**~~ — **selesai untuk demo**: tab Peta Explorer kini dua lapisan (direktori F&B + live check-in jajanan/jasa). Sisa pekerjaan pasca-hackathon: klaim listing (fase 3 proposal).
+- **Data jasa masih demo** — kategori jasa lengkap & alur end-to-end (registrasi → verifikasi → check-in → listing → WhatsApp), dan `npm run db:seed:demo` mengisi 18 bisnis campuran (10 buka hari ini). **Tapi** penyedia jasa NYATA belum ada — rekrutmen manual 5–10 usaha tetap jadi tugas tim sebelum demo day.
+- **Direktori masih scrape Google Maps** — dataset `places` (63 F&B) read-only dari ekspor GMaps (ToS: hanya untuk demo/internal). Overture Maps teruji berisi 5.457 POI Tegal ber-lisensi CDLA-Permissive — kandidat migrasi direktori pasca-hackathon (lihat `docs/decisions.md` 2026-09-29).
 
 ## Tech stack
 

@@ -11,6 +11,7 @@
 
 ## Done
 
+- [x] #23 Seed penyedia demo `npm run db:seed:demo` — 18 bisnis campuran via API, idempoten, re-run refresh check-in — 72c5807 — **backend area Arief, mohon review** (PR #24)
 - [x] #21 Peta satu fase 1 (opsi C): lapisan live "Buka Hari Ini" di tab peta Explorer — pin live pane terpisah + popup → /provider/<id>, toggle jenis/live-only, legenda 2 grup — 1803dd9 — frontend-only, rencana di `docs/proposals/unified-map.md` (#20)
 
 - [x] #4a-lanjutan Provider detail sebagai halaman penuh `/provider/<id>` (pengganti modal, deep-link + back/refresh via pushState) — 8434204 — Budi's area, PR ditandai untuk review
@@ -35,6 +36,8 @@
 
 ## Backlog (explicitly cut from MVP, post-hackathon)
 
+- Peta satu fase 3: claim-and-verify direktori ↔ provider (migrasi `providers.place_id`, alur klaim PlaceModal, OTP WhatsApp) — `docs/proposals/unified-map.md` bagian 5
+- Migrasi direktori F&B ke Overture Maps (5.457 POI Tegal terukur, CDLA-Permissive; pengganti bersih-lisensi scrape GMaps) — `docs/decisions.md` 2026-09-29
 - In-app payments, delivery, chat, reviews/ratings
 - Photo contribution + moderation
 - Story-card / OG image generation
