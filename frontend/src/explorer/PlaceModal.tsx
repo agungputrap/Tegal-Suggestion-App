@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Place } from "./types";
+import { waChatLink } from "../api";
 import {
   FALLBACK_IMAGE_LARGE,
   daysIndo,
@@ -388,9 +389,28 @@ export function PlaceModal({
         {/* Modal Footer (action buttons) */}
         <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center space-x-2">
+            {/* CTA utama konversi (tier 0 #34): chat WhatsApp langsung.
+                Prefill sekaligus jadi probe freshness — balasan pemilik
+                menegaskan masih buka. Sembunyikan kalau nomor tak tersedia. */}
+            {place.phone && (
+              <a
+                href={waChatLink(
+                  place.phone,
+                  place.title,
+                  `Halo ${place.title}, saya lihat usaha Anda di Buka Hari Ini Tegal. Masih buka?`,
+                )}
+                target="_blank"
+                rel="noreferrer"
+                className="px-4 py-2.5 rounded-xl bg-[#25D366] hover:brightness-95 text-white text-xs sm:text-sm font-bold transition flex items-center space-x-1.5 shadow-md shadow-emerald-600/20"
+              >
+                <i className="fa-brands fa-whatsapp text-base"></i>
+                <span>Chat WhatsApp</span>
+              </a>
+            )}
+
             <button
               onClick={() => onToggleFavorite(place.id)}
-              className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center space-x-1.5"
+              className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center space-x-1.5"
             >
               <i
                 className={`${isFav ? "fa-solid text-rose-500" : "fa-regular"} fa-heart`}
