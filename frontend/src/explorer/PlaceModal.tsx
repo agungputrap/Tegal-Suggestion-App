@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Place } from "./types";
 import { waChatLink } from "../api";
+import { Toast } from "../components/dialogs";
 import {
   FALLBACK_IMAGE_LARGE,
   daysIndo,
@@ -31,6 +32,8 @@ export function PlaceModal({
   onClaimPlace,
 }: Props) {
   const [heroIdx, setHeroIdx] = useState(0);
+  // Umpan balik salin tautan — pengganti alert() native (tier 2 #36)
+  const [toast, setToast] = useState<string | null>(null);
   const images = place.images;
 
   // A11y modal (tier 0 #34 + tier 2 #36): fokus pindah ke dialog saat
@@ -105,7 +108,8 @@ export function PlaceModal({
         .catch(() => {});
     } else {
       navigator.clipboard.writeText(url);
-      alert("Tautan tempat berhasil disalin ke clipboard!");
+      setToast("Tautan tempat disalin ✓");
+      window.setTimeout(() => setToast(null), 2500);
     }
   };
 
@@ -540,6 +544,7 @@ export function PlaceModal({
           </div>
         </div>
       </div>
+      <Toast message={toast} />
     </div>
   );
 }

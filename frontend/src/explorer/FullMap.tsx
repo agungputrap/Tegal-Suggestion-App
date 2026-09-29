@@ -13,6 +13,7 @@ import {
 } from "../components/mapTiles";
 import { useDarkClass } from "../hooks/useDarkMode";
 import { filterLiveListings, formatLiveDistance, type LiveTypeFilter } from "./liveLayer";
+import { CARD } from "../components/ui";
 
 type Props = {
   places: Place[];
@@ -341,7 +342,7 @@ export function FullMap({
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow flex flex-col">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 p-4 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3`}>
         <div className="flex items-center space-x-2">
           <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-sm font-bold">

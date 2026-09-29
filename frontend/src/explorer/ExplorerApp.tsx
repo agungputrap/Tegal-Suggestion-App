@@ -26,6 +26,7 @@ import { BottomNav } from "../components/BottomNav";
 import { DirectoryTab } from "./DirectoryTab";
 import { FavoritesTab } from "./FavoritesTab";
 import { PlaceModal } from "./PlaceModal";
+import { ConfirmDialog } from "../components/dialogs";
 
 // Tab berat di-code-split (#15): chart.js & leaflet hanya dimuat saat tab
 // pertama kali dibuka.
@@ -98,7 +99,10 @@ export function ExplorerApp({
     "loading",
   );
 
-  const [tab, setTab] = useState<ExplorerTab>("directory");
+  // IA completion (tier 2 #36, bagian 3 uiux-plan): pengalaman LIVE jadi
+  // halaman utama — tab default = Peta; Direktori F&B (dataset scrape)
+  // didemosi jadi tab sekunder. Analytics admin tetap terpisah.
+  const [tab, setTab] = useState<ExplorerTab>("map");
   const [view, setView] = useState<DirectoryView>("grid");
   const { dark, setDark } = useDarkMode();
 
@@ -118,6 +122,7 @@ export function ExplorerApp({
 
   const [favorites, setFavorites] = useState<string[]>(loadFavorites);
   const [modalPlaceId, setModalPlaceId] = useState<string | null>(null);
+  const [confirmClearFavs, setConfirmClearFavs] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   // Ekspor dataset hanya untuk admin — pengunjung tidak butuh menu ini.
   const [isAdmin, setIsAdmin] = useState(false);
@@ -399,8 +404,8 @@ export function ExplorerApp({
   // analytics internal (label beda antara nav desktop & bar mobile).
   type NavTab = readonly [ExplorerTab, string, string];
   const navTabs: NavTab[] = [
-    ["directory", "fa-table-cells-large", "Direktori"],
     ["map", "fa-map-location-dot", "Peta Interaktif"],
+    ["directory", "fa-table-cells-large", "Direktori"],
     ...(isAdmin
       ? ([["analytics", "fa-chart-pie", "Dashboard & Statistik"]] as const)
       : []),
@@ -474,18 +479,18 @@ export function ExplorerApp({
         hideAt="lg"
         items={[
           {
-            key: "directory",
-            icon: "fa-table-cells-large",
-            label: "Jelajah",
-            active: tab === "directory",
-            onClick: () => setTab("directory"),
-          },
-          {
             key: "map",
             icon: "fa-map-location-dot",
             label: "Peta",
             active: tab === "map",
             onClick: () => setTab("map"),
+          },
+          {
+            key: "directory",
+            icon: "fa-table-cells-large",
+            label: "Jelajah",
+            active: tab === "directory",
+            onClick: () => setTab("directory"),
           },
           {
             key: "favorites",
@@ -919,18 +924,26 @@ export function ExplorerApp({
           places={places}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
-          onClearAll={() => {
-            if (
-              confirm("Yakin ingin mengosongkan semua daftar tempat tersimpan?")
-            ) {
-              setFavorites([]);
-              localStorage.removeItem(FAV_KEY);
-            }
-          }}
+          onClearAll={() => setConfirmClearFavs(true)}
           onOpenPlace={setModalPlaceId}
           onSwitchToDirectory={() => setTab("directory")}
         />
       )}
+
+      {/* Konfirmasi kosongkan tersimpan (tier 2 #36) — pengganti confirm()
+          native yang ber-tombol OK/Cancel Inggris */}
+      <ConfirmDialog
+        open={confirmClearFavs}
+        title="Kosongkan daftar tersimpan?"
+        message="Semua tempat yang kamu simpan akan dihapus dari perangkat ini."
+        confirmLabel="Ya, kosongkan"
+        onCancel={() => setConfirmClearFavs(false)}
+        onConfirm={() => {
+          setConfirmClearFavs(false);
+          setFavorites([]);
+          localStorage.removeItem(FAV_KEY);
+        }}
+      />
 
       {/* Place Detail Modal */}
       {modalPlace && (
