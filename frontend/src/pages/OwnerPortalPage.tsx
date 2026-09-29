@@ -128,8 +128,16 @@ export function OwnerPortalPage({ token }: Props) {
         )}
       </main>
 
-      <footer className="py-4 text-center text-xs text-slate-400">
-        Jajan+Jasa Tegal · portal pemilik
+      <footer className="py-4 text-center text-xs text-slate-400 space-y-1">
+        <div>Jajan+Jasa Tegal · portal pemilik</div>
+        {/* Jalan balik ke app (tier 0 #34) — dulu portal ini jalan buntu */}
+        <a
+          href="/?view=hari-ini"
+          className="inline-flex items-center text-emerald-600 dark:text-emerald-400 hover:underline"
+        >
+          <i className="fa-solid fa-arrow-left mr-1"></i>
+          kembali ke app Buka Hari Ini
+        </a>
       </footer>
     </div>
   );

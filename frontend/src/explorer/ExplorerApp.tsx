@@ -352,9 +352,12 @@ export function ExplorerApp({
       ? ([["analytics", "fa-chart-pie", "Dashboard & Statistik"]] as const)
       : []),
   ];
+  // Tab Tersimpan ikut tampil di mobile (tier 0 #34) — favorit tidak lagi
+  // hanya bisa dijangkau dari nav desktop.
   const mobileTabs: NavTab[] = [
     ["directory", "fa-table-cells-large", "Direktori"],
     ["map", "fa-map-location-dot", "Peta"],
+    ["favorites", "fa-heart", "Tersimpan"],
     ...(isAdmin ? ([["analytics", "fa-chart-pie", "Statistik"]] as const) : []),
   ];
 
