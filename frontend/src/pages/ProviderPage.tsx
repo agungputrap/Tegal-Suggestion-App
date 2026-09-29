@@ -7,6 +7,7 @@ import {
   fetchProvider,
 } from "../api";
 import type { Category, Place, Provider } from "../api";
+import { BotHint } from "../components/BotHint";
 import { PhotoUpload } from "../components/PhotoUpload";
 import { KECAMATAN } from "../data/kecamatan";
 import {
@@ -527,6 +528,8 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
         {checkinStatus === "error" && (
           <p className={ERROR_LINE}>{checkinError}</p>
         )}
+
+        <BotHint />
 
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
           <p className={LABEL}>

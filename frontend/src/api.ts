@@ -4,6 +4,18 @@ export type { Place } from "./explorer/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
+// Nomor bot WhatsApp (fase 1 strategi #29) — dibake saat build via
+// VITE_BOT_NUMBER. Kosong = fitur bot tidak dipromosikan di UI (bot
+// memang belum aktif). Tidak pernah mengarang nomor default.
+export const BOT_NUMBER = import.meta.env.VITE_BOT_NUMBER ?? "";
+
+// Link chat ke bot dengan pesan terisi — dipakai surface owner
+// (portal & dashboard) untuk "Lebih cepat: balas BUKA di WhatsApp".
+export function botChatLink(message: string): string | null {
+  if (!BOT_NUMBER) return null;
+  return `https://wa.me/${BOT_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
 export type Category = {
   id: string;
   name: string;
