@@ -107,3 +107,11 @@
 - **Frontend:** PlaceModal menampilkan badge terverifikasi/"buka hari ini" + tombol ke `/provider/<id>` (place terklaim) atau tombol "Klaim listing ini" → `?view=saya&claim=<place_id>` (form registrasi ter-prefill nama + koordinat place). `GET /places/:id` sengaja dibuat supaya prefill tidak perlu memuat dataset 1.5MB.
 - **Why:** menghubungkan dataset scrape (read-only) dengan suplai live — jalur akuisisi suplai berbiaya rendah sekaligus langkah menuju panel liveness (strategi fase 3).
 - **Review note:** file bersama `backend/migrations/`, `backend/src/types.ts`, `docs/tech-spec.md` — **kedua owner wajib review**; area backend (Arief) & frontend (Budi) sama-sama tersentuh.
+
+## 2026-09-29 — UI/UX Tier 0+1 (#34/#36): freshness timestamp + bot env
+
+- **Decision (API contract — SHARED types.ts):** `GET /listings` kini mengembalikan **`last_checkin_at`** (`ck.created_at`, opsional) — bahan label "Buka · check-in X mnt lalu" (freshness = timestamp, bukan badge; >4 jam badge memudar). Kolom opsional, tanpa migrasi/endpoint baru; satu-satunya perubahan backend yang diizinkan misi UI/UX.
+- **Decision (frontend build env):** `VITE_BOT_NUMBER` dibake saat build (dibaca di `api.ts`, pola `VITE_API_URL`); **kosong = semua UI bot disembunyikan** (`BotHint` tidak dirender). Nomor bot tidak pernah dihardcode — menunggu device Fonnte aktif (ops fase 1).
+- **Ripple:** registrasi kini 2 langkah (3 field inti → profil opsional via portal endpoints selagi pending); klaim listing pakai SPA navigation (bukan `<a href>` reload); bottom nav mobile baru (`BottomNav.tsx`, safe-area) menggantikan tab atas mobile; hero live "X usaha · Y buka sekarang" di landing (jalur konservatif — direktori tidak dirombak). Rincian lengkap: `docs/uiux-plan.md` §8 "Status eksekusi".
+- **Why:** konversi (WA satu tap), kepercayaan (freshness terverifikasi), dan retensi owner (bot terlihat) adalah tiga lever utama rencana UI/UX.
+- **Review note:** file bersama `backend/src/types.ts` — **kedua owner wajib review** (PR #35, #37); frontend area Budi.
