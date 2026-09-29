@@ -157,6 +157,7 @@ export function ProviderPage() {
         try {
           const { date } = await checkin({
             provider_id: provider.id,
+            owner_token: getStoredOwnerToken() ?? "",
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
           });

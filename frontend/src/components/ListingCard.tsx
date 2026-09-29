@@ -1,5 +1,6 @@
+import { useState } from "react";
 import type { Listing } from "../api";
-import { resolvePhotoUrl, waChatLink } from "../api";
+import { confirmOpen, resolvePhotoUrl, waChatLink } from "../api";
 import { FALLBACK_IMAGE_MEDIUM } from "../explorer/helpers";
 import { photoErrorHandler } from "./photo";
 import { CARD } from "./ui";
@@ -18,6 +19,27 @@ function todayLabel(): string {
   });
 }
 
+// Dedupe konfirmasi per pengunjung per hari di sisi UI (server juga dedupe).
+// try/catch: localStorage bisa tidak tersedia (private mode / lingkungan uji).
+const CONFIRM_KEY = "jajanjasa:confirmedOpen";
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+function confirmedToday(id: string): boolean {
+  try {
+    return localStorage.getItem(`${CONFIRM_KEY}:${id}`) === todayIso();
+  } catch {
+    return false;
+  }
+}
+function markConfirmedToday(id: string) {
+  try {
+    localStorage.setItem(`${CONFIRM_KEY}:${id}`, todayIso());
+  } catch {
+    /* abaikan — dedupe server tetap jalan */
+  }
+}
+
 export function ListingCard({
   listing,
   categoryName,
@@ -26,6 +48,22 @@ export function ListingCard({
 }: Props) {
   const photoSrc = resolvePhotoUrl(listing.photo_url);
   const isJajanan = listing.category_type === "jajanan";
+  const [confirmed, setConfirmed] = useState(() =>
+    confirmedToday(listing.id),
+  );
+  const [confirmCount, setConfirmCount] = useState(listing.confirm_count ?? 0);
+
+  async function handleConfirm() {
+    if (confirmed) return;
+    try {
+      const count = await confirmOpen(listing.id);
+      markConfirmedToday(listing.id);
+      setConfirmed(true);
+      setConfirmCount(count);
+    } catch (err) {
+      console.warn("Konfirmasi gagal:", err); // tombol tetap bisa dicoba lagi
+    }
+  }
 
   return (
     <div
@@ -95,7 +133,32 @@ export function ListingCard({
           )}
         </div>
 
-        <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800">
+        {/* Trust row (fase 0 #27): streak freshness + konfirmasi publik */}
+        <div className="mt-auto pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+          {listing.streak_days != null && listing.streak_days >= 2 ? (
+            <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+              🔥 {listing.streak_days} hari beruntun
+            </span>
+          ) : (
+            <span />
+          )}
+          <button
+            onClick={handleConfirm}
+            disabled={confirmed}
+            title="Konfirmasi bahwa usaha ini benar-benar buka hari ini"
+            className={`text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition ${
+              confirmed
+                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600"
+            }`}
+          >
+            {confirmed
+              ? `✓ Dikonfirmasi${confirmCount > 1 ? ` · ${confirmCount}` : ""}`
+              : "✓ Masih buka"}
+          </button>
+        </div>
+
+        <div className="pt-2">
           <a
             className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5"
             href={waChatLink(listing.phone, listing.name)}

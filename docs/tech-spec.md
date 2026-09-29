@@ -125,7 +125,7 @@ Penghitung views per hari untuk trending sort (#4b); increment saat detail penye
 
 ### `places` (reference data, read-only)
 
-76 F&B places in Tegal & surroundings scraped from Google Maps (`tegal-fnb.csv`). Powers the Explorer page; never written by the app — seeded via `npm run db:seed:places`.
+63 F&B places in Tegal & surroundings scraped from Google Maps (`tegal-fnb.csv`; 76 saat scrape — 13 titik Jakarta dibuang, lihat decisions 2026-09-08). Powers the Explorer page; never written by the app — seeded via `npm run db:seed:places`.
 
 | Column | Type | Notes |
 | ------ | ---- | ----- |
@@ -145,13 +145,14 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 | Method | Path | Purpose |
 | ------ | ---- | ------- |
 | GET | `/categories` | all categories (with icons) |
-| POST | `/providers` | register provider `{name, phone, category_type, category_id, description?, base_lat?, base_lng?, service_radius_km?}` → `{id}` |
+| POST | `/providers` | register provider `{name, phone, category_type, category_id, description?, base_lat?, base_lng?, service_radius_km?}` → `{id}` — rate limit 5/IP/jam |
 | GET | `/providers/:id` | provider detail |
-| POST | `/providers/:id/photo` | upload photo — raw image bytes (not multipart), `Content-Type: image/jpeg|png|webp`, max 5MB |
+| POST | `/providers/:id/photo` | upload photo — raw image bytes (not multipart), `Content-Type: image/jpeg|png|webp`, max 5MB, **header `X-Owner-Token` wajib** (fase 0 #27), rate limit 10/IP/jam |
 | GET | `/photos/*` | serve photo from R2 (Cache-Control 1 year, immutable) |
-| POST | `/checkins` | daily checkin `{provider_id, lat, lng}` — upsert per day, invalidates KV cache |
-| GET | `/listings?type=&category=&lat=&lng=&radius=` | today's active providers; bounding-box prefilter + haversine, sorted by distance |
-| GET | `/places` | all 76 reference F&B places (Explorer dataset); JSON columns returned as strings, client-side filter/sort |
+| POST | `/checkins` | daily checkin **`{provider_id, owner_token, lat, lng}`** — upsert per day, invalidates KV cache. Fase 0 (#27): `owner_token` wajib (403 jika salah); GPS divalidasi terhadap base (422 jika > max(service_radius_km, 25 km)); rate limit 10/IP/10 menit |
+| POST | `/providers/:id/confirm-open` | **baru (fase 0 #27)** — konfirmasi publik "✓ Masih buka"; dedupe 1× per pengunjung/hari (hash IP+tanggal) → `{confirm_count}`; rate limit 30/IP/jam |
+| GET | `/listings?type=&category=&lat=&lng=&radius=` | today's active providers; bounding-box prefilter + haversine, sorted by distance; ikutkan **`streak_days`** (check-in beruntun berakhir hari ini) & **`confirm_count`** (konfirmasi hari ini) |
+| GET | `/places` | all 63 reference F&B places (Explorer dataset); JSON columns returned as strings, client-side filter/sort |
 
 ### Admin (header `Authorization: Bearer <ADMIN_TOKEN>`)
 
@@ -168,10 +169,10 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 
 ## Key decisions locked
 
-- **No auth system for providers.** Provider identity lives in the browser `localStorage` after registration; checkin uses `provider_id` directly. Sufficient for demo day; proper WhatsApp OTP is Phase 2.
+- **No auth system for providers.** Provider identity lives in the browser `localStorage` after registration. *Update fase 0 (#27):* mutasi sensitif (check-in, upload foto) kini **terikat `owner_token`** (disimpan di localStorage, dikembalikan sekali saat registrasi) — bukan lagi `provider_id` publik. WhatsApp OTP penuh tetap Phase 2.
 - **Admin auth is one shared token** (`ADMIN_TOKEN` Worker secret). Multi-admin roles are Phase 2.
 - **No payments/chat/orders in-app.** Everything routes to WhatsApp via `wa.me` links.
-- **Daily checkin is the freshness signal.** `/listings` filters on `checkins.date = today (Jakarta) AND is_active = 1`. Cron expires old checkins at midnight WIB.
+- **Daily checkin is the freshness signal.** `/listings` filters on `checkins.date = today (Jakarta) AND is_active = 1`. Cron expires old checkins at midnight WIB. Sejak fase 0 (#27): histori check-in dibaca jadi **`streak_days`** (hari beruntun) dan dikawal **`confirm_count`** (konfirmasi pelanggan, tabel `confirm_opens` — migrasi 0003). Rate limit tulisan publik bersifat in-memory per isolate (best-effort).
 - **KV is cache only.** D1 is the source of truth; writes delete cache keys instead of writing to KV.
 
 ## Gaps vs PRD — selesai (2026-09-08)

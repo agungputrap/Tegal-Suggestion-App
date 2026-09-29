@@ -3,6 +3,7 @@ import type { Env, Item } from "../types";
 import { PUBLIC_PROVIDER_COLUMNS } from "../types";
 import { EXT_BY_TYPE, MAX_PHOTO_BYTES } from "../constants";
 import { todayJakarta } from "../geo";
+import { clientIp, rateLimit } from "../rateLimit";
 
 const router = new Hono<{ Bindings: Env }>();
 
@@ -27,6 +28,15 @@ function generateOwnerToken(): string {
 // membawa owner_token + verify_code SEKALI ini saja.
 // ---------------------------------------------------------
 router.post("/providers", async (c) => {
+  if (
+    !rateLimit(`register:${clientIp(c.req.raw.headers)}`, 5, 60 * 60_000)
+  ) {
+    return c.json(
+      { error: "Terlalu banyak pendaftaran dari IP ini. Coba lagi nanti." },
+      429,
+    );
+  }
+
   const body = await c.req.json();
 
   if (!body.name || !body.phone || !body.category_type || !body.category_id) {
@@ -125,11 +135,17 @@ router.post("/providers/:id/view", async (c) => {
 // ---------------------------------------------------------
 // POST /providers/:id/photo -> upload foto (body: raw bytes gambar)
 // Header wajib: Content-Type: image/jpeg | image/png | image/webp
+//               X-Owner-Token: token pemilik usaha (fase 0 #27)
 // Worker jadi proxy ke R2, jadi tidak perlu setup CORS terpisah di bucket.
 // ---------------------------------------------------------
 router.post("/providers/:id/photo", async (c) => {
+  if (!rateLimit(`photo:${clientIp(c.req.raw.headers)}`, 10, 60 * 60_000)) {
+    return c.json({ error: "Terlalu banyak upload. Coba lagi nanti." }, 429);
+  }
+
   const providerId = c.req.param("id");
   const contentType = c.req.header("content-type") ?? "";
+  const ownerToken = c.req.header("x-owner-token") ?? "";
 
   const ext = EXT_BY_TYPE[contentType];
   if (!ext) {
@@ -140,12 +156,18 @@ router.post("/providers/:id/photo", async (c) => {
   }
 
   const provider = await c.env.DB.prepare(
-    "SELECT id, photo_url FROM providers WHERE id = ?",
+    "SELECT id, owner_token, photo_url FROM providers WHERE id = ?",
   )
     .bind(providerId)
-    .first<{ id: string; photo_url: string | null }>();
+    .first<{ id: string; owner_token: string; photo_url: string | null }>();
 
   if (!provider) return c.json({ error: "Provider tidak ditemukan" }, 404);
+  if (provider.owner_token !== ownerToken) {
+    return c.json(
+      { error: "x-owner-token tidak valid — hanya pemilik usaha" },
+      403,
+    );
+  }
 
   const body = await c.req.arrayBuffer();
 

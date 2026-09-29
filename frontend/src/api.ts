@@ -25,6 +25,9 @@ export type Listing = {
   area: string | null;
   halal: number | null;
   views: number;
+  // Fase 0 strategi (#27): sinyal kepercayaan
+  streak_days?: number; // hari beruntun check-in berakhir hari ini
+  confirm_count?: number; // konfirmasi pelanggan "masih buka" hari ini
 };
 
 // Item menu/price-list penyedia (bentuk sama dengan backend/src/types.ts)
@@ -49,10 +52,14 @@ export function resolvePhotoUrl(photoUrl: string | null): string | null {
 export async function uploadProviderPhoto(
   providerId: string,
   file: File,
+  ownerToken: string,
 ): Promise<string> {
   const res = await fetch(`${API_URL}/providers/${providerId}/photo`, {
     method: "POST",
-    headers: { "Content-Type": file.type },
+    headers: {
+      "Content-Type": file.type,
+      "X-Owner-Token": ownerToken,
+    },
     body: file,
   });
 
@@ -125,6 +132,7 @@ export async function fetchProvider(id: string): Promise<Provider | null> {
 
 export async function checkin(input: {
   provider_id: string;
+  owner_token: string;
   lat: number;
   lng: number;
 }): Promise<{ date: string }> {
@@ -188,6 +196,20 @@ export function trackProviderView(id: string): void {
   fetch(`${API_URL}/providers/${id}/view`, { method: "POST" }).catch(() => {
     /* view tracking tidak boleh mengganggu UI */
   });
+}
+
+// Konfirmasi publik "✓ Masih buka" (fase 0 #27) — pelanggan menegaskan
+// usaha benar-benar buka. Dedupe per pengunjung/hari di server.
+export async function confirmOpen(id: string): Promise<number> {
+  const res = await fetch(`${API_URL}/providers/${id}/confirm-open`, {
+    method: "POST",
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Gagal konfirmasi" }));
+    throw new Error(err.error ?? "Gagal konfirmasi");
+  }
+  const data = await res.json();
+  return data.confirm_count as number;
 }
 
 // Dataset F&B Tegal dari Google Maps (halaman Explorer).

@@ -38,15 +38,18 @@ npm run db:migrate:remote
 npm run deploy
 ```
 
-Smoke test:
+Smoke test (fase 0 #27: check-in terikat `owner_token` yang dikembalikan respons registrasi):
 
 ```bash
 curl http://localhost:8787/categories
 curl -X POST http://localhost:8787/providers -H "Content-Type: application/json" \
   -d '{"name":"Tukang AC Pak Bud","phone":"08123456789","category_type":"jasa","category_id":"servis-ac","base_lat":-6.9219,"base_lng":109.1401}'
+# -> simpan "owner_token" dari respons (sekali saja), lalu:
 curl -X POST http://localhost:8787/checkins -H "Content-Type: application/json" \
-  -d '{"provider_id":"<id_from_above>","lat":-6.9219,"lng":109.1401}'
+  -d '{"provider_id":"<id_from_above>","owner_token":"<owner_token>","lat":-6.9219,"lng":109.1401}'
 curl "http://localhost:8787/listings?type=jasa&lat=-6.922&lng=109.14&radius=5"
+# konfirmasi publik "masih buka" (dedupe per pengunjung/hari):
+curl -X POST http://localhost:8787/providers/<id_from_above>/confirm-open
 ```
 
 Validation (must pass before claiming done):

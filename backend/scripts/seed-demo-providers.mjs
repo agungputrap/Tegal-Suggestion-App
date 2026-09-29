@@ -9,10 +9,11 @@
 //
 // Idempoten: kunci unik = nomor HP. Re-run tidak menduplikasi provider;
 // ia me-refresh check-in HARI INI untuk yang terdaftar sebagai "buka"
-// (tabel checkins UNIQUE(provider_id, date) → upsert idempoten), supaya
-// pin live tetap tampil di hari demo (cron expire-kan listing tiap
-// tengah malam WIB). Items hanya dibuat saat registrasi baru karena
-// owner_token hanya dikembalikan sekali.
+// (UNIQUE(provider_id, date) → upsert idempoten), supaya pin live tetap
+// tampil di hari demo (cron expire-kan checkin tiap tengah malam WIB).
+// Check-in kini WAJIB owner_token (fase 0 #27) — token disimpan ke
+// seed-demo-tokens.json (gitignored) saat registrasi pertama dan dipakai
+// ulang saat re-run. Hilang = hapus provider demo di admin + seed ulang.
 //
 // Pemakaian:
 //   npm run db:seed:demo                                   # lokal (:8787)
@@ -42,6 +43,21 @@ function adminToken() {
   throw new Error("ADMIN_TOKEN tidak ditemukan (env atau backend/.dev.vars)");
 }
 const TOKEN = adminToken();
+
+// Penyimpanan owner_token per nomor HP (gitignored) — dibutuhkan karena
+// check-in terikat token sejak fase 0 (#27), dan token hanya dikembalikan
+// sekali saat registrasi.
+const tokenFile = path.join(scriptDir, "..", "seed-demo-tokens.json");
+function loadTokens() {
+  try {
+    return JSON.parse(fs.readFileSync(tokenFile, "utf8"));
+  } catch {
+    return {};
+  }
+}
+function saveTokens(map) {
+  fs.writeFileSync(tokenFile, JSON.stringify(map, null, 2));
+}
 
 const DEMO = [
   // ---- Jajanan (8) ----
@@ -225,6 +241,7 @@ async function findExisting(phone) {
 
 async function main() {
   console.log(`Seeding demo providers ke ${API_URL}\n`);
+  const tokens = loadTokens();
   let openCount = 0;
 
   for (const d of DEMO) {
@@ -248,7 +265,9 @@ async function main() {
 
     let provider = null;
     if (reg.ok) {
-      provider = { id: reg.body.id, ownerToken: reg.body.owner_token };
+      provider = { id: reg.body.id };
+      tokens[d.phone] = reg.body.owner_token;
+      saveTokens(tokens);
       console.log(`  + daftar    : ${d.name} (${d.area})`);
     } else {
       provider = await findExisting(d.phone);
@@ -272,9 +291,10 @@ async function main() {
 
     // 3) Items via portal — hanya saat registrasi baru (owner_token hanya
     //    dikembalikan sekali); re-run tidak menambah item ganda.
-    if (provider.ownerToken) {
+    const ownerToken = tokens[d.phone];
+    if (reg.ok && ownerToken) {
       for (const item of d.items) {
-        await api(`/kelola/${provider.ownerToken}/items`, {
+        await api(`/kelola/${ownerToken}/items`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(item),
@@ -282,14 +302,29 @@ async function main() {
       }
     }
 
-    // 4) Check-in hari ini untuk yang "buka" — upsert idempoten per hari
+    // 4) Check-in hari ini untuk yang "buka" — wajib owner_token (fase 0)
     if (d.openToday) {
+      if (!ownerToken) {
+        console.log(
+          `  ! skip cekin: ${d.name} — owner_token tidak ada di ${path.basename(tokenFile)}`,
+        );
+        continue;
+      }
       const ck = await api("/checkins", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ provider_id: provider.id, lat: d.lat, lng: d.lng }),
+        body: JSON.stringify({
+          provider_id: provider.id,
+          owner_token: ownerToken,
+          lat: d.lat,
+          lng: d.lng,
+        }),
       });
       if (ck.ok) openCount++;
+      else
+        console.log(
+          `  ! gagal cekin: ${d.name} — ${ck.body.error ?? ck.status}`,
+        );
     }
   }
 
