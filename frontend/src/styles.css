@@ -62,6 +62,19 @@ textarea:focus-visible,
   outline-offset: 2px;
 }
 
+/* ---------- Peta gelap (tier 0 #34, revisi) ----------
+   Tile CartoDB dark_all tak bisa dipakai lagi tanpa API key (placeholder
+   "API KEY REQUIRED" — lihat components/mapTiles.ts). Dark mode sekarang:
+   tile OSM biasa + filter CSS, tanpa penukaran sumber tile. */
+html.dark .leaflet-container {
+  /* lantai gelap sebelum tile termuat — mencegah kilasan terang saat load */
+  background: #0f172a;
+}
+html.dark .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.87) contrast(1.05)
+    saturate(0.6);
+}
+
 /* ---------- Pin peta (Leaflet divIcon) ---------- */
 .map-pin-wrapper {
   background: transparent !important;
