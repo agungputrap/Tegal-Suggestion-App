@@ -19,6 +19,16 @@
   --sp-3: 12px;
 }
 
+/* Dark mode: overscroll body ikut gelap, bukan krem (tier 0 #34).
+   Nilai mengikuti slate-950/900 Tailwind yang dipakai halaman dark. */
+html.dark {
+  --bg: #020617;
+  --bg-alt: #0f172a;
+  --ink: #e2e8f0;
+  --line: #1e293b;
+  --card: #0f172a;
+}
+
 * {
   box-sizing: border-box;
 }

@@ -163,7 +163,7 @@ export function ProviderDetailPage({ id, onBack }: Props) {
             {isJajanan ? "Menu hari ini" : "Daftar jasa & harga"}
           </h4>
           {items === null ? (
-            <p className="text-xs text-slate-500">memuat item...</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">memuat item...</p>
           ) : availableItems.length === 0 ? (
             <p className="text-xs text-slate-400">
               Belum ada daftar {isJajanan ? "menu" : "jasa"} yang tersedia hari

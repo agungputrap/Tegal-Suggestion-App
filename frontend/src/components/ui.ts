@@ -14,7 +14,9 @@ export const BTN_DANGER =
   "inline-flex items-center justify-center space-x-1.5 px-3 py-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-300 rounded-xl text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-900/60 transition disabled:opacity-60";
 export const STATUS_LINE =
   "text-xs text-slate-500 dark:text-slate-400 text-center py-2";
-export const ERROR_LINE = "text-xs text-rose-500 text-center py-2";
+// Dark variant: rose-500 di atas latar gelap kurang terang — pakai rose-400
+export const ERROR_LINE =
+  "text-xs text-rose-500 dark:text-rose-400 text-center py-2";
 
 // Pill filter gaya "Filter Cepat" di Explorer (qf-btn).
 // min-h 44px = standar touch target (tier 0 #34) — cukup padding, bukan

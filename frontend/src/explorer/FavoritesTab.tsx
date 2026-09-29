@@ -33,7 +33,7 @@ export function FavoritesTab({
             <i className="fa-solid fa-heart text-rose-500 mr-2"></i> Tempat
             Kuliner Tersimpan &amp; Komparasi
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Tandai tempat favorit Anda untuk membandingkan fasilitas, harga, dan
             rating secara berdampingan.
           </p>
@@ -54,7 +54,7 @@ export function FavoritesTab({
               <i className="fa-regular fa-heart"></i>
             </div>
             <h3 className="text-base font-bold">Belum ada tempat tersimpan</h3>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Klik ikon hati pada kartu tempat kuliner di direktori untuk
               menyimpannya ke sini.
             </p>
@@ -82,7 +82,7 @@ export function FavoritesTab({
                   >
                     {p.title}
                   </h4>
-                  <div className="text-xs text-slate-500 mt-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     <span className="text-amber-500 font-bold">
                       ★ {formatRating(p)}
                     </span>

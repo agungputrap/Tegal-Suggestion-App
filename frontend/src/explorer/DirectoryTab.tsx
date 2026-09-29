@@ -6,6 +6,11 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { Place } from "./types";
 import { ErrorState } from "../components/ErrorState";
 import {
+  tileAttributionForTheme,
+  tilesForTheme,
+} from "../components/mapTiles";
+import { useDarkClass } from "../hooks/useDarkMode";
+import {
   FALLBACK_IMAGE_MEDIUM,
   FALLBACK_IMAGE_SMALL,
   extractHighlights,
@@ -228,7 +233,7 @@ export function DirectoryTab({
       </div>
 
       {status === "loading" && (
-        <div className="p-8 text-center text-sm text-slate-500">
+        <div className="p-8 text-center text-sm text-slate-500 dark:text-slate-400">
           <i className="fa-solid fa-spinner fa-spin mr-2"></i>Memuat dataset
           F&amp;B...
         </div>
@@ -280,7 +285,7 @@ function EmptyState({ onReset }: { onReset: () => void }) {
       <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">
         Tidak ada tempat kuliner ditemukan
       </h3>
-      <p className="text-xs text-slate-500 mt-1">
+      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
         Coba sesuaikan kata kunci pencarian atau filter yang dipilih.
       </p>
       <button
@@ -469,7 +474,7 @@ function ListView({
 }) {
   if (places.length === 0) {
     return (
-      <div className="p-8 text-center text-slate-500">
+      <div className="p-8 text-center text-slate-500 dark:text-slate-400">
         Tidak ada data ditemukan.
       </div>
     );
@@ -506,7 +511,7 @@ function ListView({
               <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base hover:text-emerald-600 transition mt-0.5">
                 {p.title}
               </h4>
-              <div className="flex items-center space-x-3 text-xs text-slate-500 mt-1">
+              <div className="flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
                 <span className="text-amber-500 font-bold">
                   <i className="fa-solid fa-star mr-1"></i>
                   {formatRating(p)}
@@ -569,7 +574,7 @@ function TableView({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {places.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-slate-500">
+                <td colSpan={6} className="p-8 text-center text-slate-500 dark:text-slate-400">
                   Tidak ada data ditemukan.
                 </td>
               </tr>
@@ -648,14 +653,16 @@ function SplitView({
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const tilesRef = useRef<L.TileLayer | null>(null);
+  const dark = useDarkClass();
 
   // Init map sekali
   useEffect(() => {
     if (!mapElRef.current || mapRef.current) return;
 
     const map = L.map(mapElRef.current).setView([-6.87, 109.13], 12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
+    tilesRef.current = L.tileLayer(tilesForTheme(dark), {
+      attribution: tileAttributionForTheme(dark),
     }).addTo(map);
 
     layerRef.current = L.layerGroup().addTo(map);
@@ -669,8 +676,17 @@ function SplitView({
       map.remove();
       mapRef.current = null;
       layerRef.current = null;
+      tilesRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Tile ikut tema gelap/terang (tier 0 #34)
+  useEffect(() => {
+    if (!tilesRef.current) return;
+    tilesRef.current.setUrl(tilesForTheme(dark));
+    tilesRef.current.options.attribution = tileAttributionForTheme(dark);
+  }, [dark]);
 
   // Update marker setiap daftar berubah
   useEffect(() => {
@@ -696,7 +712,7 @@ function SplitView({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100vh-280px)] min-h-[550px]">
       <div className="lg:col-span-5 h-full overflow-y-auto custom-scrollbar space-y-3 pr-2">
         {places.length === 0 && (
-          <div className="p-8 text-center text-slate-500">
+          <div className="p-8 text-center text-slate-500 dark:text-slate-400">
             Tidak ada data ditemukan.
           </div>
         )}
@@ -714,7 +730,7 @@ function SplitView({
                 ★ {formatRating(p)}
               </span>
             </div>
-            <div className="text-xs text-slate-500 mt-1 flex items-center justify-between">
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center justify-between">
               <span>
                 {p.category} • {p.city}
               </span>

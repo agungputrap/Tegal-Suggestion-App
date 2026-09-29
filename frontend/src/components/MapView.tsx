@@ -6,6 +6,11 @@ import {
   FALLBACK_PIN_EMOJI,
   PIN_COLOR,
 } from "./mapPins";
+import {
+  tileAttributionForTheme,
+  tilesForTheme,
+} from "./mapTiles";
+import { useDarkClass } from "../hooks/useDarkMode";
 
 type Props = {
   listings: Listing[];
@@ -24,6 +29,8 @@ export function MapView({ listings, categories, center }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.LayerGroup | null>(null);
+  const tilesRef = useRef<L.TileLayer | null>(null);
+  const dark = useDarkClass();
 
   const categoryById = useMemo(() => {
     const map = new Map<string, Category>();
@@ -58,8 +65,8 @@ export function MapView({ listings, categories, center }: Props) {
       minZoom: 11,
     }).setView([center.lat, center.lng], 14);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
+    tilesRef.current = L.tileLayer(tilesForTheme(dark), {
+      attribution: tileAttributionForTheme(dark),
       maxZoom: 19,
     }).addTo(map);
 
@@ -72,6 +79,13 @@ export function MapView({ listings, categories, center }: Props) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Tile ikut tema gelap/terang (tier 0 #34)
+  useEffect(() => {
+    tilesRef.current?.setUrl(tilesForTheme(dark));
+    if (tilesRef.current)
+      tilesRef.current.options.attribution = tileAttributionForTheme(dark);
+  }, [dark]);
 
   // Update marker tiap listings atau kategori berubah
   useEffect(() => {
