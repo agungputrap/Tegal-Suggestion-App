@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { fetchListings, fetchPlaces } from "../api";
+import { fetchListings, fetchPlace, fetchPlaces, fetchPlacesSummary } from "../api";
 import type { Listing } from "../api";
 import {
   clearStoredAdminToken,
@@ -14,7 +14,13 @@ import {
   verifyAdminToken,
 } from "../adminApi";
 import type { Place } from "../explorer/types";
-import { extractHighlights, isOpenNow, nowParts } from "./helpers";
+import {
+  aboutSearchBlob,
+  buildSearchBlob,
+  extractHighlights,
+  isOpenNow,
+  nowParts,
+} from "./helpers";
 import { useDarkMode } from "../hooks/useDarkMode";
 import { BottomNav } from "../components/BottomNav";
 import { DirectoryTab } from "./DirectoryTab";
@@ -115,14 +121,30 @@ export function ExplorerApp({
   // ----- Data -----
   // Dipisah jadi callback supaya tombol "Coba lagi" di DirectoryTab bisa
   // memuat ulang dataset tanpa reload halaman (tier 0 #34).
+  // Render pertama dari ringkasan ringkan (~15KB vs ~1.5MB, tier 2 #36):
+  // kartu/peta/KPI tampil duluan di jaringan lambat, dataset penuh
+  // (about/ulasan/foto) lazy-load setelah paint dan menggantikan in-place.
   const loadPlaces = useCallback(() => {
     setStatus("loading");
-    fetchPlaces()
-      .then((data) => {
-        setPlaces(data);
+    fetchPlacesSummary()
+      .then((summary) => {
+        setPlaces(summary);
         setStatus("ready");
+        fetchPlaces()
+          .then((full) => setPlaces(full))
+          .catch(() => {
+            /* ringkasan tetap dipakai — modal tetap bisa ambil per-place */
+          });
       })
-      .catch(() => setStatus("error"));
+      .catch(() => {
+        // Ringkasan gagal (backend lama/jaringan) → jalur lama: penuh langsung.
+        fetchPlaces()
+          .then((data) => {
+            setPlaces(data);
+            setStatus("ready");
+          })
+          .catch(() => setStatus("error"));
+      });
   }, []);
 
   useEffect(() => {
@@ -169,38 +191,31 @@ export function ExplorerApp({
   }, [modalPlaceId]);
 
   // ----- Filter & sorting (port dari applyFilters) -----
+  // Blob pencarian & aboutJson precompute SEKALI per dataset (tier 2 #36) —
+  // dulu setiap keystroke memanggil JSON.stringify(about/user_reviews) untuk
+  // semua place; sekarang filter hanya .includes() di string jadi.
+  const searchIndex = useMemo(() => {
+    const map = new Map<string, { blob: string; aboutJson: string }>();
+    places.forEach((p) => {
+      map.set(p.id, { blob: buildSearchBlob(p), aboutJson: aboutSearchBlob(p) });
+    });
+    return map;
+  }, [places]);
+
   const filteredPlaces = useMemo(() => {
     const q = search.trim().toLowerCase();
     const { dayIndo, hour, min } = nowParts();
 
     const result = places.filter((p) => {
-      if (q) {
-        const matchTitle = p.title.toLowerCase().includes(q);
-        const matchCat = p.category.toLowerCase().includes(q);
-        const matchAddr = p.address.toLowerCase().includes(q);
-        const matchAbout =
-          p.about.length > 0 &&
-          JSON.stringify(p.about).toLowerCase().includes(q);
-        const matchReview =
-          p.user_reviews.length > 0 &&
-          JSON.stringify(p.user_reviews).toLowerCase().includes(q);
-        if (
-          !matchTitle &&
-          !matchCat &&
-          !matchAddr &&
-          !matchAbout &&
-          !matchReview
-        ) {
-          return false;
-        }
-      }
+      const idx = searchIndex.get(p.id);
+      if (q && idx && !idx.blob.includes(q)) return false;
 
       if (city !== "all" && p.city !== city) return false;
 
       if (category !== "all" && p.category !== category) return false;
       if (minRating > 0 && (p.rating ?? 0) < minRating) return false;
 
-      const aboutJson = JSON.stringify(p.about).toLowerCase();
+      const aboutJson = idx ? idx.aboutJson : aboutSearchBlob(p);
       if (quick.openNow && isOpenNow(p, dayIndo, hour, min) !== true)
         return false;
       if (quick.wifi) {
@@ -246,7 +261,7 @@ export function ExplorerApp({
     });
 
     return result;
-  }, [places, search, city, category, minRating, sort, quick]);
+  }, [places, searchIndex, search, city, category, minRating, sort, quick]);
 
   // ----- KPI (port dari calculateRealtimeKPIs) -----
   const kpis = useMemo(() => {
@@ -265,7 +280,9 @@ export function ExplorerApp({
       }
       totalRev += p.review_count;
       categories.add(p.category);
-      photoCount += p.images.length;
+      // Saat masih ringkasan (tier 2 #36), jumlah foto dari backend —
+      // jangan hitung 0 padahal fotonya ada, cuma belum dimuat.
+      photoCount += p.images.length || p.images_count || 0;
       if (isOpenNow(p, dayIndo, hour, min) === true) openNowCount++;
     });
 
@@ -343,9 +360,29 @@ export function ExplorerApp({
     });
   }, []);
 
-  const modalPlace = modalPlaceId
+  const partialPlace = modalPlaceId
     ? (places.find((p) => p.id === modalPlaceId) ?? null)
     : null;
+  // Modal dari ringkasan (tier 2 #36): about/ulasan/foto belum ada — ambil
+  // place penuh per-id sekali, tampilkan ringkasan sampai lengkap datang.
+  const [fullPlace, setFullPlace] = useState<Place | null>(null);
+  useEffect(() => {
+    setFullPlace(null);
+    if (!modalPlaceId || !partialPlace?.partial) return;
+    let alive = true;
+    fetchPlace(modalPlaceId)
+      .then((p) => {
+        if (alive) setFullPlace(p);
+      })
+      .catch(() => {
+        /* gagal → modal tetap tampil dengan data ringkasan */
+      });
+    return () => {
+      alive = false;
+    };
+  }, [modalPlaceId, partialPlace]);
+  const modalPlace =
+    partialPlace && partialPlace.partial && fullPlace ? fullPlace : partialPlace;
 
   // Dashboard & Statistik hanya untuk admin — pengunjung tidak butuh
   // analytics internal (label beda antara nav desktop & bar mobile).

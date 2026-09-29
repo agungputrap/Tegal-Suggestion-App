@@ -1,4 +1,4 @@
-import { toPlace, type Place } from "./explorer/types";
+import { toPlace, toPlaceFromSummary, type Place } from "./explorer/types";
 
 export type { Place } from "./explorer/types";
 
@@ -226,6 +226,16 @@ export async function confirmOpen(id: string): Promise<number> {
   }
   const data = await res.json();
   return data.confirm_count as number;
+}
+
+// Ringkasan ringkan (~15KB) untuk render pertama Explorer (tier 2 #36) —
+// kartu/peta/KPI tampil duluan di jaringan lambat; dataset penuh di bawah
+// lazy-load menyusul setelah paint.
+export async function fetchPlacesSummary(): Promise<Place[]> {
+  const res = await fetch(`${API_URL}/places/summary`);
+  if (!res.ok) throw new Error("Gagal memuat ringkasan places");
+  const data = await res.json();
+  return (data.places ?? []).map(toPlaceFromSummary);
 }
 
 // Dataset F&B Tegal dari Google Maps (halaman Explorer).
