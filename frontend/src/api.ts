@@ -231,10 +231,18 @@ export async function fetchPlace(id: string): Promise<Place> {
   return toPlace(data.place);
 }
 
-export function waChatLink(phone: string, providerName: string): string {
+// Pesan default: konsumen menegaskan sumbernya + menyisipkan probe freshness
+// (balasan pemilik = konfirmasi masih buka). message opsional untuk konteks
+// lain (mis. PlaceModal direktori yang belum tentu check-in hari ini).
+export function waChatLink(
+  phone: string,
+  providerName: string,
+  message?: string,
+): string {
   const digits = phone.replace(/^0/, "62").replace(/\D/g, "");
   const text = encodeURIComponent(
-    `Halo ${providerName}, saya lihat statusnya aktif hari ini di Buka Hari Ini. Masih bisa?`,
+    message ??
+      `Halo ${providerName}, saya lihat statusnya aktif hari ini di Buka Hari Ini. Masih bisa?`,
   );
   return `https://wa.me/${digits}?text=${text}`;
 }

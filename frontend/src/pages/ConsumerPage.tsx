@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchCategories, fetchListings } from "../api";
 import type { Category, Listing } from "../api";
 import { CategoryFilter } from "../components/CategoryFilter";
+import { ErrorState } from "../components/ErrorState";
 import { ListingCard } from "../components/ListingCard";
 import { MapView } from "../components/MapView";
 import { KECAMATAN } from "../data/kecamatan";
 import {
-  ERROR_LINE,
   STATUS_LINE,
   pillClass,
   selectClass,
@@ -58,7 +58,9 @@ export function ConsumerPage({ onOpenDetail }: Props) {
       });
   }, []);
 
-  useEffect(() => {
+  // Fetch listing — dipisah jadi callback supaya tombol "Coba lagi" bisa
+  // memanggilnya ulang saat koneksi putus (tier 0 #34).
+  const load = useCallback(() => {
     setStatus("loading");
     fetchListings({
       type: filter === "semua" ? undefined : filter,
@@ -75,6 +77,10 @@ export function ConsumerPage({ onOpenDetail }: Props) {
       })
       .catch(() => setStatus("error"));
   }, [filter, area, halalOnly, trending, center]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const categoryById = useMemo(() => {
     const map = new Map<string, Category>();
@@ -147,11 +153,7 @@ export function ConsumerPage({ onOpenDetail }: Props) {
         <p className={STATUS_LINE}>memuat status hari ini...</p>
       )}
 
-      {status === "error" && (
-        <p className={ERROR_LINE}>
-          gagal memuat data. cek apakah API sedang jalan.
-        </p>
-      )}
+      {status === "error" && <ErrorState onRetry={load} />}
 
       {status === "ready" && listings.length === 0 && (
         <div className={`${STATUS_LINE} py-12`}>

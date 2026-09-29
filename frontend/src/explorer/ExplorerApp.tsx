@@ -108,7 +108,10 @@ export function ExplorerApp({
   const [isAdmin, setIsAdmin] = useState(false);
 
   // ----- Data -----
-  useEffect(() => {
+  // Dipisah jadi callback supaya tombol "Coba lagi" di DirectoryTab bisa
+  // memuat ulang dataset tanpa reload halaman (tier 0 #34).
+  const loadPlaces = useCallback(() => {
+    setStatus("loading");
     fetchPlaces()
       .then((data) => {
         setPlaces(data);
@@ -116,6 +119,10 @@ export function ExplorerApp({
       })
       .catch(() => setStatus("error"));
   }, []);
+
+  useEffect(() => {
+    loadPlaces();
+  }, [loadPlaces]);
 
   // Lapisan live: penyedia yang check-in hari ini. Radius 20 km mencakup
   // Kota + Kab. Tegal + Brebes (default endpoint = 5 km, wajib eksplisit).
@@ -345,9 +352,12 @@ export function ExplorerApp({
       ? ([["analytics", "fa-chart-pie", "Dashboard & Statistik"]] as const)
       : []),
   ];
+  // Tab Tersimpan ikut tampil di mobile (tier 0 #34) — favorit tidak lagi
+  // hanya bisa dijangkau dari nav desktop.
   const mobileTabs: NavTab[] = [
     ["directory", "fa-table-cells-large", "Direktori"],
     ["map", "fa-map-location-dot", "Peta"],
+    ["favorites", "fa-heart", "Tersimpan"],
     ...(isAdmin ? ([["analytics", "fa-chart-pie", "Statistik"]] as const) : []),
   ];
 
@@ -406,6 +416,10 @@ export function ExplorerApp({
     [filteredPlaces],
   );
 
+  // KPI ditampilkan "--" sampai dataset siap (tier 0 #34) — jangan tampilkan
+  // nol palsu yang terbaca "tidak ada data".
+  const kpiReady = status === "ready";
+
   return (
     <div className="explorer bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
       {/* Top Meta Banner */}
@@ -421,16 +435,17 @@ export function ExplorerApp({
           </div>
           <div className="flex items-center space-x-4 text-xs">
             <span>
-              <i className="fa-solid fa-store mr-1"></i> {kpis.totalPlaces}{" "}
-              Tempat
+              <i className="fa-solid fa-store mr-1"></i>{" "}
+              {kpiReady ? kpis.totalPlaces : "--"} Tempat
             </span>
             <span className="hidden sm:inline">
               <i className="fa-solid fa-star text-amber-300 mr-1"></i> Avg{" "}
-              {kpis.avgRating}★
+              {kpiReady ? kpis.avgRating : "--"}★
             </span>
             <span className="hidden md:inline">
               <i className="fa-solid fa-comments mr-1"></i>{" "}
-              {kpis.totalReviews.toLocaleString("id-ID")}+ Ulasan
+              {kpiReady ? kpis.totalReviews.toLocaleString("id-ID") : "--"}+{" "}
+              Ulasan
             </span>
           </div>
         </div>
@@ -568,13 +583,13 @@ export function ExplorerApp({
             </div>
           </div>
 
-          {/* Mobile Tabs Bar */}
+          {/* Mobile Tabs Bar — min-h 44px supaya nyaman ditap (tier 0 #34) */}
           <div className="flex lg:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
             {mobileTabs.map(([id, icon, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
-                className={`px-3 py-1.5 text-xs rounded-lg whitespace-nowrap ${
+                className={`inline-flex items-center px-3 py-2 min-h-[44px] text-xs rounded-lg whitespace-nowrap ${
                   tab === id
                     ? "text-emerald-600 font-semibold"
                     : "text-slate-600 dark:text-slate-400"
@@ -602,7 +617,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-emerald-950 dark:text-emerald-200">
-                {kpis.totalPlaces}
+                {kpiReady ? kpis.totalPlaces : "--"}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Total Tempat
@@ -616,7 +631,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-amber-950 dark:text-amber-200">
-                {kpis.avgRating} ★
+                {kpiReady ? kpis.avgRating : "--"} ★
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Rata-rata Rating
@@ -630,7 +645,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-blue-950 dark:text-blue-200">
-                {kpis.totalReviews.toLocaleString("id-ID")}
+                {kpiReady ? kpis.totalReviews.toLocaleString("id-ID") : "--"}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Total Ulasan
@@ -644,7 +659,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-purple-950 dark:text-purple-200">
-                {kpis.totalCategories}
+                {kpiReady ? kpis.totalCategories : "--"}
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Kategori Kuliner
@@ -672,7 +687,7 @@ export function ExplorerApp({
             </div>
             <div>
               <div className="text-lg font-extrabold text-teal-950 dark:text-teal-200">
-                {kpis.photoCount}+
+                {kpiReady ? kpis.photoCount : "--"}+
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Galeri Foto
@@ -708,6 +723,7 @@ export function ExplorerApp({
             setQuick,
           }}
           onReset={resetFilters}
+          onRetry={loadPlaces}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
           onOpenPlace={setModalPlaceId}

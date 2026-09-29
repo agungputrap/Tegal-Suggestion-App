@@ -108,12 +108,15 @@ export function ListingCard({
       </div>
 
       <div className="p-4 flex-grow flex flex-col">
-        <h3
-          className="font-bold text-slate-900 dark:text-white text-base line-clamp-1 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition"
+        {/* Judul = elemen aksesibel kartu (tier 0 #34): button asli supaya
+            bisa dikeyboard, bukan div onClick */}
+        <button
+          type="button"
           onClick={onOpenDetail}
+          className="block w-full text-left font-bold text-slate-900 dark:text-white text-base line-clamp-1 hover:text-emerald-600 dark:hover:text-emerald-400 transition cursor-pointer"
         >
           {listing.name}
-        </h3>
+        </button>
 
         <div className="flex items-center flex-wrap gap-x-2 text-xs text-slate-500 dark:text-slate-400 mt-1.5 mb-3">
           {listing.distance_km != null && (
@@ -146,7 +149,7 @@ export function ListingCard({
             onClick={handleConfirm}
             disabled={confirmed}
             title="Konfirmasi bahwa usaha ini benar-benar buka hari ini"
-            className={`text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition ${
+            className={`text-xs font-semibold px-3 py-2 min-h-[44px] rounded-lg transition ${
               confirmed
                 ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600"

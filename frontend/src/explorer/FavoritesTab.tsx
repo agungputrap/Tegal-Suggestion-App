@@ -33,7 +33,7 @@ export function FavoritesTab({
             <i className="fa-solid fa-heart text-rose-500 mr-2"></i> Tempat
             Kuliner Tersimpan &amp; Komparasi
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Tandai tempat favorit Anda untuk membandingkan fasilitas, harga, dan
             rating secara berdampingan.
           </p>
@@ -54,7 +54,7 @@ export function FavoritesTab({
               <i className="fa-regular fa-heart"></i>
             </div>
             <h3 className="text-base font-bold">Belum ada tempat tersimpan</h3>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Klik ikon hati pada kartu tempat kuliner di direktori untuk
               menyimpannya ke sini.
             </p>
@@ -76,13 +76,14 @@ export function FavoritesTab({
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                     {p.category}
                   </span>
-                  <h4
+                  <button
+                    type="button"
                     onClick={() => onOpenPlace(p.id)}
-                    className="font-bold text-slate-900 dark:text-white text-base mt-1 hover:text-emerald-600 cursor-pointer"
+                    className="block w-full text-left font-bold text-slate-900 dark:text-white text-base mt-1 hover:text-emerald-600 cursor-pointer"
                   >
                     {p.title}
-                  </h4>
-                  <div className="text-xs text-slate-500 mt-1">
+                  </button>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     <span className="text-amber-500 font-bold">
                       ★ {formatRating(p)}
                     </span>

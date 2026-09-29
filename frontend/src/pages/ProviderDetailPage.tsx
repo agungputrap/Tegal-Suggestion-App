@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   fetchCategories,
   fetchProvider,
@@ -11,7 +11,8 @@ import {
   type Provider,
 } from "../api";
 import { FALLBACK_IMAGE_LARGE } from "../explorer/helpers";
-import { BTN_SECONDARY, CARD, ERROR_LINE, LABEL, STATUS_LINE } from "../components/ui";
+import { ErrorState } from "../components/ErrorState";
+import { BTN_SECONDARY, CARD, LABEL, STATUS_LINE } from "../components/ui";
 
 function formatRupiah(n: number): string {
   return `Rp ${n.toLocaleString("id-ID")}`;
@@ -31,7 +32,9 @@ export function ProviderDetailPage({ id, onBack }: Props) {
     "loading",
   );
 
-  useEffect(() => {
+  // Fetch detail — callback supaya tombol "Coba lagi" bisa memuat ulang
+  // saat koneksi putus (tier 0 #34).
+  const load = useCallback(() => {
     setStatus("loading");
     setNotFound(false);
     trackProviderView(id);
@@ -55,12 +58,16 @@ export function ProviderDetailPage({ id, onBack }: Props) {
       });
   }, [id]);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
   if (status === "loading") {
     return <p className={STATUS_LINE}>memuat detail penyedia...</p>;
   }
 
   if (status === "error") {
-    return <p className={ERROR_LINE}>gagal memuat data. cek apakah API sedang jalan.</p>;
+    return <ErrorState onRetry={load} />;
   }
 
   if (notFound || !provider) {
@@ -156,7 +163,7 @@ export function ProviderDetailPage({ id, onBack }: Props) {
             {isJajanan ? "Menu hari ini" : "Daftar jasa & harga"}
           </h4>
           {items === null ? (
-            <p className="text-xs text-slate-500">memuat item...</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">memuat item...</p>
           ) : availableItems.length === 0 ? (
             <p className="text-xs text-slate-400">
               Belum ada daftar {isJajanan ? "menu" : "jasa"} yang tersedia hari

@@ -4,6 +4,12 @@ import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { Place } from "./types";
+import { ErrorState } from "../components/ErrorState";
+import {
+  tileAttributionForTheme,
+  tilesForTheme,
+} from "../components/mapTiles";
+import { useDarkClass } from "../hooks/useDarkMode";
 import {
   FALLBACK_IMAGE_MEDIUM,
   FALLBACK_IMAGE_SMALL,
@@ -43,6 +49,7 @@ type Props = {
     setQuick: (v: QuickFilters) => void;
   };
   onReset: () => void;
+  onRetry: () => void;
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   onOpenPlace: (id: string) => void;
@@ -75,6 +82,7 @@ export function DirectoryTab({
   filters,
   onFilterChange,
   onReset,
+  onRetry,
   favorites,
   onToggleFavorite,
   onOpenPlace,
@@ -98,7 +106,8 @@ export function DirectoryTab({
             {filters.search && (
               <button
                 onClick={() => onFilterChange.setSearch("")}
-                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                title="Bersihkan pencarian"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <i className="fa-solid fa-circle-xmark"></i>
               </button>
@@ -174,7 +183,7 @@ export function DirectoryTab({
                     [key]: !filters.quick[key],
                   })
                 }
-                className={`qf-btn px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-500 transition ${
+                className={`qf-btn inline-flex items-center px-3.5 py-2 min-h-[44px] rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-500 transition ${
                   filters.quick[key] ? "active" : ""
                 }`}
               >
@@ -183,7 +192,7 @@ export function DirectoryTab({
             ))}
             <button
               onClick={onReset}
-              className="text-xs text-rose-500 hover:underline ml-2"
+              className="inline-flex items-center min-h-[44px] px-2 text-xs text-rose-500 hover:underline ml-2"
             >
               <i className="fa-solid fa-rotate-left mr-1"></i>Reset
             </button>
@@ -195,7 +204,7 @@ export function DirectoryTab({
                 key={key}
                 onClick={() => onViewChange(key)}
                 title={title}
-                className={`p-1.5 rounded-lg text-xs ${
+                className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-xs ${
                   view === key
                     ? "text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-700 shadow-xs"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-900"
@@ -223,18 +232,14 @@ export function DirectoryTab({
         </div>
       </div>
 
-      {status === "loading" && (
-        <div className="p-8 text-center text-sm text-slate-500">
-          <i className="fa-solid fa-spinner fa-spin mr-2"></i>Memuat dataset
-          F&amp;B...
-        </div>
-      )}
+      {status === "loading" && <GridSkeleton />}
 
       {status === "error" && (
-        <div className="p-8 text-center text-sm text-rose-500">
-          Gagal memuat data. Pastikan API berjalan di
-          <code className="mx-1">GET /places</code>.
-        </div>
+        <ErrorState
+          onRetry={onRetry}
+          title="Gagal memuat data F&B"
+          message="Koneksi terputus — coba lagi ya."
+        />
       )}
 
       {status === "ready" && view === "grid" && (
@@ -265,6 +270,33 @@ export function DirectoryTab({
   );
 }
 
+// ---------- SKELETON ----------
+// Skeleton kartu direktori selama dataset ~1.5MB dimuat (tier 0 #34) —
+// terasa lebih cepat daripada spinner, apalagi di jaringan lambat.
+function GridSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+      aria-hidden="true"
+    >
+      {Array.from({ length: count }, (_, i) => (
+        <div
+          key={i}
+          className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm animate-pulse"
+        >
+          <div className="h-48 bg-slate-200 dark:bg-slate-800" />
+          <div className="p-4 space-y-3">
+            <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded" />
+            <div className="h-9 w-full bg-slate-200 dark:bg-slate-700 rounded-xl" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ---------- Empty state ----------
 function EmptyState({ onReset }: { onReset: () => void }) {
   return (
@@ -275,7 +307,7 @@ function EmptyState({ onReset }: { onReset: () => void }) {
       <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">
         Tidak ada tempat kuliner ditemukan
       </h3>
-      <p className="text-xs text-slate-500 mt-1">
+      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
         Coba sesuaikan kata kunci pencarian atau filter yang dipilih.
       </p>
       <button
@@ -367,7 +399,7 @@ function GridView({
                   onToggleFavorite(p.id);
                 }}
                 title="Simpan ke Favorit"
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 shadow-md flex items-center justify-center transition"
+                className="absolute top-2.5 right-2.5 w-11 h-11 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 shadow-md flex items-center justify-center transition"
               >
                 <i
                   className={`${isFav ? "fa-solid text-rose-500" : "fa-regular"} fa-heart text-sm`}
@@ -389,12 +421,13 @@ function GridView({
             <div className="p-4 flex-grow flex flex-col justify-between">
               <div>
                 <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <h3
+                  <button
+                    type="button"
                     onClick={() => onOpenPlace(p.id)}
-                    className="font-bold text-slate-900 dark:text-white text-base hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition line-clamp-1"
+                    className="block w-full text-left font-bold text-slate-900 dark:text-white text-base hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer transition line-clamp-1"
                   >
                     {p.title}
-                  </h3>
+                  </button>
                 </div>
 
                 <div className="flex items-center space-x-2 text-xs mb-2">
@@ -464,7 +497,7 @@ function ListView({
 }) {
   if (places.length === 0) {
     return (
-      <div className="p-8 text-center text-slate-500">
+      <div className="p-8 text-center text-slate-500 dark:text-slate-400">
         Tidak ada data ditemukan.
       </div>
     );
@@ -501,7 +534,7 @@ function ListView({
               <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base hover:text-emerald-600 transition mt-0.5">
                 {p.title}
               </h4>
-              <div className="flex items-center space-x-3 text-xs text-slate-500 mt-1">
+              <div className="flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
                 <span className="text-amber-500 font-bold">
                   <i className="fa-solid fa-star mr-1"></i>
                   {formatRating(p)}
@@ -564,7 +597,7 @@ function TableView({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {places.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-slate-500">
+                <td colSpan={6} className="p-8 text-center text-slate-500 dark:text-slate-400">
                   Tidak ada data ditemukan.
                 </td>
               </tr>
@@ -575,12 +608,13 @@ function TableView({
                   className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
                 >
                   <td className="p-3">
-                    <div
-                      className="font-bold text-slate-900 dark:text-white cursor-pointer hover:text-emerald-600"
+                    <button
+                      type="button"
+                      className="font-bold text-left text-slate-900 dark:text-white cursor-pointer hover:text-emerald-600"
                       onClick={() => onOpenPlace(p.id)}
                     >
                       {p.title}
-                    </div>
+                    </button>
                     <div className="text-xs text-slate-400">{p.category}</div>
                   </td>
                   <td className="p-3 whitespace-nowrap">
@@ -643,14 +677,16 @@ function SplitView({
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
+  const tilesRef = useRef<L.TileLayer | null>(null);
+  const dark = useDarkClass();
 
   // Init map sekali
   useEffect(() => {
     if (!mapElRef.current || mapRef.current) return;
 
     const map = L.map(mapElRef.current).setView([-6.87, 109.13], 12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
+    tilesRef.current = L.tileLayer(tilesForTheme(dark), {
+      attribution: tileAttributionForTheme(dark),
     }).addTo(map);
 
     layerRef.current = L.layerGroup().addTo(map);
@@ -664,8 +700,17 @@ function SplitView({
       map.remove();
       mapRef.current = null;
       layerRef.current = null;
+      tilesRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Tile ikut tema gelap/terang (tier 0 #34)
+  useEffect(() => {
+    if (!tilesRef.current) return;
+    tilesRef.current.setUrl(tilesForTheme(dark));
+    tilesRef.current.options.attribution = tileAttributionForTheme(dark);
+  }, [dark]);
 
   // Update marker setiap daftar berubah
   useEffect(() => {
@@ -691,7 +736,7 @@ function SplitView({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100vh-280px)] min-h-[550px]">
       <div className="lg:col-span-5 h-full overflow-y-auto custom-scrollbar space-y-3 pr-2">
         {places.length === 0 && (
-          <div className="p-8 text-center text-slate-500">
+          <div className="p-8 text-center text-slate-500 dark:text-slate-400">
             Tidak ada data ditemukan.
           </div>
         )}
@@ -709,7 +754,7 @@ function SplitView({
                 ★ {formatRating(p)}
               </span>
             </div>
-            <div className="text-xs text-slate-500 mt-1 flex items-center justify-between">
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center justify-between">
               <span>
                 {p.category} • {p.city}
               </span>

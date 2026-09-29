@@ -7,6 +7,11 @@ import type { Listing, Place } from "../api";
 import { FALLBACK_IMAGE_MEDIUM, formatCount, formatRating } from "./helpers";
 import { createCustomMarkerIcon } from "./DirectoryTab";
 import { buildLivePinIcon, FALLBACK_PIN_EMOJI, PIN_COLOR } from "../components/mapPins";
+import {
+  tileAttributionForTheme,
+  tilesForTheme,
+} from "../components/mapTiles";
+import { useDarkClass } from "../hooks/useDarkMode";
 import { filterLiveListings, formatLiveDistance, type LiveTypeFilter } from "./liveLayer";
 
 type Props = {
@@ -30,8 +35,10 @@ export function FullMap({
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const liveLayerRef = useRef<L.LayerGroup | null>(null);
+  const tilesRef = useRef<L.TileLayer | null>(null);
   const onOpenPlaceRef = useRef(onOpenPlace);
   const onOpenProviderRef = useRef(onOpenProvider);
+  const dark = useDarkClass();
 
   // Kontrol lapisan live — milik FullMap saja (tidak memengaruhi tab lain)
   const [liveType, setLiveType] = useState<LiveTypeFilter>("semua");
@@ -73,8 +80,8 @@ export function FullMap({
     if (!mapElRef.current || mapRef.current) return;
 
     const map = L.map(mapElRef.current).setView([-6.87, 109.13], 12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
+    tilesRef.current = L.tileLayer(tilesForTheme(dark), {
+      attribution: tileAttributionForTheme(dark),
     }).addTo(map);
 
     const cluster = L.markerClusterGroup({
@@ -102,8 +109,18 @@ export function FullMap({
       mapRef.current = null;
       clusterRef.current = null;
       liveLayerRef.current = null;
+      tilesRef.current = null;
     };
+    // dark hanya nilai awal tile — update tema lewat effect [dark] di bawah
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Tile ikut tema gelap/terang (tier 0 #34)
+  useEffect(() => {
+    if (!tilesRef.current) return;
+    tilesRef.current.setUrl(tilesForTheme(dark));
+    tilesRef.current.options.attribution = tileAttributionForTheme(dark);
+  }, [dark]);
 
   // Update marker direktori ketika daftar/visibilitas berubah (port dari
   // updateFullMapMarkers)
@@ -273,7 +290,7 @@ export function FullMap({
           <span className="text-sm font-bold">
             Peta Tegal — Direktori &amp; Buka Hari Ini
           </span>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-slate-500 dark:text-slate-400">
             ({places.length} tempat · {liveListings.length} buka hari ini)
           </span>
         </div>

@@ -459,7 +459,7 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
-              placeholder="mis. buka jam 6 pagi, khusus wilayah Lowokwaru"
+              placeholder="mis. buka jam 6 pagi, khusus wilayah Margadana"
             />
           </label>
 
@@ -545,7 +545,18 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
           )}
         </div>
 
-        <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          {/* Portal kelola terjangkau lagi setelah approved (tier 0 #34) —
+              magic-link /kelola/<token> dari token registrasi yang tersimpan */}
+          {getStoredOwnerToken() && (
+            <a
+              className={`${BTN_SECONDARY} w-full`}
+              href={`/kelola/${getStoredOwnerToken()}`}
+            >
+              <i className="fa-solid fa-key"></i>
+              <span>Buka Portal /kelola (atur menu &amp; jam buka)</span>
+            </a>
+          )}
           <button className={BTN_SECONDARY} onClick={handleGantiAkun}>
             <i className="fa-solid fa-right-from-bracket"></i>
             <span>Ganti akun / keluar</span>
