@@ -459,7 +459,7 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
-              placeholder="mis. buka jam 6 pagi, khusus wilayah Lowokwaru"
+              placeholder="mis. buka jam 6 pagi, khusus wilayah Margadana"
             />
           </label>
 

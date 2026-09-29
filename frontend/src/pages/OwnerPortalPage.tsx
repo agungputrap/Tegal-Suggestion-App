@@ -12,6 +12,7 @@ import {
 } from "../api";
 import { KECAMATAN } from "../data/kecamatan";
 import { useDarkMode } from "../hooks/useDarkMode";
+import { ErrorState } from "../components/ErrorState";
 import {
   BTN_DANGER,
   BTN_PRIMARY,
@@ -85,17 +86,11 @@ export function OwnerPortalPage({ token }: Props) {
         )}
 
         {status === "error" && (
-          <div className={`${CARD} p-6 text-center`}>
-            <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto mb-3 text-2xl">
-              <i className="fa-solid fa-link-slash"></i>
-            </div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              Portal tidak bisa dibuka
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              {error}
-            </p>
-          </div>
+          <ErrorState
+            onRetry={reload}
+            title="Portal tidak bisa dibuka"
+            message={error || "Koneksi terputus — coba lagi ya."}
+          />
         )}
 
         {status === "ready" && data && (

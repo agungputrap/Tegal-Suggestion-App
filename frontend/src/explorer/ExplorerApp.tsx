@@ -108,7 +108,10 @@ export function ExplorerApp({
   const [isAdmin, setIsAdmin] = useState(false);
 
   // ----- Data -----
-  useEffect(() => {
+  // Dipisah jadi callback supaya tombol "Coba lagi" di DirectoryTab bisa
+  // memuat ulang dataset tanpa reload halaman (tier 0 #34).
+  const loadPlaces = useCallback(() => {
+    setStatus("loading");
     fetchPlaces()
       .then((data) => {
         setPlaces(data);
@@ -116,6 +119,10 @@ export function ExplorerApp({
       })
       .catch(() => setStatus("error"));
   }, []);
+
+  useEffect(() => {
+    loadPlaces();
+  }, [loadPlaces]);
 
   // Lapisan live: penyedia yang check-in hari ini. Radius 20 km mencakup
   // Kota + Kab. Tegal + Brebes (default endpoint = 5 km, wajib eksplisit).
@@ -708,6 +715,7 @@ export function ExplorerApp({
             setQuick,
           }}
           onReset={resetFilters}
+          onRetry={loadPlaces}
           favorites={favorites}
           onToggleFavorite={toggleFavorite}
           onOpenPlace={setModalPlaceId}

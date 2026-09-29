@@ -4,6 +4,7 @@ import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { Place } from "./types";
+import { ErrorState } from "../components/ErrorState";
 import {
   FALLBACK_IMAGE_MEDIUM,
   FALLBACK_IMAGE_SMALL,
@@ -43,6 +44,7 @@ type Props = {
     setQuick: (v: QuickFilters) => void;
   };
   onReset: () => void;
+  onRetry: () => void;
   favorites: string[];
   onToggleFavorite: (id: string) => void;
   onOpenPlace: (id: string) => void;
@@ -75,6 +77,7 @@ export function DirectoryTab({
   filters,
   onFilterChange,
   onReset,
+  onRetry,
   favorites,
   onToggleFavorite,
   onOpenPlace,
@@ -231,10 +234,11 @@ export function DirectoryTab({
       )}
 
       {status === "error" && (
-        <div className="p-8 text-center text-sm text-rose-500">
-          Gagal memuat data. Pastikan API berjalan di
-          <code className="mx-1">GET /places</code>.
-        </div>
+        <ErrorState
+          onRetry={onRetry}
+          title="Gagal memuat data F&B"
+          message="Koneksi terputus — coba lagi ya."
+        />
       )}
 
       {status === "ready" && view === "grid" && (
