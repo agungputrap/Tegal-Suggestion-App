@@ -87,7 +87,9 @@ Env vars:
 
 ## Seed data
 
-Skema dikelola lewat **d1 migrations** (`backend/migrations/`) — migrasi baseline menyemai tabel `categories` (gorengan, kue basah, servis AC, tukang, …), diterapkan oleh `db:migrate:local` / `db:migrate:remote`. Migrasi baru: `wrangler d1 migrations create <nama>` di `backend/`, tulis SQL, lalu apply sama seperti di atas. For demo-day provider data, register a few providers + checkins via the API (see smoke test above) or the Provider page in the frontend.
+Skema dikelola lewat **d1 migrations** (`backend/migrations/`) — migrasi baseline menyemai tabel `categories` (gorengan, kue basah, servis AC, tukang, …), diterapkan oleh `db:migrate:local` / `db:migrate:remote`. Migrasi baru: `wrangler d1 migrations create <nama>` di `backend/`, tulis SQL, lalu apply sama seperti di atas.
+
+**Data penyedia demo (demo day, #23/#24):** `cd backend && npm run db:seed:demo` menyemai 18 bisnis campuran food+jasa (10 "buka hari ini") **lewat API** — backend lokal harus jalan dulu. Idempoten (kunci = nomor HP); **jalankan ulang pagi hari demo** untuk refresh check-in hari ini (cron expire-kan listing tengah malam WIB). Untuk produksi: `SEED_API_URL=https://<worker> ADMIN_TOKEN=<token> npm run db:seed:demo`. Pendaftaran penyedia NYATA tetap manual via form/API (see smoke test above) or the Provider page in the frontend.
 
 The Explorer page reads from the `places` table — seed it with `npm run db:seed:places` (local) or `npm run db:seed:places:remote` (production D1). Source: `backend/seeds/tegal-fnb.csv` (Google Maps export); the generated `backend/seed-places.sql` is gitignored — regenerate any time with the same command.
 

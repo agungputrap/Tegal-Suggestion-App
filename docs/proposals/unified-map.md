@@ -1,6 +1,6 @@
 # Proposal: Peta Satu — Opsi C, Peta Berlapis (Layered Hybrid)
 
-> **Status:** Proposal untuk didiskusikan sebelum demo day (menindaklanjuti README "Known gaps" #3).
+> **Status:** DIADOPSI — fase 1 shipped (#21/#22), kode fase 2 shipped (#23/#24), uji Overture fase 4 selesai (lihat bagian 6). Fase 3 (claim-and-verify) menunggu pasca-hackathon.
 > **Tanggal:** 2026-09-29 · **Author:** Gan Fitran (riset via 3 jalur: inventory kode, docs PRD/keputusan, riset eksternal data-source)
 > **Keputusan yang diminta:** setuju/tidak pada Fase 1–2 untuk demo day; Fase 3–4 sebagai arah pasca-hackathon.
 
@@ -150,8 +150,8 @@ Pola standar industri (Google Business Profile, Yelp, TripAdvisor): direktori da
 
 ## 6. Fase 4 — Higiene lisensi
 
-1. **Uji Overture** (CDLA-Permissive, gratis) sebagai fallback bersih: `overturemaps download --bbox=109.08,-6.93,109.22,-6.80 -t places` → hitung coverage Tegal. Kalau layak: sumber direktori v2.
-2. **Containerisasi ToS**: data scrape Google Maps hanya untuk demo/internal; tidak ikut dalam peluncuran publik/monetisasi tanpa keputusan lisensi. Catat di decisions.md saat demo.
+1. **Uji Overture** (CDLA-Permissive, gratis) sebagai fallback bersih — **TERUJI 2026-09-29, HASIL POSITIF**: `overturemaps download --bbox=109.08,-6.93,109.22,-6.80 -t place -f geojson` menghasilkan **5.457 POI** untuk area Tegal (vs 63 di scrape saat ini!) — ±1.153 makan-minum (restaurant 637, cafe 119, casual_eatery 119, coffee_shop 89), jasa rumah tangga tipis tapi ada (laundry_service 25, building_or_construction_service 17; di luar itu personal/beauty 154, otomotif 130). Lisensi **CDLA-Permissive-2.0** (sumber utama: dataset Meta). Catatan skema: properti rilis terbaru memakai `basic_category`/`taxonomy`, bukan `categories.main` dari dokumentasi lama. → Migrasi direktori F&B ke Overture layak jadi task pasca-hackathon; jasa tetap andalkan check-in live + rekrutmen.
+2. **Containerisasi ToS**: data scrape Google Maps hanya untuk demo/internal; tidak ikut dalam peluncuran publik/monetisasi tanpa keputusan lisensi. Tercatat di `docs/decisions.md` 2026-09-29.
 
 ## 7. Risiko & mitigasi
 
@@ -165,9 +165,9 @@ Pola standar industri (Google Business Profile, Yelp, TripAdvisor): direktori da
 
 ## 8. Pertanyaan terbuka (untuk diskusi tim)
 
-1. Setuju demo day berjalan di atas data scrape Google Maps (ToS) dengan Overture sebagai fallback tercatat — atau blok dulu sampai sumber bersih lolos uji?
-2. Tab default Explorer setelah Fase 1: tetap "Direktori" (usulan) atau langsung "Peta"?
-3. Fase 2: berapa banyak provider demo realistis yang bisa direkrut nyata sebelum demo day (target minimal 5)?
+1. ~~Setuju demo day berjalan di atas data scrape Google Maps (ToS) dengan Overture sebagai fallback tercatat — atau blok dulu?~~ **Terjawab 2026-09-29:** Overture lolos uji (5.457 POI Tegal, CDLA-Permissive — bagian 6) — demo jalan dengan scrape, migrasi Overture masuk backlog pasca-hackathon.
+2. Tab default Explorer setelah Fase 1: tetap "Direktori" (usulan, sudah diimplementasi begitu) atau langsung "Peta"?
+3. Fase 2: berapa banyak provider demo realistis yang bisa direkrut nyata sebelum demo day (target minimal 5)? — **tetap terbuka, tugas manual tim.**
 
 ## 9. Ringkasan effort
 
