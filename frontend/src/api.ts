@@ -28,6 +28,9 @@ export type Listing = {
   // Fase 0 strategi (#27): sinyal kepercayaan
   streak_days?: number; // hari beruntun check-in berakhir hari ini
   confirm_count?: number; // konfirmasi pelanggan "masih buka" hari ini
+  // Tier 1 (#36): check-in pertama hari ini, UTC "YYYY-MM-DD HH:MM:SS"
+  // (format SQLite CURRENT_TIMESTAMP dari backend)
+  last_checkin_at?: string;
 };
 
 // Item menu/price-list penyedia (bentuk sama dengan backend/src/types.ts)

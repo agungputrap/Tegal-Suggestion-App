@@ -134,3 +134,42 @@ export function formatRating(place: Place): string {
 export function formatCount(n: number): string {
   return (n || 0).toLocaleString("id-ID");
 }
+
+// ---------- Freshness check-in (tier 1 #36) ----------
+// Timestamp dari backend berbentuk UTC "YYYY-MM-DD HH:MM:SS" (SQLite
+// CURRENT_TIMESTAMP). Konversi ke label relatif Indonesia; null kalau
+// tidak bisa diparse / sudah terlalu lama. nowMs opsional untuk test.
+
+// > 4 jam tanpa kabar → badge memudar (prinsip 5 uiux-plan: data basi
+// memudar visual, pola Waze)
+export const FRESHNESS_STALE_MS = 4 * 60 * 60 * 1000;
+
+function parseSqliteUtc(sqliteUtc: string): number | null {
+  const t = Date.parse(`${sqliteUtc.replace(" ", "T")}Z`);
+  return Number.isNaN(t) ? null : t;
+}
+
+export function relativeCheckinLabel(
+  sqliteUtc: string | undefined | null,
+  nowMs: number = Date.now(),
+): string | null {
+  if (!sqliteUtc) return null;
+  const t = parseSqliteUtc(sqliteUtc);
+  if (t === null) return null;
+  const diffMin = Math.max(0, Math.floor((nowMs - t) / 60_000));
+  if (diffMin < 1) return "baru saja";
+  if (diffMin < 60) return `${diffMin} mnt lalu`;
+  const hours = Math.floor(diffMin / 60);
+  if (hours < 24) return `${hours} jam lalu`;
+  return null; // lebih dari sehari — jangan tampilkan, sudah basi
+}
+
+export function isStaleCheckin(
+  sqliteUtc: string | undefined | null,
+  nowMs: number = Date.now(),
+): boolean {
+  if (!sqliteUtc) return false;
+  const t = parseSqliteUtc(sqliteUtc);
+  if (t === null) return false;
+  return nowMs - t > FRESHNESS_STALE_MS;
+}

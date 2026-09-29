@@ -1,7 +1,11 @@
 import { useState } from "react";
 import type { Listing } from "../api";
 import { confirmOpen, resolvePhotoUrl, waChatLink } from "../api";
-import { FALLBACK_IMAGE_MEDIUM } from "../explorer/helpers";
+import {
+  FALLBACK_IMAGE_MEDIUM,
+  isStaleCheckin,
+  relativeCheckinLabel,
+} from "../explorer/helpers";
 import { photoErrorHandler } from "./photo";
 import { CARD } from "./ui";
 
@@ -53,6 +57,14 @@ export function ListingCard({
   );
   const [confirmCount, setConfirmCount] = useState(listing.confirm_count ?? 0);
 
+  // Freshness (tier 1 #36): "Buka · check-in X mnt lalu" — timestamp bukan
+  // sekadar badge. Tanpa data check-in jatuh ke label tanggal lama.
+  const stale = isStaleCheckin(listing.last_checkin_at);
+  const checkinLabel = relativeCheckinLabel(listing.last_checkin_at);
+  const badgeLabel = checkinLabel
+    ? `Buka · check-in ${checkinLabel}`
+    : `Aktif · ${todayLabel()}`;
+
   async function handleConfirm() {
     if (confirmed) return;
     try {
@@ -94,10 +106,20 @@ export function ListingCard({
           </div>
         )}
 
-        {/* Badge aktif hari ini */}
-        <span className="absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/90 text-white backdrop-blur-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse mr-1"></span>
-          Aktif · {todayLabel()}
+        {/* Badge aktif hari ini — memudar kalau check-in basi >4 jam (tier 1) */}
+        <span
+          className={`absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold backdrop-blur-sm ${
+            stale
+              ? "bg-slate-500/70 text-white/70"
+              : "bg-emerald-500/90 text-white"
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full bg-white mr-1 ${
+              stale ? "" : "animate-pulse"
+            }`}
+          ></span>
+          {badgeLabel}
         </span>
 
         {/* Kategori */}
