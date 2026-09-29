@@ -14,7 +14,9 @@ export function ErrorState({
   message?: string;
 }) {
   return (
-    <div className="py-10 text-center space-y-3">
+    // role="alert" (sweep a11y tier 2 #36): kegagalan fetch diumumkan
+    // screen reader tanpa harus fokus pindah ke region ini.
+    <div className="py-10 text-center space-y-3" role="alert">
       <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto text-2xl">
         <i className="fa-solid fa-plug-circle-xmark"></i>
       </div>

@@ -171,7 +171,7 @@ export function DirectoryTab({
         {/* Quick Filter Pills + View Switcher */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <span className="text-slate-400 text-xs mr-1">
+            <span className="text-slate-500 text-xs mr-1">
               <i className="fa-solid fa-sliders mr-1"></i>Filter Cepat:
             </span>
             {QUICK_FILTERS.map(({ key, label }) => (
@@ -226,12 +226,17 @@ export function DirectoryTab({
           </span>{" "}
           dari <span className="font-bold">{totalCount}</span> tempat kuliner
         </div>
-        <div className="text-xs text-slate-400">
+        <div className="text-xs text-slate-500">
           <i className="fa-regular fa-lightbulb text-amber-500 mr-1"></i>
           Klik kartu untuk melihat foto, jam buka &amp; ulasan
         </div>
       </div>
 
+      {status === "loading" && (
+        <p className="sr-only" role="status">
+          Memuat data usaha…
+        </p>
+      )}
       {status === "loading" && <GridSkeleton />}
 
       {status === "error" && (
@@ -529,7 +534,7 @@ function ListView({
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                   {p.category}
                 </span>
-                <span className="text-xs text-slate-400">{p.city}</span>
+                <span className="text-xs text-slate-500">{p.city}</span>
               </div>
               <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base hover:text-emerald-600 transition mt-0.5">
                 {p.title}
@@ -615,13 +620,13 @@ function TableView({
                     >
                       {p.title}
                     </button>
-                    <div className="text-xs text-slate-400">{p.category}</div>
+                    <div className="text-xs text-slate-500">{p.category}</div>
                   </td>
                   <td className="p-3 whitespace-nowrap">
                     <span className="font-bold text-amber-500">
                       ★ {formatRating(p)}
                     </span>
-                    <span className="text-xs text-slate-400 ml-1">
+                    <span className="text-xs text-slate-500 ml-1">
                       ({p.review_count || 0})
                     </span>
                   </td>
@@ -676,7 +681,7 @@ function SplitView({
 }) {
   const mapElRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const layerRef = useRef<L.LayerGroup | null>(null);
+  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const tilesRef = useRef<L.TileLayer | null>(null);
   const dark = useDarkClass();
 
@@ -684,12 +689,20 @@ function SplitView({
   useEffect(() => {
     if (!mapElRef.current || mapRef.current) return;
 
-    const map = L.map(mapElRef.current).setView([-6.87, 109.13], 12);
+    // preferCanvas + clustering — standar peta 2025 (tier 2 #36), sama
+    // dengan FullMap: banyak pin di peta kecil tidak lagi menumpuk DOM.
+    const map = L.map(mapElRef.current, { preferCanvas: true }).setView(
+      [-6.87, 109.13],
+      12,
+    );
     tilesRef.current = L.tileLayer(tilesForTheme(dark), {
       attribution: tileAttributionForTheme(dark),
     }).addTo(map);
 
-    layerRef.current = L.layerGroup().addTo(map);
+    clusterRef.current = L.markerClusterGroup({
+      maxClusterRadius: 40,
+      showCoverageOnHover: false,
+    }).addTo(map);
     mapRef.current = map;
 
     // Sama seperti FullMap: paksa re-measure supaya tile dirender
@@ -699,7 +712,7 @@ function SplitView({
       clearTimeout(sizeTimer);
       map.remove();
       mapRef.current = null;
-      layerRef.current = null;
+      clusterRef.current = null;
       tilesRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -714,17 +727,16 @@ function SplitView({
 
   // Update marker setiap daftar berubah
   useEffect(() => {
-    const map = mapRef.current;
-    const layer = layerRef.current;
-    if (!map || !layer) return;
+    const cluster = clusterRef.current;
+    if (!cluster) return;
 
-    layer.clearLayers();
+    cluster.clearLayers();
     places.forEach((p) => {
       const marker = L.marker([p.latitude, p.longitude], {
         icon: createCustomMarkerIcon(p.category),
       });
       marker.on("click", () => onOpenPlace(p.id));
-      layer.addLayer(marker);
+      cluster.addLayer(marker);
     });
   }, [places, onOpenPlace]);
 
@@ -733,8 +745,10 @@ function SplitView({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100vh-280px)] min-h-[550px]">
-      <div className="lg:col-span-5 h-full overflow-y-auto custom-scrollbar space-y-3 pr-2">
+    // Tinggi peta konsisten (tier 2 #36): 420px mobile / 550px desktop,
+    // sama dengan FullMap & MapView.
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:h-[550px]">
+      <div className="lg:col-span-5 lg:h-full overflow-y-auto custom-scrollbar space-y-3 pr-2">
         {places.length === 0 && (
           <div className="p-8 text-center text-slate-500 dark:text-slate-400">
             Tidak ada data ditemukan.
@@ -776,7 +790,7 @@ function SplitView({
           </div>
         ))}
       </div>
-      <div className="lg:col-span-7 h-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative">
+      <div className="lg:col-span-7 h-[420px] lg:h-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative">
         <div ref={mapElRef} className="absolute inset-0"></div>
       </div>
     </div>

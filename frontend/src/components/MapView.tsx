@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
 import L from "leaflet";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { Category, Listing } from "../api";
 import {
   buildPinIcon,
@@ -58,11 +61,13 @@ export function MapView({ listings, categories, center }: Props) {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
+    // preferCanvas (tier 2 #36) — konsisten dengan peta Explorer.
     const map = L.map(containerRef.current, {
       zoomControl: false,
       maxBounds: TEGAL_BOUNDS,
       maxBoundsViscosity: 1.0,
       minZoom: 11,
+      preferCanvas: true,
     }).setView([center.lat, center.lng], 14);
 
     tilesRef.current = L.tileLayer(tilesForTheme(dark), {
@@ -70,7 +75,14 @@ export function MapView({ listings, categories, center }: Props) {
       maxZoom: 19,
     }).addTo(map);
 
-    markersRef.current = L.layerGroup().addTo(map);
+    // Clustering (tier 2 #36) — semua marker di peta ini adalah pin LIVE
+    // "buka sekarang", jadi cluster bubar di zoom default (14) ke atas:
+    // pin tunggal harus selalu terlihat, cluster hanya merapikan zoom-out.
+    markersRef.current = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 40,
+      disableClusteringAtZoom: 14,
+    }).addTo(map);
     mapRef.current = map;
 
     return () => {

@@ -270,10 +270,10 @@ function StatsPanel({ token }: { token: string }) {
       {/* Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className={`${CARD} p-5`}>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
             <i className="fa-solid fa-layer-group text-purple-500 mr-2"></i> Per
             Kategori
-          </h4>
+          </h3>
           <div className="space-y-1.5">
             {stats.by_category.map((row) => (
               <div
@@ -290,10 +290,10 @@ function StatsPanel({ token }: { token: string }) {
         </div>
 
         <div className={`${CARD} p-5`}>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
             <i className="fa-solid fa-chart-simple text-blue-500 mr-2"></i> Per
             Jenis
-          </h4>
+          </h3>
           <div className="space-y-1.5">
             {stats.by_type.map((row) => (
               <div
@@ -695,10 +695,10 @@ function CategoriesPanel({ token }: { token: string }) {
       )}
 
       <form className={`${CARD} p-5 space-y-4`} onSubmit={handleAdd}>
-        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
           <i className="fa-solid fa-plus text-emerald-500 mr-2"></i> Tambah
           kategori baru
-        </h4>
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <label className="block">
             <span className={LABEL}>ID (slug, mis. "tukang-las")</span>
