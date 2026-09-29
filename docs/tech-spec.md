@@ -155,6 +155,7 @@ Base path: `/` (no prefix). All responses JSON. Errors use `{"error": "..."}` wi
 | GET | `/listings?type=&category=&lat=&lng=&radius=` | today's active providers; bounding-box prefilter + haversine, sorted by distance; ikutkan **`streak_days`** (check-in beruntun berakhir hari ini) & **`confirm_count`** (konfirmasi hari ini) |
 | GET | `/places` | all 63 reference F&B places (Explorer dataset); JSON columns returned as strings, client-side filter/sort; ikutkan `claimed_provider_id`/`claimed_name`/`claimed_open` untuk place yang diklaim (fase 3 #31) |
 | GET | `/places/:id` | **baru (fase 3 #31)** — satu place + status klaim (untuk prefill form klaim tanpa memuat dataset penuh) |
+| GET | `/places/summary` | **baru (UI/UX Tier 2 #36)** — ringkasan ringkan (~48KB vs ~1.3MB) untuk render pertama Explorer: id/title/category/address/city/rating/review_count/price_range/lat/lng/thumbnail/open_hours(JSON string)/images_count(`json_array_length`). Terdaftar SEBELUM `/places/:id`; dataset penuh tetap via `/places` (lazy-load frontend) |
 
 ### Admin (header `Authorization: Bearer <ADMIN_TOKEN>`)
 

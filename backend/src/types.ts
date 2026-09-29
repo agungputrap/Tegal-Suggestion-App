@@ -72,6 +72,26 @@ export type ActiveListing = Provider & {
   last_checkin_at?: string;
 };
 
+// Baris ringkasan `places` untuk GET /places/summary (UI/UX Tier 2 #36):
+// payload ringan (~15KB vs ~1.5MB) untuk render pertama halaman Explorer —
+// kartu direktori, peta, dan KPI tampil sebelum dataset penuh datang.
+// Kolom berat (images/about/user_reviews/popular_times) sengaja tidak ada.
+export type PlaceSummaryRecord = {
+  id: string;
+  title: string;
+  category: string;
+  address: string | null;
+  city: string | null;
+  rating: number | null;
+  review_count: number;
+  price_range: string | null;
+  latitude: number;
+  longitude: number;
+  thumbnail: string | null;
+  open_hours: string | null; // JSON string — status buka dihitung frontend
+  images_count: number; // json_array_length(images) — untuk KPI Galeri Foto
+};
+
 // Satu baris tabel `places` — dataset F&B Tegal dari Google Maps.
 // Kolom JSON (open_hours, popular_times, images, about, user_reviews,
 // reviews_per_rating) dikirim apa adanya sebagai string; frontend yang parse.

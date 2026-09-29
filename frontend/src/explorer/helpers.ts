@@ -173,3 +173,29 @@ export function isStaleCheckin(
   if (t === null) return false;
   return nowMs - t > FRESHNESS_STALE_MS;
 }
+
+// ---------- Pencarian precompute (tier 2 #36) ----------
+// Blob pencarian lowercase — dibangun SEKALI per place (bukan per keystroke):
+// dulu filter Explorer memanggil JSON.stringify(about/user_reviews) untuk
+// setiap place di setiap ketikan. Field digabung dengan pemisah "\n" yang
+// tidak bisa muncul di hasil JSON.stringify (newline di string JSON
+// ter-escape jadi "\\n"), jadi semantik "match jika ADA field yang memuat
+// query" tetap identik dengan cek per-field.
+
+// JSON `about` lowercase — dipakai juga filter cepat (wifi/outdoor/reservasi)
+// yang dulu stringify ulang di setiap evaluasi filter.
+export function aboutSearchBlob(place: Place): string {
+  return JSON.stringify(place.about).toLowerCase();
+}
+
+export function buildSearchBlob(place: Place): string {
+  return [
+    place.title.toLowerCase(),
+    place.category.toLowerCase(),
+    place.address.toLowerCase(),
+    place.about.length > 0 ? aboutSearchBlob(place) : "",
+    place.user_reviews.length > 0
+      ? JSON.stringify(place.user_reviews).toLowerCase()
+      : "",
+  ].join("\n");
+}

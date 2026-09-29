@@ -115,3 +115,10 @@
 - **Ripple:** registrasi kini 2 langkah (3 field inti → profil opsional via portal endpoints selagi pending); klaim listing pakai SPA navigation (bukan `<a href>` reload); bottom nav mobile baru (`BottomNav.tsx`, safe-area) menggantikan tab atas mobile; hero live "X usaha · Y buka sekarang" di landing (jalur konservatif — direktori tidak dirombak). Rincian lengkap: `docs/uiux-plan.md` §8 "Status eksekusi".
 - **Why:** konversi (WA satu tap), kepercayaan (freshness terverifikasi), dan retensi owner (bot terlihat) adalah tiga lever utama rencana UI/UX.
 - **Review note:** file bersama `backend/src/types.ts` — **kedua owner wajib review** (PR #35, #37); frontend area Budi.
+
+## 2026-09-29 — UI/UX Tier 2 PR A: endpoint ringkasan `GET /places/summary`
+
+- **Decision (API contract — SHARED types.ts):** endpoint publik baru **`GET /places/summary`** mengembalikan `{count, places[]}` berisi subset kolom `places` — `id, title, category, address, city, rating, review_count, price_range, latitude, longitude, thumbnail, open_hours (JSON string), images_count` (`json_array_length(images)`, kolom virtual, tanpa migrasi). Payload ~48KB vs ~1.3MB `GET /places`.
+- **Why:** dataset 1.5MB berada di critical path render pertama (rencana UI/UX Tier 2); di jaringan bottom-decile 5,7Mbps itu ±2-3 detik sebelum pixel pertama direktori. Frontend kini render pertama dari ringkasan, lalu lazy-load dataset penuh dan mengganti in-place; modal yang dibuka saat masih ringkasan memakai `GET /places/:id` yang sudah ada. `open_hours` sengaja ikut agar badge "Buka" tetap dihitung frontend (logika + test `open-hours` yang sudah ada), dan `images_count` agar KPI "Galeri Foto" tidak menampilkan nol palsu.
+- **Frontend ripple:** `fetchPlacesSummary()`; `Place.partial`/`images_count` opsional; blob pencarian precompute sekali per dataset (`buildSearchBlob`/`aboutSearchBlob` — menghapus `JSON.stringify` per keystroke, perilaku identik, +8 test).
+- **Review note:** file bersama `backend/src/types.ts` + `docs/tech-spec.md` — **kedua owner wajib review**; tanpa migrasi, tanpa perubahan endpoint lama.

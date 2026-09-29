@@ -50,6 +50,31 @@ export type Place = {
   claimed_provider_id?: string | null;
   claimed_name?: string | null;
   claimed_open?: number;
+  // Render dari ringkasan (tier 2 #36): true = data dari /places/summary
+  // (tanpa about/ulasan/foto) — dataset penuh lazy-load menyusul. Modal
+  // fetch satu place penuh bila dibuka saat masih partial.
+  partial?: boolean;
+  // Jumlah foto dari backend (summary) — KPI Galeri Foto tanpa muat images.
+  images_count?: number;
+};
+
+// Baris ringkasan dari GET /places/summary (tier 2 #36) — subset kolom
+// PlaceRecord tanpa kolom berat; bentuk sama dengan PlaceSummaryRecord di
+// backend/src/types.ts.
+export type PlaceSummaryRecord = {
+  id: string;
+  title: string;
+  category: string;
+  address: string | null;
+  city: string | null;
+  rating: number | null;
+  review_count: number;
+  price_range: string | null;
+  latitude: number;
+  longitude: number;
+  thumbnail: string | null;
+  open_hours: string | null;
+  images_count: number;
 };
 
 // Bentuk mentah dari GET /places — kolom JSON dikirim sebagai string
@@ -129,5 +154,36 @@ export function toPlace(row: PlaceRecord): Place {
     claimed_provider_id: row.claimed_provider_id ?? null,
     claimed_name: row.claimed_name ?? null,
     claimed_open: row.claimed_open ?? 0,
+  };
+}
+
+// Place dari baris ringkasan (tier 2 #36) — field berat dibiarkan kosong;
+// marker `partial` menandai perlu di-lengkapi sebelum dipakai modal.
+export function toPlaceFromSummary(row: PlaceSummaryRecord): Place {
+  return {
+    id: row.id,
+    title: row.title,
+    category: row.category,
+    address: row.address ?? "",
+    city: row.city ?? "",
+    rating: row.rating,
+    review_count: row.review_count ?? 0,
+    price_range: row.price_range ?? "",
+    phone: "",
+    website: "",
+    thumbnail: row.thumbnail ?? "",
+    latitude: row.latitude,
+    longitude: row.longitude,
+    link: "",
+    street_view_url: "",
+    plus_code: "",
+    open_hours: parseJson<OpenHours | null>(row.open_hours, null),
+    popular_times: null,
+    images: [],
+    about: [],
+    user_reviews: [],
+    reviews_per_rating: null,
+    images_count: row.images_count ?? 0,
+    partial: true,
   };
 }

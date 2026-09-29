@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { Env, PlaceRecord } from "../types";
+import type { Env, PlaceRecord, PlaceSummaryRecord } from "../types";
 import { todayJakarta } from "../geo";
 
 const router = new Hono<{ Bindings: Env }>();
@@ -22,6 +22,30 @@ const CLAIM_SELECT = `
   LEFT JOIN checkins ck
     ON ck.provider_id = p.id AND ck.date = ? AND ck.is_active = 1
 `;
+
+// ---------------------------------------------------------
+// GET /places/summary -> ringkasan ringan untuk render pertama Explorer
+// (UI/UX Tier 2 #36). Tanpa kolom ulasan/foto/about — payload ~15KB vs
+// ~1.5MB di GET /places, jadi kartu/peta/KPI tampil di jaringan lambat
+// sebelum dataset penuh lazy-load menyusul. open_hours tetap disertakan
+// (JSON string, kecil) supaya badge "Buka" dihitung frontend dengan logika
+// yang sudah ada + test-nya; images_count via json_array_length agar KPI
+// Galeri Foto tidak tampil nol palsu.
+// Catatan urutan: HARUS terdaftar sebelum "/places/:id" supaya tidak
+// tertelan param :id.
+// ---------------------------------------------------------
+router.get("/places/summary", async (c) => {
+  const { results } = await c.env.DB.prepare(
+    `SELECT pl.id, pl.title, pl.category, pl.address, pl.city, pl.rating,
+            pl.review_count, pl.price_range, pl.latitude, pl.longitude,
+            pl.thumbnail, pl.open_hours,
+            CASE WHEN pl.images IS NULL THEN 0
+                 ELSE json_array_length(pl.images) END as images_count
+     FROM places pl
+     ORDER BY pl.review_count DESC`,
+  ).all<PlaceSummaryRecord>();
+  return c.json({ count: results.length, places: results });
+});
 
 // ---------------------------------------------------------
 // GET /places -> dataset F&B Tegal dari Google Maps (read-only referensi)
