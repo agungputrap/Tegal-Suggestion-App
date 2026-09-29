@@ -146,7 +146,7 @@ export function ListingCard({
             onClick={handleConfirm}
             disabled={confirmed}
             title="Konfirmasi bahwa usaha ini benar-benar buka hari ini"
-            className={`text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition ${
+            className={`text-xs font-semibold px-3 py-2 min-h-[44px] rounded-lg transition ${
               confirmed
                 ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
                 : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600"

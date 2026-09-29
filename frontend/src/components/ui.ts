@@ -16,9 +16,11 @@ export const STATUS_LINE =
   "text-xs text-slate-500 dark:text-slate-400 text-center py-2";
 export const ERROR_LINE = "text-xs text-rose-500 text-center py-2";
 
-// Pill filter gaya "Filter Cepat" di Explorer (qf-btn)
+// Pill filter gaya "Filter Cepat" di Explorer (qf-btn).
+// min-h 44px = standar touch target (tier 0 #34) — cukup padding, bukan
+// desain baru.
 export function pillClass(active: boolean): string {
-  return `qf-btn px-2.5 py-1 rounded-full border text-xs transition ${
+  return `qf-btn inline-flex items-center px-3.5 py-2 min-h-[44px] rounded-full border text-xs transition ${
     active
       ? "active border-emerald-600"
       : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-500"

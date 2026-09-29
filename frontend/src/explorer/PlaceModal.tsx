@@ -66,19 +66,19 @@ export function PlaceModal({
       }}
     >
       <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden relative">
-        {/* Modal Header (Close & share) */}
+        {/* Modal Header (Close & share) — tombol 44px touch target (#34) */}
         <div className="absolute top-4 right-4 z-20 flex items-center space-x-2">
           <button
             onClick={sharePlace}
             title="Bagikan"
-            className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center transition"
+            className="w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center transition"
           >
             <i className="fa-solid fa-share-nodes text-xs"></i>
           </button>
           <button
             onClick={onClose}
             title="Tutup"
-            className="w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center transition"
+            className="w-11 h-11 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md flex items-center justify-center transition"
           >
             <i className="fa-solid fa-xmark text-sm"></i>
           </button>

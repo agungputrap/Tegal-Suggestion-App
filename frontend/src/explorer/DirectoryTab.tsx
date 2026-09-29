@@ -101,7 +101,8 @@ export function DirectoryTab({
             {filters.search && (
               <button
                 onClick={() => onFilterChange.setSearch("")}
-                className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                title="Bersihkan pencarian"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <i className="fa-solid fa-circle-xmark"></i>
               </button>
@@ -177,7 +178,7 @@ export function DirectoryTab({
                     [key]: !filters.quick[key],
                   })
                 }
-                className={`qf-btn px-2.5 py-1 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-500 transition ${
+                className={`qf-btn inline-flex items-center px-3.5 py-2 min-h-[44px] rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-emerald-500 transition ${
                   filters.quick[key] ? "active" : ""
                 }`}
               >
@@ -186,7 +187,7 @@ export function DirectoryTab({
             ))}
             <button
               onClick={onReset}
-              className="text-xs text-rose-500 hover:underline ml-2"
+              className="inline-flex items-center min-h-[44px] px-2 text-xs text-rose-500 hover:underline ml-2"
             >
               <i className="fa-solid fa-rotate-left mr-1"></i>Reset
             </button>
@@ -198,7 +199,7 @@ export function DirectoryTab({
                 key={key}
                 onClick={() => onViewChange(key)}
                 title={title}
-                className={`p-1.5 rounded-lg text-xs ${
+                className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-xs ${
                   view === key
                     ? "text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-700 shadow-xs"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-900"
@@ -371,7 +372,7 @@ function GridView({
                   onToggleFavorite(p.id);
                 }}
                 title="Simpan ke Favorit"
-                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 shadow-md flex items-center justify-center transition"
+                className="absolute top-2.5 right-2.5 w-11 h-11 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-700 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 shadow-md flex items-center justify-center transition"
               >
                 <i
                   className={`${isFav ? "fa-solid text-rose-500" : "fa-regular"} fa-heart text-sm`}

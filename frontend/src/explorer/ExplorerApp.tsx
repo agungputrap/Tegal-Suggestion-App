@@ -575,13 +575,13 @@ export function ExplorerApp({
             </div>
           </div>
 
-          {/* Mobile Tabs Bar */}
+          {/* Mobile Tabs Bar — min-h 44px supaya nyaman ditap (tier 0 #34) */}
           <div className="flex lg:hidden border-t border-slate-200 dark:border-slate-800 overflow-x-auto py-1 space-x-1">
             {mobileTabs.map(([id, icon, label]) => (
               <button
                 key={id}
                 onClick={() => setTab(id)}
-                className={`px-3 py-1.5 text-xs rounded-lg whitespace-nowrap ${
+                className={`inline-flex items-center px-3 py-2 min-h-[44px] text-xs rounded-lg whitespace-nowrap ${
                   tab === id
                     ? "text-emerald-600 font-semibold"
                     : "text-slate-600 dark:text-slate-400"
