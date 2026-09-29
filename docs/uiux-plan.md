@@ -214,3 +214,41 @@ Semua tier melayani `docs/strategy.md`: **percaya** (timestamp + konfirmasi + fo
 - Bottom-sheet place card di mobile, my-location FAB, hentikan `fitBounds` otomatis, satu tinggi peta, legend collapse (Tier 2).
 - A11y sweep penuh: focus-trap, `aria-live` status async, satu `h1`/view, kontras AA penuh (Tier 2).
 - Streak publik "🔥 N hari beruntun", ping personal, digest bot (Tier 3).
+
+### 8.8 Tier 2 — selesai semua (issue #36, PR #39–#43, 2026-09-29)
+
+> Dieksekusi otomatis sesuai misi "Verify UI/UX Tier 0/1 visually + Execute Tier 2".
+> Gates final: backend `typecheck`+`test` 33/33; frontend `typecheck`+`lint`+`build`+`test` 57/57 (39 lama + 18 baru: 8 search/summary, 10 sw-lib).
+> Deploy produksi: Worker `afef850e`, Pages bundle `index-DSW4B7Dt.js` + `sw.js`. Verifikasi produksi: pages 200, bundle baru terserve, `/places/summary` 48KB/0,65s vs `/places` 1,33MB/2,0s, peta gelap + IA baru + SW aktif dicek visual di produksi.
+
+#### Phase 0 — verifikasi visual (checklist 8.5)
+
+| # | Butir | Hasil |
+|---|-------|-------|
+| 1 | Tile gelap 3 peta | **FAIL ditemukan & diperbaiki** — CartoDB `dark_all` kini menjawab placeholder "API KEY REQUIRED" (regresi produksi Tier 0, bukan salah kode lama). Fix `a96ddc2` (PR #39): satu sumber tile OSM + filter CSS `.dark .leaflet-tile`; bonus: nol flash penukaran tile saat toggle & satu domain tile untuk cache SW. |
+| 2 | Pill 44px @360px | PASS — susunan vertikal rapi, tanpa breakout. |
+| 3 | Hero live + search + feed + nav | PASS — "63 usaha · N buka sekarang" hidup (lokal seeded: 12 buka), search memfilter direktori, feed `overflow-x-auto` 1756px vs 351px viewport (gesture horizontal tak bisa disimulasikan runtime browser — bukti struktural + kartu terpotong di tepi); footer bebas dari bottom nav; `env(safe-area-inset-bottom)` terpasang. |
+| 4 | PlaceModal dialog/WA CTA | PASS — `role="dialog"`+`aria-modal`, fokus masuk & restore ke pemicu, WA CTA hijau tombol pertama footer, tersembunyi untuk place tanpa nomor. **Escape ternyata belum pernah terpasang** (klaim 8.3 meleset) — dilengkapi di PR C. |
+| 5 | Skeleton / KPI "--" | PASS — KPI tampil "--" saat memuat (tangkapan layar 2x); grid skeleton terverifikasi kode+test. |
+| 6 | OG preview | PASS — description + og:* lengkap + twitter:card + favicon + manifest; `og:image` sengaja absen (tidak fabrikasi aset). |
+
+Catatan Phase 0: thumbnail foto GMaps di dataset banyak yang mati (URL expire) — masalah dataset, di luar lingkup UI; interaksi pane browser IAB kadang tidak stabil (ada reset tampilan spontan saat verifikasi; semua temuan divalidasi ulang atomik).
+
+#### Item Tier 2 (urutan PR)
+
+| Item | PR | Commit | Catatan |
+|------|----|--------|---------|
+| Fix tile gelap (Phase 0) | #39 | `a96ddc2` | frontend-only; lihat tabel Phase 0. |
+| PR A — dataset off critical path | #40 | `6574d43` | **Endpoint baru `GET /places/summary`** (SHARED types.ts+tech-spec+decisions; tanpa migrasi): 48KB vs 1,33MB (−96%). Frontend render pertama dari ringkasan, dataset penuh lazy-load; modal partial → `GET /places/:id`; KPI Galeri Foto pakai `images_count` (tanpa nol palsu); `buildSearchBlob`/`aboutSearchBlob` precompute sekali per dataset (hapus JSON.stringify per keystroke; semantik identik; +8 test). Bundle: entry 221,0→221,9KB, ExplorerApp 59,6→59,8KB (win di payload jaringan, bukan bundle). |
+| PR B — PWA offline-first | #41 | `bf0a40a` | Vanilla SW tanpa Workbox: navigasi = SWR kunci `/` (offline shell); dataset API SWR (dicocokkan dari PATH — API lintas origin di produksi); tile/foto SWR dengan trim 400/300; POST tak disentuh; **tanpa skipWaiting** (update aman, berlaku di reload berikutnya); logika murni di `public/sw-lib.js` yang diuji vitest langsung (+10 test); registrasi hanya PROD. Terverifikasi: kedua server dimatikan → reload tetap merender app dari cache. A2HS tetap di luar (Tier 3). |
+| PR C — peta + deep-link + a11y | #42 | `5b4a686` | preferCanvas 3 peta; clustering SplitView & MapView (`disableClusteringAtZoom:14` — pin live tetap terlihat); FAB lokasi-saya; fitBounds berhenti setelah dragstart pengguna; tinggi peta konsisten 420/550; legenda jadi chip collapse. Deep-link `/place/:id` (route App + `initialPlaceId`); share PlaceModal kini membagikan link app. A11y: focus-trap penuh + Escape, h4→h3 (6 file) + h1 portal, `role="alert"`/`role="status"` untuk status async, kontras metadata slate-400→500. |
+| PR D — design system + IA | #43 | `2189b00` | 17 kartu → konstanta `CARD`; pill → `pillClass()`; Archivo Black & JetBrains Mono dipangkas dari fonts; `components/dialogs.tsx` (ConfirmDialog + Toast, ID santai) menggantikan confirm()/alert() di Tersimpan-kosongkan, hapus item portal, share modal (AdminPage sengaja native — area admin di luar lingkup); **IA completion: tab default = Peta (live), Direktori didemosi jadi tab sekunder** — urutan nav: Peta · Jelajah · Tersimpan · Saya; analytics admin utuh. |
+
+#### Yang tersisa / catatan handoff Tier 3
+
+- **OG per-place**: tidak mungkin di Pages statis tanpa prerender; link share `/place/:id` memakai OG app-level. Kalau mau OG per-place, butuh Worker prerender kecil (evaluasi biaya-vs-manfaat dulu).
+- **SW update flow**: tanpa skipWaiting — pengguna dapat versi baru di muat-ulang berikutnya; kalau mau prompt "ada versi baru", tambahkan UI di atas message `SKIP_WAITING` (kaitan A2HS banner, Tier 3).
+- **Bottom-sheet place card mobile** (menggantikan PlaceModal di mobile, bagian 3 Tier 2) — tidak dikerjakan: PlaceModal sudah trap-safe & responsif; bottom-sheet = pembangunan komponen baru yang layak dikerjakan dengan uji perangkat nyata, ditunda.
+- **A2HS banner, streak publik, ping personal, digest bot** — Tier 3, sesuai batas misi.
+- **Foto dataset GMaps mati** (thumbnail/ulasan) — butuh re-seed atau migrasi Overture (backlog).
+- **VITE_BOT_NUMBER** masih belum diset (lihat 8.6).
