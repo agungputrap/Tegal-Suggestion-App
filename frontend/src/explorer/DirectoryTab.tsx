@@ -92,35 +92,16 @@ export function DirectoryTab({
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
-      {/* Filter & Controls — satu baris di desktop: pencarian melebar +
-          4 select setinggi sama; di mobile select jadi grid 2 kolom */}
+      {/* Filter & Controls — PENCARIAN TIDAK ADA DI SINI: satu-satunya
+          search adalah milik hero di atas (state `search` yang sama), supaya
+          tidak ada dua kotak pencarian untuk filter yang sama. Baris ini
+          hanya filter: 4 select selebar baris di desktop, grid 2×2 di HP. */}
       <div className={`${CARD} p-4 sm:p-5 mb-6`}>
-        <div className="flex flex-col lg:flex-row gap-3 mb-4">
-          <div className="relative lg:flex-1 lg:min-w-[220px]">
-            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input
-              type="text"
-              value={filters.search}
-              onChange={(e) => onFilterChange.setSearch(e.target.value)}
-              placeholder="Cari nama cafe, restoran, menu, jalan, wifi..."
-              className="w-full pl-10 pr-9 py-2.5 min-h-[44px] bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
-            />
-            {filters.search && (
-              <button
-                onClick={() => onFilterChange.setSearch("")}
-                title="Bersihkan pencarian"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <i className="fa-solid fa-circle-xmark"></i>
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap lg:flex-nowrap gap-2">
+        <div className="grid grid-cols-2 lg:flex gap-2 mb-4">
             <select
               value={filters.city}
               onChange={(e) => onFilterChange.setCity(e.target.value)}
-              className={`${selectClass} min-h-[44px] w-full sm:w-[148px] lg:w-[136px]`}
+              className={`${selectClass} min-h-[44px] w-full lg:flex-1`}
             >
               <option value="all">Semua Wilayah</option>
               <option value="Kota Tegal">Kota Tegal</option>
@@ -131,7 +112,7 @@ export function DirectoryTab({
             <select
               value={filters.category}
               onChange={(e) => onFilterChange.setCategory(e.target.value)}
-              className={`${selectClass} min-h-[44px] w-full sm:w-[210px] lg:w-[190px]`}
+              className={`${selectClass} min-h-[44px] w-full lg:flex-1`}
             >
               <option value="all">
                 Semua Kategori ({places.length > 0 ? totalCount : 0})
@@ -148,7 +129,7 @@ export function DirectoryTab({
               onChange={(e) =>
                 onFilterChange.setMinRating(parseFloat(e.target.value))
               }
-              className={`${selectClass} min-h-[44px] w-full sm:w-[168px] lg:w-[150px]`}
+              className={`${selectClass} min-h-[44px] w-full lg:flex-1`}
             >
               <option value="0">Semua Rating</option>
               <option value="4.8">4.8+ Luar Biasa</option>
@@ -161,14 +142,13 @@ export function DirectoryTab({
               onChange={(e) =>
                 onFilterChange.setSort(e.target.value as SortOption)
               }
-              className={`${selectClass} min-h-[44px] w-full sm:w-[178px] lg:w-[160px] font-medium`}
+              className={`${selectClass} min-h-[44px] w-full lg:flex-1 font-medium`}
             >
               <option value="rating_desc">Rating Tertinggi</option>
               <option value="reviews_desc">Ulasan Terbanyak</option>
               <option value="title_asc">Nama A - Z</option>
             </select>
           </div>
-        </div>
 
         {/* Quick Filter Pills + View Switcher */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
