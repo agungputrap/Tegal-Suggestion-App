@@ -2,8 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Chart from "chart.js/auto";
 import type { ChartConfiguration } from "chart.js";
 import type { Place } from "./types";
-import { formatCount, formatRating } from "./helpers";
-import { CARD } from "../components/ui";
+import { formatCount, formatRating, isOpenNow, nowParts } from "./helpers";
+import { CARD, statClass } from "../components/ui";
 
 type Props = {
   places: Place[];
@@ -76,6 +76,34 @@ function KeyInsights({ places }: { places: Place[] }) {
 
 export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
   const [popularDay, setPopularDay] = useState("Saturday");
+  // Ringkasan dataset (dipindah dari strip publik — angka ini urusan admin)
+  const kpis = useMemo(() => {
+    const { dayIndo, hour, min } = nowParts();
+    let sumRating = 0;
+    let rated = 0;
+    let totalRev = 0;
+    let openNow = 0;
+    let photos = 0;
+    const cats = new Set<string>();
+    places.forEach((p) => {
+      if (p.rating != null) {
+        sumRating += p.rating;
+        rated++;
+      }
+      totalRev += p.review_count;
+      cats.add(p.category);
+      photos += p.images.length || p.images_count || 0;
+      if (isOpenNow(p, dayIndo, hour, min) === true) openNow++;
+    });
+    return {
+      total: places.length,
+      avg: (sumRating / (rated || 1)).toFixed(2),
+      totalRev,
+      openNow,
+      photos,
+      cats: cats.size,
+    };
+  }, [places]);
   const catCanvas = useRef<HTMLCanvasElement | null>(null);
   const ratingCanvas = useRef<HTMLCanvasElement | null>(null);
   const priceCanvas = useRef<HTMLCanvasElement | null>(null);
@@ -309,6 +337,65 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-6">
+      {/* Ringkasan dataset — dipindah dari strip publik Explorer */}
+      <div className={`${CARD} p-4 overflow-x-auto custom-scrollbar`}>
+        <div className="flex divide-x divide-slate-100 dark:divide-slate-800 min-w-max">
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpis.total}
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Total Tempat
+            </div>
+          </div>
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpis.avg}
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold">
+                {" "}
+                ★
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Rata-rata Rating
+            </div>
+          </div>
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpis.totalRev.toLocaleString("id-ID")}
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Total Ulasan
+            </div>
+          </div>
+          <div className={`${statClass(true)}`}>
+            <div className="text-xl font-bold tabular-nums leading-tight inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              {kpis.openNow}
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Buka Sekarang
+            </div>
+          </div>
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpis.cats}
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Kategori
+            </div>
+          </div>
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpis.photos}+
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Galeri Foto
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Row 1: Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className={`${CARD} p-5`}>

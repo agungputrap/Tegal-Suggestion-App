@@ -14,10 +14,12 @@ type Props = {
   children: ReactNode;
 };
 
+// Nav publik — Admin SENGAJA tidak ada di nav (bukan bagian perjalanan
+// konsumen; ia tetap bisa dijangkau lewat ?view=admin atau link kecil
+// di footer). CoreView "admin" tetap ada untuk route-nya.
 const TABS: { id: CoreView; icon: string; label: string; short: string }[] = [
   { id: "hari-ini", icon: "fa-sun", label: "Hari Ini", short: "Hari Ini" },
   { id: "saya", icon: "fa-bullhorn", label: "Jasa Saya", short: "Jasa Saya" },
-  { id: "admin", icon: "fa-user-shield", label: "Admin", short: "Admin" },
 ];
 
 export function AppShell({
@@ -138,6 +140,14 @@ export function AppShell({
           className="text-emerald-600 dark:text-emerald-400 hover:underline"
         >
           kembali ke Tegal F&amp;B Explorer
+        </button>
+        {" · "}
+        {/* Link admin sengaja diskret — bukan navigasi publik */}
+        <button
+          onClick={() => onTabChange("admin")}
+          className="text-slate-400 dark:text-slate-600 hover:text-slate-600 dark:hover:text-slate-400 hover:underline"
+        >
+          admin
         </button>
       </footer>
     </div>

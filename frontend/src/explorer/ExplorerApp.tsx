@@ -27,7 +27,6 @@ import { DirectoryTab } from "./DirectoryTab";
 import { FavoritesTab } from "./FavoritesTab";
 import { PlaceModal } from "./PlaceModal";
 import { ConfirmDialog } from "../components/dialogs";
-import { statClass } from "../components/ui";
 
 // Tab berat di-code-split (#15): chart.js & leaflet hanya dimuat saat tab
 // pertama kali dibuka.
@@ -521,21 +520,6 @@ export function ExplorerApp({
               Koleksi Data F&amp;B &amp; Kuliner Tegal &amp; Sekitarnya
             </span>
           </div>
-          <div className="flex items-center space-x-4 text-xs">
-            <span>
-              <i className="fa-solid fa-store mr-1"></i>{" "}
-              {kpiReady ? kpis.totalPlaces : "--"} Tempat
-            </span>
-            <span className="hidden sm:inline">
-              <i className="fa-solid fa-star text-amber-300 mr-1"></i> Avg{" "}
-              {kpiReady ? kpis.avgRating : "--"}★
-            </span>
-            <span className="hidden md:inline">
-              <i className="fa-solid fa-comments mr-1"></i>{" "}
-              {kpiReady ? kpis.totalReviews.toLocaleString("id-ID") : "--"}+{" "}
-              Ulasan
-            </span>
-          </div>
         </div>
       </div>
 
@@ -589,8 +573,9 @@ export function ExplorerApp({
 
             {/* Right Action Controls */}
             <div className="flex items-center space-x-2">
-              {/* Akses ke app inti (checkin) & admin — selalu tampil, label
-                  disembunyikan di layar kecil supaya tetap bisa dijangkau */}
+              {/* Akses ke app inti (checkin) — satu-satunya tombol publik.
+                  Admin bukan bagian navbar publik: masuk via ?view=admin,
+                  atau tombol ini muncul setelah login admin. */}
               <button
                 onClick={onOpenLegacyApp}
                 title="Buka Hari Ini — app jajan & jasa"
@@ -599,13 +584,15 @@ export function ExplorerApp({
                 <i className="fa-solid fa-store"></i>
                 <span className="hidden lg:inline">Buka Hari Ini</span>
               </button>
-              <button
-                onClick={onOpenAdmin}
-                title="Admin"
-                className="flex p-2 text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition items-center"
-              >
-                <i className="fa-solid fa-user-shield"></i>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={onOpenAdmin}
+                  title="Admin"
+                  className="flex p-2 text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition items-center"
+                >
+                  <i className="fa-solid fa-user-shield"></i>
+                </button>
+              )}
 
               {/* Export Dropdown — admin only */}
               {isAdmin && (
@@ -773,64 +760,6 @@ export function ExplorerApp({
               </div>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Statistik — strip teks, bukan dashboard kartu pelangi
-          (DESIGN.md aturan 6): angka tabular + caption, pemisah tipis.
-          Satu-satunya aksen: "buka sekarang" = live (emerald). */}
-      <section className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/60 py-3 px-4 sm:px-6 lg:px-8 overflow-x-auto custom-scrollbar">
-        <div className="max-w-7xl mx-auto flex divide-x divide-slate-100 dark:divide-slate-800/60 min-w-max">
-          <div className={statClass()}>
-            <div className="text-xl font-bold tabular-nums leading-tight">
-              {kpiReady ? kpis.totalPlaces : "--"}
-            </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-              Total Tempat
-            </div>
-          </div>
-          <div className={statClass()}>
-            <div className="text-xl font-bold tabular-nums leading-tight">
-              {kpiReady ? kpis.avgRating : "--"}
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold"> ★</span>
-            </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-              Rata-rata Rating
-            </div>
-          </div>
-          <div className={statClass()}>
-            <div className="text-xl font-bold tabular-nums leading-tight">
-              {kpiReady ? kpis.totalReviews.toLocaleString("id-ID") : "--"}
-            </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-              Total Ulasan
-            </div>
-          </div>
-          <div className={`${statClass(true)}`}>
-            <div className="text-xl font-bold tabular-nums leading-tight inline-flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              {status === "ready" ? kpis.openNowCount : "--"}
-            </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-              Buka Sekarang
-            </div>
-          </div>
-          <div className={statClass()}>
-            <div className="text-xl font-bold tabular-nums leading-tight">
-              {kpiReady ? kpis.totalCategories : "--"}
-            </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-              Kategori
-            </div>
-          </div>
-          <div className={statClass()}>
-            <div className="text-xl font-bold tabular-nums leading-tight">
-              {kpiReady ? kpis.photoCount : "--"}+
-            </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-              Galeri Foto
-            </div>
-          </div>
         </div>
       </section>
 
