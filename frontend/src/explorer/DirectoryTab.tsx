@@ -92,17 +92,18 @@ export function DirectoryTab({
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
-      {/* Filter & Controls */}
-      <div className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm mb-6`}>
-        <div className="flex flex-col md:flex-row gap-3 items-center justify-between mb-4">
-          <div className="relative w-full md:w-1/2">
-            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+      {/* Filter & Controls — satu baris di desktop: pencarian melebar +
+          4 select setinggi sama; di mobile select jadi grid 2 kolom */}
+      <div className={`${CARD} p-4 sm:p-5 mb-6`}>
+        <div className="flex flex-col lg:flex-row gap-3 mb-4">
+          <div className="relative lg:flex-1 lg:min-w-[220px]">
+            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <input
               type="text"
               value={filters.search}
               onChange={(e) => onFilterChange.setSearch(e.target.value)}
               placeholder="Cari nama cafe, restoran, menu, jalan, wifi..."
-              className="w-full pl-10 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+              className="w-full pl-10 pr-9 py-2.5 min-h-[44px] bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
             />
             {filters.search && (
               <button
@@ -115,13 +116,13 @@ export function DirectoryTab({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap lg:flex-nowrap gap-2">
             <select
               value={filters.city}
               onChange={(e) => onFilterChange.setCity(e.target.value)}
-              className={selectClass}
+              className={`${selectClass} min-h-[44px] w-full sm:w-[148px] lg:w-[136px]`}
             >
-              <option value="all">📍 Semua Wilayah</option>
+              <option value="all">Semua Wilayah</option>
               <option value="Kota Tegal">Kota Tegal</option>
               <option value="Kabupaten Brebes">Kabupaten Brebes</option>
               <option value="Kabupaten Tegal">Kabupaten Tegal</option>
@@ -130,10 +131,10 @@ export function DirectoryTab({
             <select
               value={filters.category}
               onChange={(e) => onFilterChange.setCategory(e.target.value)}
-              className={selectClass}
+              className={`${selectClass} min-h-[44px] w-full sm:w-[210px] lg:w-[190px]`}
             >
               <option value="all">
-                🍽️ Semua Kategori ({places.length > 0 ? totalCount : 0})
+                Semua Kategori ({places.length > 0 ? totalCount : 0})
               </option>
               {filters.categories.map(([cat, cnt]) => (
                 <option key={cat} value={cat}>
@@ -147,12 +148,12 @@ export function DirectoryTab({
               onChange={(e) =>
                 onFilterChange.setMinRating(parseFloat(e.target.value))
               }
-              className={selectClass}
+              className={`${selectClass} min-h-[44px] w-full sm:w-[168px] lg:w-[150px]`}
             >
-              <option value="0">⭐ Semua Rating</option>
-              <option value="4.8">⭐ 4.8+ Luar Biasa</option>
-              <option value="4.5">⭐ 4.5+ Sangat Baik</option>
-              <option value="4.0">⭐ 4.0+ Baik</option>
+              <option value="0">Semua Rating</option>
+              <option value="4.8">4.8+ Luar Biasa</option>
+              <option value="4.5">4.5+ Sangat Baik</option>
+              <option value="4.0">4.0+ Baik</option>
             </select>
 
             <select
@@ -160,11 +161,11 @@ export function DirectoryTab({
               onChange={(e) =>
                 onFilterChange.setSort(e.target.value as SortOption)
               }
-              className={`${selectClass} font-medium`}
+              className={`${selectClass} min-h-[44px] w-full sm:w-[178px] lg:w-[160px] font-medium`}
             >
-              <option value="rating_desc">🔥 Rating Tertinggi</option>
-              <option value="reviews_desc">💬 Ulasan Terbanyak</option>
-              <option value="title_asc">🔤 Nama A - Z</option>
+              <option value="rating_desc">Rating Tertinggi</option>
+              <option value="reviews_desc">Ulasan Terbanyak</option>
+              <option value="title_asc">Nama A - Z</option>
             </select>
           </div>
         </div>
@@ -286,7 +287,7 @@ function GridSkeleton({ count = 6 }: { count?: number }) {
       {Array.from({ length: count }, (_, i) => (
         <div
           key={i}
-          className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm animate-pulse`}
+          className={`${CARD} overflow-hidden animate-pulse`}
         >
           <div className="h-48 bg-slate-200 dark:bg-slate-800" />
           <div className="p-4 space-y-3">
@@ -364,7 +365,7 @@ function GridView({
         return (
           <div
             key={p.id}
-            className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group`}
+            className={`${CARD} overflow-hidden hover:shadow-xl hover:-translate-y-1 transition duration-300 flex flex-col group`}
           >
             <div
               className="relative h-48 overflow-hidden bg-slate-100 dark:bg-slate-800 cursor-pointer"
@@ -512,7 +513,7 @@ function ListView({
       {places.map((p) => (
         <div
           key={p.id}
-          className={`${CARD} p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}
+          className={`${CARD} p-3 sm:p-4 hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}
         >
           <div
             className="flex items-center space-x-3.5 flex-grow cursor-pointer"
@@ -585,7 +586,7 @@ function TableView({
   onOpenPlace: (id: string) => void;
 }) {
   return (
-    <div className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm`}>
+    <div className={`${CARD} overflow-hidden`}>
       <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full text-left text-xs sm:text-sm">
           <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase text-[11px] tracking-wider">
@@ -756,7 +757,7 @@ function SplitView({
         {places.map((p) => (
           <div
             key={p.id}
-            className={`${CARD} p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500 cursor-pointer transition`}
+            className={`${CARD} p-3.5 hover:shadow-md cursor-pointer transition`}
             onClick={() => selectPlace(p)}
           >
             <div className="flex justify-between items-start">

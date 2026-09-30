@@ -61,7 +61,7 @@ export function ConfirmDialog({
         role="alertdialog"
         aria-modal="true"
         aria-label={title}
-        className={`${CARD} p-5 rounded-2xl max-w-sm w-full shadow-2xl space-y-3`}
+        className={`${CARD} p-5 max-w-sm w-full shadow-[0_24px_48px_-12px_rgba(2,6,23,0.25)] space-y-3`}
       >
         <p className="text-sm font-bold text-slate-900 dark:text-white">
           {title}

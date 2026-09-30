@@ -311,7 +311,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-6">
       {/* Row 1: Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm`}>
+        <div className={`${CARD} p-5`}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center">
@@ -328,7 +328,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
           </div>
         </div>
 
-        <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm`}>
+        <div className={`${CARD} p-5`}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center">
@@ -348,7 +348,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
 
       {/* Row 2: Price and Popular Times */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm`}>
+        <div className={`${CARD} p-5`}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center">
@@ -365,7 +365,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
           </div>
         </div>
 
-        <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm`}>
+        <div className={`${CARD} p-5`}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center">
@@ -396,7 +396,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
 
       {/* Row 3: Leaderboards & Insights */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm`}>
+        <div className={`${CARD} p-5`}>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
             <i className="fa-solid fa-fire text-rose-500 mr-2"></i> Top 5
             Terpopuler (Paling Banyak Diulas)
@@ -434,7 +434,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
           </div>
         </div>
 
-        <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm`}>
+        <div className={`${CARD} p-5`}>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
             <i className="fa-solid fa-award text-amber-500 mr-2"></i> Top 5
             Rating Tertinggi (Min. 100 Ulasan)
@@ -472,7 +472,7 @@ export function AnalyticsTab({ places, dark, onOpenPlace }: Props) {
           </div>
         </div>
 
-        <div className={`${CARD} p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between`}>
+        <div className={`${CARD} p-5 flex flex-col justify-between`}>
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center">
               <i className="fa-solid fa-lightbulb text-emerald-500 mr-2"></i>{" "}
