@@ -499,7 +499,7 @@ function ListView({
             className="flex items-center space-x-3.5 flex-grow cursor-pointer"
             onClick={() => onOpenPlace(p.id)}
           >
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
               <img
                 src={placeThumbnail(p)}
                 alt={p.title}
