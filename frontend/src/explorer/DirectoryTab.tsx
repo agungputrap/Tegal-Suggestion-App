@@ -90,6 +90,16 @@ export function DirectoryTab({
 }: Props) {
   const { dayIndo, hour, min } = nowParts();
 
+  // Reset hanya tampil saat ada filter yang benar-benar aktif — tanpa itu
+  // tombolnya jadi dekorasi permanen (DESIGN.md: ikon/aksi fungsional).
+  const hasActiveFilters =
+    filters.search.trim() !== "" ||
+    filters.city !== "all" ||
+    filters.category !== "all" ||
+    filters.minRating > 0 ||
+    filters.sort !== "rating_desc" ||
+    Object.values(filters.quick).some(Boolean);
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
       {/* Filter & Controls — PENCARIAN TIDAK ADA DI SINI: satu-satunya
@@ -170,12 +180,16 @@ export function DirectoryTab({
                 {label}
               </button>
             ))}
-            <button
-              onClick={onReset}
-              className="inline-flex items-center min-h-[44px] px-2 text-xs text-rose-500 hover:underline ml-2"
-            >
-              <i className="fa-solid fa-rotate-left mr-1"></i>Reset
-            </button>
+            {hasActiveFilters && (
+              <button
+                onClick={onReset}
+                title="Bersihkan semua filter"
+                className="inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-medium transition"
+              >
+                <i className="fa-solid fa-rotate-left"></i>
+                Reset
+              </button>
+            )}
           </div>
 
           <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
