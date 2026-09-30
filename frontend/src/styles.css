@@ -52,6 +52,14 @@ button {
   background-color: transparent;
 }
 
+/* Field form sama: tanpa reset, input bertampil memakai border UA
+   "2px inset" abu-abu (terlihat aneh di search bar hero). */
+input,
+select,
+textarea {
+  border: 0 solid;
+}
+
 /* Form control UA (dropdown select, scrollbar) ikut skema warna halaman */
 html {
   color-scheme: light;
