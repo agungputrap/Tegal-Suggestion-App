@@ -43,6 +43,11 @@ body {
 
 button {
   font-family: inherit;
+  /* Tailwind di-import TANPA preflight (keputusan 2026-08-24) — tombol tanpa
+     kelas border punya border default UA "2px outset" (penyebab tombol
+     ber-"border tebal" di seluruh app). Reset ala preflight: tanpa border,
+     style tetap solid supaya utilitas border-* Tailwind tetap bekerja. */
+  border: 0 solid;
 }
 
 a {

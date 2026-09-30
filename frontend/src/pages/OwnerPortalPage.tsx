@@ -63,7 +63,7 @@ export function OwnerPortalPage({ token }: Props) {
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 glass-nav">
         <div className="max-w-3xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-white">
+            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white">
               <i className="fa-solid fa-key text-sm"></i>
             </div>
             <span className="font-bold text-sm">Portal Pemilik</span>
@@ -100,7 +100,7 @@ export function OwnerPortalPage({ token }: Props) {
             {/* Status hari ini */}
             <div className="text-center space-y-2">
               {/* h1 satu-satunya di halaman portal (sweep a11y tier 2 #36) */}
-              <h1 className="text-xl font-black text-slate-900 dark:text-white">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 {data.provider.name}
               </h1>
               <span

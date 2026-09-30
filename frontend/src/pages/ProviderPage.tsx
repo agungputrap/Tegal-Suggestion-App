@@ -240,7 +240,7 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
         <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto text-2xl">
           <i className="fa-solid fa-circle-xmark"></i>
         </div>
-        <h2 className="text-lg font-black text-slate-900 dark:text-white">
+        <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
           Pendaftaran ditolak
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -279,7 +279,7 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5"></span>
             Menunggu verifikasi admin
           </span>
-          <h2 className="text-lg font-black text-slate-900 dark:text-white">
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
             "Hampir jadi!"
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -292,7 +292,7 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
         {code && (
           <div className={`${CARD} p-5 text-center space-y-3`}>
             <p className={LABEL}>Kode verifikasi kamu</p>
-            <p className="text-3xl font-black tracking-[0.3em] text-emerald-600 dark:text-emerald-400">
+            <p className="text-3xl font-bold tracking-tight tracking-[0.3em] text-emerald-600 dark:text-emerald-400">
               {code}
             </p>
             <div className="flex items-center justify-center gap-2">
@@ -350,7 +350,7 @@ export function ProviderPage({ claimPlaceId }: { claimPlaceId?: string | null })
     return (
       <div className="max-w-2xl mx-auto space-y-5">
         <div className="text-center">
-          <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center justify-center">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center justify-center">
             <i className="fa-solid fa-bullhorn text-emerald-500 mr-2"></i>{" "}
             Daftar Jadi Penyedia
           </h2>
@@ -613,7 +613,7 @@ function ProfileCompletionCard({ provider }: { provider: Provider }) {
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       <div className="text-center">
-        <h2 className="text-xl font-black text-slate-900 dark:text-white">
+        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
           {provider.name}
         </h2>
         <span

@@ -30,11 +30,11 @@ export function AppShell({
 
   return (
     <div className="explorer bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
-      {/* Top Meta Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white text-xs py-1.5 px-4">
+      {/* Top Meta Banner — strip netral gelap (DESIGN.md: tanpa gradient) */}
+      <div className="bg-slate-900 text-slate-300 text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/10 text-slate-200">
               <i className="fa-solid fa-bolt mr-1"></i> App Inti
             </span>
             <span className="font-medium">
@@ -58,11 +58,11 @@ export function AppShell({
           <div className="flex items-center justify-between h-16">
             {/* Logo & Title */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-teal-500/20">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white">
                 <i className="fa-solid fa-store text-lg"></i>
               </div>
               <div>
-                <h1 className="text-lg font-bold bg-gradient-to-r from-slate-900 via-teal-700 to-emerald-700 dark:from-white dark:via-teal-300 dark:to-emerald-400 bg-clip-text text-transparent">
+                <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                   Jajan+Jasa Tegal
                 </h1>
                 <p className="text-xs text-slate-500 dark:text-slate-400">

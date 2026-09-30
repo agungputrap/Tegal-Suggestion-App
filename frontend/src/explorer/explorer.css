@@ -63,11 +63,8 @@
   color: #16a34a;
   font-weight: 600;
 }
-.explorer .qf-btn.active {
-  background-color: #059669;
-  color: #ffffff;
-  border-color: #059669;
-}
+/* .qf-btn.active — fill aktif kini dari kelas Tailwind di pillClass()
+   (ui.ts, DESIGN.md aturan 3: pill tanpa border, aktif solid emerald). */
 .explorer .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;

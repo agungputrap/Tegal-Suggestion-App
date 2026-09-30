@@ -98,8 +98,8 @@ export function ListingCard({
           <div
             className={`w-full h-full flex items-center justify-center text-5xl ${
               isJajanan
-                ? "bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40"
-                : "bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950/40 dark:to-teal-950/40"
+                ? "bg-amber-100 dark:bg-amber-950/40"
+                : "bg-emerald-100 dark:bg-emerald-950/40"
             }`}
           >
             {categoryIcon ?? (isJajanan ? "🍽️" : "🛠️")}

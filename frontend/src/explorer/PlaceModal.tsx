@@ -126,7 +126,7 @@ export function PlaceModal({
         aria-modal="true"
         aria-label={place.title}
         tabIndex={-1}
-        className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden relative focus:outline-none"
+        className="bg-white dark:bg-slate-900 rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-[0_24px_48px_-12px_rgba(2,6,23,0.25)] dark:ring-1 dark:ring-slate-800/60 overflow-hidden relative focus:outline-none"
       >
         {/* Modal Header (Close & share) — tombol 44px touch target (#34) */}
         <div className="absolute top-4 right-4 z-20 flex items-center space-x-2">
@@ -177,7 +177,7 @@ export function PlaceModal({
                       </span>
                     )}
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-black">
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
                     {place.title}
                   </h2>
                   <p className="text-xs text-slate-200 line-clamp-1 mt-0.5">
@@ -252,7 +252,7 @@ export function PlaceModal({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Jadwal jam buka */}
-              <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
                   <i className="fa-solid fa-clock text-emerald-500 mr-2"></i>{" "}
                   Jadwal Jam Buka
@@ -288,7 +288,7 @@ export function PlaceModal({
               </div>
 
               {/* Distribusi bintang */}
-              <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
                   <i className="fa-solid fa-star-half-stroke text-amber-500 mr-2"></i>{" "}
                   Distribusi Bintang Ulasan
@@ -320,7 +320,7 @@ export function PlaceModal({
 
             {/* Fasilitas & layanan */}
             {highlights.length > 0 && (
-              <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center">
                   <i className="fa-solid fa-list-check text-blue-500 mr-2"></i>{" "}
                   Fasilitas &amp; Layanan
@@ -359,7 +359,7 @@ export function PlaceModal({
                     return (
                       <div
                         key={rev.review_id ?? idx}
-                        className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2"
+                        className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl space-y-2"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2.5">
@@ -433,7 +433,7 @@ export function PlaceModal({
             )}
           </div>
         ) : (
-          <div className="mx-4 mb-2 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div className="mx-4 mb-2 px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-slate-600 dark:text-slate-300">
               <span className="font-semibold">Pemilik usaha ini?</span> Klaim
               biar bisa tampil sebagai "buka hari ini" &amp; terhubung WhatsApp.
@@ -486,7 +486,7 @@ export function PlaceModal({
 
             <button
               onClick={() => onToggleFavorite(place.id)}
-              className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center space-x-1.5"
+              className="px-3 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold transition flex items-center space-x-1.5"
             >
               <i
                 className={`${isFav ? "fa-solid text-rose-500" : "fa-regular"} fa-heart`}

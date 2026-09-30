@@ -93,7 +93,7 @@ export function ConsumerPage({ onOpenDetail }: Props) {
       {/* Header halaman */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center">
             <i className="fa-solid fa-sun text-amber-500 mr-2"></i> Buka Hari
             Ini
           </h2>
