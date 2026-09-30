@@ -477,7 +477,7 @@ function GridView({
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Buka di Google Maps"
-                    className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                    className="p-2 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
                   >
                     <i className="fa-solid fa-arrow-up-right-from-square text-xs"></i>
                   </a>
@@ -564,7 +564,7 @@ function ListView({
                 href={p.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
+                className="p-2 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition"
               >
                 <i className="fa-solid fa-map-location-dot"></i>
               </a>

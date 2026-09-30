@@ -149,8 +149,8 @@ export function ProviderDetailPage({ id, onBack }: Props) {
           <div
             className={`w-full h-full flex items-center justify-center text-7xl ${
               isJajanan
-                ? "bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40"
-                : "bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950/40 dark:to-teal-950/40"
+                ? "bg-amber-100 dark:bg-amber-950/40"
+                : "bg-emerald-100 dark:bg-emerald-950/40"
             }`}
           >
             {isJajanan ? "🍜" : "🛠️"}
@@ -175,7 +175,7 @@ export function ProviderDetailPage({ id, onBack }: Props) {
               </span>
             )}
           </div>
-          <h2 className="text-xl sm:text-2xl font-black">{provider.name}</h2>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">{provider.name}</h2>
           {checkinLabel && (
             <p
               className={`inline-flex items-center mt-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold backdrop-blur-sm ${

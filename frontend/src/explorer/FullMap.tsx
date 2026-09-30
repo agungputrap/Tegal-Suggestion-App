@@ -342,7 +342,7 @@ export function FullMap({
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow flex flex-col">
-      <div className={`${CARD} rounded-2xl border border-slate-200 dark:border-slate-800 p-4 mb-4 shadow-sm flex flex-wrap items-center justify-between gap-3`}>
+      <div className={`${CARD} p-4 mb-4 flex flex-wrap items-center justify-between gap-3`}>
         <div className="flex items-center space-x-2">
           <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-sm font-bold">
@@ -396,7 +396,7 @@ export function FullMap({
 
       {/* Tinggi peta konsisten di semua tampilan (tier 2 #36):
           420px mobile / 550px desktop — sama dengan SplitView & MapView. */}
-      <div className="h-[420px] lg:h-[550px] w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm relative">
+      <div className="h-[420px] lg:h-[550px] w-full rounded-xl overflow-hidden shadow-[0_1px_2px_rgba(2,6,23,0.05),0_12px_32px_-16px_rgba(2,6,23,0.10)] dark:ring-1 dark:ring-slate-800/60 relative">
         {/* absolute inset-0: height:100% tidak reliable di sini karena rantai
             tinggi parent tidak eksplisit (beda dengan ref yang set html.h-full) */}
         <div ref={mapElRef} className="absolute inset-0"></div>
@@ -406,7 +406,7 @@ export function FullMap({
           onClick={locateMe}
           aria-label="Lokasi saya"
           title="Lokasi saya"
-          className="absolute bottom-4 right-4 z-[1000] w-11 h-11 rounded-full bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-slate-800 transition"
+          className="absolute bottom-4 right-4 z-[1000] w-11 h-11 rounded-full bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-lg flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-slate-800 transition"
         >
           <i
             className={`fa-solid ${locating ? "fa-spinner fa-spin" : "fa-location-crosshairs"}`}
@@ -417,7 +417,7 @@ export function FullMap({
             selalu terbuka menutupi peta di layar 360px */}
         <div className="absolute bottom-4 left-4 z-[1000]">
           {legendOpen ? (
-            <div className="bg-white/95 dark:bg-slate-900/95 p-3 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 text-xs backdrop-blur-md max-w-xs">
+            <div className="bg-white/95 dark:bg-slate-900/95 p-3 rounded-xl shadow-lg text-xs backdrop-blur-md max-w-xs">
               <div className="flex items-center justify-between gap-4 mb-2">
                 <span className="font-bold text-slate-700 dark:text-slate-300">
                   Legenda
@@ -466,7 +466,7 @@ export function FullMap({
             <button
               onClick={() => setLegendOpen(true)}
               aria-expanded={false}
-              className="bg-white/95 dark:bg-slate-900/95 px-3 py-2 rounded-full shadow-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 backdrop-blur-md flex items-center space-x-1.5"
+              className="bg-white/95 dark:bg-slate-900/95 px-3 py-2 rounded-full shadow-lg text-xs font-semibold text-slate-700 dark:text-slate-300 backdrop-blur-md flex items-center space-x-1.5"
             >
               <i className="fa-solid fa-palette"></i>
               <span>Legenda</span>

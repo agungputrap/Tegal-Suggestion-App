@@ -27,6 +27,7 @@ import { DirectoryTab } from "./DirectoryTab";
 import { FavoritesTab } from "./FavoritesTab";
 import { PlaceModal } from "./PlaceModal";
 import { ConfirmDialog } from "../components/dialogs";
+import { statClass } from "../components/ui";
 
 // Tab berat di-code-split (#15): chart.js & leaflet hanya dimuat saat tab
 // pertama kali dibuka.
@@ -509,11 +510,11 @@ export function ExplorerApp({
         ]}
       />
 
-      {/* Top Meta Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white text-xs py-1.5 px-4">
+      {/* Top Meta Banner — strip netral gelap (DESIGN.md: tanpa gradient) */}
+      <div className="bg-slate-900 text-slate-300 text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <div className="flex items-center space-x-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/10 text-slate-200">
               <i className="fa-solid fa-map-location-dot mr-1"></i> Data Gmaps
             </span>
             <span className="font-medium">
@@ -542,12 +543,12 @@ export function ExplorerApp({
       <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 glass-nav">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo & Title */}
+            {/* Logo & Title — solid, tanpa gradient text (DESIGN.md aturan 5/8) */}
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white">
                 <i className="fa-solid fa-utensils text-lg"></i>
               </div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-slate-900 via-emerald-800 to-teal-700 dark:from-white dark:via-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
+              <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
                 Tegal F&amp;B Explorer
               </h1>
             </div>
@@ -691,12 +692,13 @@ export function ExplorerApp({
 
       {/* Hero "yang buka sekarang" (tier 1 #36) — produk inti di atas fold:
           hitungan live + pencarian + feed check-in hari ini. Direktori F&B
-          tetap ada di bawah (tidak dihapus), peta 1 tap lewat bottom nav. */}
-      <section className="bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white">
+          tetap ada di bawah (tidak dihapus), peta 1 tap lewat bottom nav.
+          Satu warna brand-deep, tanpa gradient (DESIGN.md aturan 5). */}
+      <section className="bg-emerald-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black">
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
                 Yang buka sekarang di Tegal
               </h2>
               <p className="text-xs sm:text-sm text-emerald-100 mt-1">
@@ -748,7 +750,7 @@ export function ExplorerApp({
                   <button
                     key={l.id}
                     onClick={() => onOpenProvider(l.id)}
-                    className="flex-shrink-0 w-52 text-left bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl p-3 transition"
+                    className="flex-shrink-0 w-52 text-left bg-white/10 hover:bg-white/[0.18] rounded-xl p-3 transition"
                   >
                     <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-100">
                       <span>{l.category_type === "jajanan" ? "🍜" : "🛠️"}</span>
@@ -774,91 +776,59 @@ export function ExplorerApp({
         </div>
       </section>
 
-      {/* Hero KPI Metric Cards */}
-      <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-4 px-4 sm:px-6 lg:px-8 shadow-sm">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {/* Class Tailwind ditulis statis (tidak bisa dinamis via template string) */}
-          <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 p-3 rounded-xl flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-              <i className="fa-solid fa-shop"></i>
+      {/* Statistik — strip teks, bukan dashboard kartu pelangi
+          (DESIGN.md aturan 6): angka tabular + caption, pemisah tipis.
+          Satu-satunya aksen: "buka sekarang" = live (emerald). */}
+      <section className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/60 py-3 px-4 sm:px-6 lg:px-8 overflow-x-auto custom-scrollbar">
+        <div className="max-w-7xl mx-auto flex divide-x divide-slate-100 dark:divide-slate-800/60 min-w-max">
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpiReady ? kpis.totalPlaces : "--"}
             </div>
-            <div>
-              <div className="text-lg font-extrabold text-emerald-950 dark:text-emerald-200">
-                {kpiReady ? kpis.totalPlaces : "--"}
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Total Tempat
-              </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Total Tempat
             </div>
           </div>
-
-          <div className="bg-amber-50/50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 p-3 rounded-xl flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
-              <i className="fa-solid fa-star"></i>
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpiReady ? kpis.avgRating : "--"}
+              <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold"> ★</span>
             </div>
-            <div>
-              <div className="text-lg font-extrabold text-amber-950 dark:text-amber-200">
-                {kpiReady ? kpis.avgRating : "--"} ★
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Rata-rata Rating
-              </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Rata-rata Rating
             </div>
           </div>
-
-          <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 p-3 rounded-xl flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
-              <i className="fa-solid fa-comment-dots"></i>
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpiReady ? kpis.totalReviews.toLocaleString("id-ID") : "--"}
             </div>
-            <div>
-              <div className="text-lg font-extrabold text-blue-950 dark:text-blue-200">
-                {kpiReady ? kpis.totalReviews.toLocaleString("id-ID") : "--"}
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Total Ulasan
-              </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Total Ulasan
             </div>
           </div>
-
-          <div className="bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/40 p-3 rounded-xl flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
-              <i className="fa-solid fa-layer-group"></i>
+          <div className={`${statClass(true)}`}>
+            <div className="text-xl font-bold tabular-nums leading-tight inline-flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              {status === "ready" ? kpis.openNowCount : "--"}
             </div>
-            <div>
-              <div className="text-lg font-extrabold text-purple-950 dark:text-purple-200">
-                {kpiReady ? kpis.totalCategories : "--"}
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Kategori Kuliner
-              </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Buka Sekarang
             </div>
           </div>
-
-          <div className="bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 p-3 rounded-xl flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
-              <i className="fa-solid fa-clock"></i>
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpiReady ? kpis.totalCategories : "--"}
             </div>
-            <div>
-              <div className="text-lg font-extrabold text-rose-950 dark:text-rose-200">
-                {status === "ready" ? `${kpis.openNowCount} Tempat` : "--"}
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Buka Saat Ini
-              </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Kategori
             </div>
           </div>
-
-          <div className="bg-teal-50/50 dark:bg-teal-950/20 border border-teal-100 dark:border-teal-900/40 p-3 rounded-xl flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
-              <i className="fa-solid fa-camera"></i>
+          <div className={statClass()}>
+            <div className="text-xl font-bold tabular-nums leading-tight">
+              {kpiReady ? kpis.photoCount : "--"}+
             </div>
-            <div>
-              <div className="text-lg font-extrabold text-teal-950 dark:text-teal-200">
-                {kpiReady ? kpis.photoCount : "--"}+
-              </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Galeri Foto
-              </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              Galeri Foto
             </div>
           </div>
         </div>

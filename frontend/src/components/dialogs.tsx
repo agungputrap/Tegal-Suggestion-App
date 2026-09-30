@@ -94,7 +94,7 @@ export function Toast({ message }: { message: string | null }) {
   return (
     <div
       role="status"
-      className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[1100] bg-slate-900/95 dark:bg-slate-800/95 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg border border-slate-700"
+      className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[1100] bg-slate-900/95 dark:bg-slate-800/95 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg"
     >
       {message}
     </div>

@@ -65,7 +65,7 @@ export function AdminPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center">
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center">
             <i className="fa-solid fa-user-shield text-emerald-500 mr-2"></i>{" "}
             Dashboard Admin
           </h2>
@@ -143,10 +143,10 @@ function AdminLogin({ onSuccess }: { onSuccess: (token: string) => void }) {
     <div className="max-w-md mx-auto py-8">
       <form className={`${CARD} p-6 space-y-4`} onSubmit={handleSubmit}>
         <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto mb-3 shadow-md shadow-emerald-500/20">
+          <div className="w-14 h-14 rounded-xl bg-emerald-600 text-white flex items-center justify-center mx-auto mb-3">
             <i className="fa-solid fa-user-shield text-xl"></i>
           </div>
-          <h2 className="text-lg font-black text-slate-900 dark:text-white">
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
             Login Admin
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
