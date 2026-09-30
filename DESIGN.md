@@ -66,5 +66,37 @@ icon: "FontAwesome hanya di tempat fungsional (status, aksi). Jangan jadi dekora
    menggantikan aturan aksesibilitas `docs/dev-standards.md`.
 10. **Touch target ≥44px tetap wajib** (tier 0 #34).
 
+## Mode gelap — skema Linear (copas, jangan karangan)
+
+> Sumber: [DESIGN.md Linear — soul-design-md (GitHub)](https://github.com/soulcore-dev/soul-design-md/blob/main/designs/linear/DESIGN.md),
+> plus [analisis surface ladder](https://www.shadcn.io/design/linear) dan
+> [zinc dark shadcn](https://ui.shadcn.com/docs/theming). Prinsip kuncinya:
+> **near-black NETRAL (bukan biru/ungu slate)**, elevasi lewat *luminance
+> stacking* (permukaan makin terang = makin tinggi — bukan drop-shadow),
+> dan teks 4 tingkat kontras.
+
+Implementasi: blok `.dark { --color-slate-*: … }` di `explorer.css`
+(override var tema Tailwind v4 — semua utilitas `slate-*` di bawah `.dark`
+ternada ulang otomatis). Nilai lama `#0f172a` (slate-950 biru) = penyebab
+wajah "template AI".
+
+| Peran | Nilai | Menggantikan |
+|-------|-------|--------------|
+| Halaman | `#08090a` | slate-950 `#020617` |
+| Kartu / panel / header | `#0f1011` | slate-900 `#0f172a` |
+| Chip / input / hover | `#1f2023` | slate-800 `#1e293b` |
+| Hover lebih terang | `#26282b` | slate-700 `#334155` |
+| Teks primer | `#f7f8f8` | slate-100 `#f1f5f9` |
+| Teks sekunder | `#d0d6e0` | slate-300 `#cbd5e1` |
+| Teks tersier | `#8a8f98` | slate-400 `#94a3b8` |
+| Muted (dekoratif) | `#74787f` | slate-500 `#64748b` |
+| Hero brand (dark) | `#0e3d2c` | emerald-700 `#047857` |
+| Aksen aksi | `#059669` (tetap) | — |
+
+Aturan tambahan mode gelap: **jangan pakai drop-shadow** — kenaikan level
+permukaan cukup dengan perbedaan luminance + hairline
+(`dark:ring-slate-800/60`). Teks muted `#74787f` hanya untuk dekorasi;
+teks yang membawa informasi minimal `#8a8f98` (5.4:1 di panel).
+
 Penerapan token hidup: `frontend/src/components/ui.ts` (satu-satunya sumber kelas
 bersama). Kalau token di dokumen ini berubah, ubah `ui.ts` di commit yang sama.

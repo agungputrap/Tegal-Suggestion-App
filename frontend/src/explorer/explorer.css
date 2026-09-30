@@ -22,6 +22,37 @@
   --color-brand-900: #14532d;
 }
 
+/*
+ * Mode gelap — skema Linear (token di-copas dari DESIGN.md Linear:
+ * github.com/soulcore-dev/soul-design-md — bg #08090a, panel #0f1011,
+ * ladder #191a1b/#1f2023, teks #f7f8f8/#d0d6e0/#8a8f98, hairline border).
+ *
+ * Slate biru-ungu Tailwind (#0f172a dkk) = wajah "template AI" — di sini
+ * SELURUH tangga slate diganti menjadi near-black NETRAL via override var
+ * tema, jadi semua utilitas slate-* yang muncul di bawah .dark ikut
+ * ternada ulang tanpa menyentuh file per file. Elevasi ala Linear:
+ * luminance stacking (permukaan lebih terang = lebih tinggi), bukan
+ * drop-shadow; border hairline rgba putih.
+ */
+.dark {
+  /* permukaan */
+  --color-slate-950: #08090a; /* halaman — Marketing Black */
+  --color-slate-900: #0f1011; /* kartu/panel/header — Panel Dark */
+  --color-slate-800: #1f2023; /* chip/input/hover — Secondary Surface */
+  --color-slate-700: #26282b; /* hover lebih terang */
+
+  /* teks (4 tingkat Linear) */
+  --color-slate-100: #f7f8f8; /* primer */
+  --color-slate-200: #ececee; /* judul sekunder */
+  --color-slate-300: #d0d6e0; /* sekunder */
+  --color-slate-400: #8a8f98; /* tersier (5.4:1 di panel) */
+  --color-slate-500: #74787f; /* muted — dekoratif saja */
+
+  /* brand: hero & hover tombol jadi hijau dalam, bukan hijau teriak */
+  --color-emerald-700: #0e3d2c;
+  --color-emerald-800: #0a2f22;
+}
+
 .explorer {
   font-family: var(--font-sans);
 }
