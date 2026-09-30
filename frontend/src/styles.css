@@ -44,10 +44,20 @@ body {
 button {
   font-family: inherit;
   /* Tailwind di-import TANPA preflight (keputusan 2026-08-24) — tombol tanpa
-     kelas border punya border default UA "2px outset" (penyebab tombol
-     ber-"border tebal" di seluruh app). Reset ala preflight: tanpa border,
-     style tetap solid supaya utilitas border-* Tailwind tetap bekerja. */
+     kelas border/background membawa default UA "border 2px outset" DAN
+     "background: ButtonFace" (putih) — penyebab tombol/strip putih yang
+     menembus dark mode di seluruh app. Reset ala preflight: transparan,
+     border 0 tapi style solid supaya utilitas border-* Tetap bekerja. */
   border: 0 solid;
+  background-color: transparent;
+}
+
+/* Form control UA (dropdown select, scrollbar) ikut skema warna halaman */
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
 }
 
 a {
