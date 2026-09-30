@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Place } from "./types";
 import { waChatLink } from "../api";
 import { Toast } from "../components/dialogs";
+import { SmartImage } from "../components/SmartImage";
 import {
   FALLBACK_IMAGE_LARGE,
   daysIndo,
@@ -151,13 +152,12 @@ export function PlaceModal({
           {images.length > 0 && (
             <>
               <div className="relative bg-slate-950 h-64 sm:h-80 w-full overflow-hidden">
-                <img
-                  src={images[heroIdx]?.image ?? FALLBACK_IMAGE_LARGE}
+                <SmartImage
+                  src={images[heroIdx]?.image}
+                  fallback={FALLBACK_IMAGE_LARGE}
                   alt={place.title}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = FALLBACK_IMAGE_LARGE;
-                  }}
+                  loading="eager"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
 
@@ -190,7 +190,7 @@ export function PlaceModal({
               {images.length > 1 && (
                 <div className="flex space-x-2 p-3 bg-slate-900 overflow-x-auto custom-scrollbar">
                   {images.map((img, idx) => (
-                    <img
+                    <SmartImage
                       key={idx}
                       src={img.image}
                       alt={`Foto ${idx + 1}`}
@@ -363,11 +363,8 @@ export function PlaceModal({
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2.5">
-                            <img
-                              src={
-                                rev.ProfilePicture ||
-                                "https://lh3.googleusercontent.com/a/default-user=s120"
-                              }
+                            <SmartImage
+                              src={rev.ProfilePicture}
                               alt={rev.Name ?? "Pengunjung"}
                               className="w-8 h-8 rounded-full object-cover"
                             />
@@ -390,7 +387,7 @@ export function PlaceModal({
                         {revImages.length > 0 && (
                           <div className="flex space-x-1.5 pt-1 overflow-x-auto custom-scrollbar">
                             {revImages.map((img, i) => (
-                              <img
+                              <SmartImage
                                 key={i}
                                 src={img}
                                 alt={`Foto ulasan ${i + 1}`}

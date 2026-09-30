@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Foto tidak tersedia">
+  <rect width="800" height="600" fill="#1f2023"/>
+  <g fill="none" stroke="#8a8f98" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M330 300h140"/>
+    <path d="M345 300v90a55 55 0 0 0 110 0v-90"/>
+    <path d="M345 300v-95m0 55a20 20 0 0 1-20-20v-35m20 0a20 20 0 0 0 20-20m-20 40v-20"/>
+    <path d="M455 300v-95m0 40a25 25 0 0 0 25-25v-15m-25 0v-25m-25 25v-25"/>
+    <path d="M400 445v55"/>
+  </g>
+  <text x="400" y="540" text-anchor="middle" font-family="system-ui, sans-serif" font-size="26" fill="#62666d">Foto tidak tersedia</text>
+</svg>

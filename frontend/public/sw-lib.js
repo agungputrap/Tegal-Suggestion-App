@@ -40,7 +40,8 @@
       return (
         pathname.indexOf("/assets/") === 0 ||
         pathname === "/manifest.json" ||
-        pathname === "/favicon.svg"
+        pathname === "/favicon.svg" ||
+        pathname === "/placeholder.svg"
       );
     },
 
