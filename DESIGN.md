@@ -98,5 +98,29 @@ permukaan cukup dengan perbedaan luminance + hairline
 (`dark:ring-slate-800/60`). Teks muted `#74787f` hanya untuk dekorasi;
 teks yang membawa informasi minimal `#8a8f98` (5.4:1 di panel).
 
+## Audit UI (wajib sebelum deploy yang menyentuh tampilan)
+
+> Kenapa wajib: project ini memakai Tailwind **tanpa preflight** (keputusan
+> 2026-08-24), jadi default stylesheet browser (border tombol `2px outset`,
+> background `ButtonFace`, border input `2px inset`, margin heading/list)
+> **bocor ke UI kalau elemennya tidak berkelas lengkap** — dan ia sudah
+> lolos dua kali (tombol border tebal, search bar) meski sudah ada reset
+> parsial. Review visual "bandingkan sebelum/sesudah" TIDAK cukup —
+> gunakan scan kriteria berikut dengan tooling browser sesi:
+
+1. Cakupan: dark + light × viewport 360/768/1280 × halaman landing,
+   Jelajah, Tersimpan, modal place, app inti (Hari Ini/Jasa Saya),
+   portal + admin.
+2. **Scan background terang di dark**: elemen terlihat dengan luminance
+   background > 0.55 ditandai; offender harus 0 kecuali yang by-design
+   (catat: pill putih di hero hijau, cluster peta).
+3. **Scan border gaya UA**: `border-style: inset|outset` di mana pun, atau
+   border ≥2px pada input/select/textarea/button tanpa kelas border
+   eksplisit — harus 0 di kedua mode.
+4. **Kontras mencurigakan**: teks dengan rasio < 4.5:1 terhadap latar
+   efektifnya — periksa manual apakah teks informasi atau dekoratif.
+5. Ketemu offender = perbaiki di sumbernya (kelas lengkap, atau reset
+   `styles.css` bila berlaku umum), lalu ulangi scan sampai 0.
+
 Penerapan token hidup: `frontend/src/components/ui.ts` (satu-satunya sumber kelas
 bersama). Kalau token di dokumen ini berubah, ubah `ui.ts` di commit yang sama.
