@@ -8,7 +8,7 @@ Suggestion map for Tegal residents & newcomers — **food** (snacks, meals, tren
 
 Dua wajah aplikasi:
 
-1. **Tegal F&B Explorer** (halaman utama) — direktori & analisis 63 tempat kuliner Tegal hasil ekspor Google Maps: pencarian + filter, 4 mode tampilan (grid/list/tabel/split), peta ber-cluster, dashboard statistik (Chart.js), favorit + perbandingan, detail tempat (foto, jam buka, ulasan).
+1. **Tegal F&B Explorer** (halaman utama) — pengalaman live di atas: hero "Yang buka sekarang di Tegal" dengan hitungan live + pencarian, lalu peta berlapis (direktori & live check-in) sebagai tab utama. Direktori 63 tempat kuliner hasil ekspor Google Maps jadi tab sekunder: filter, 4 mode tampilan (grid/list/tabel/split), favorit + perbandingan, detail tempat (foto, jam buka, ulasan). Statistik dataset ada di tab admin.
 2. **App inti check-in** — penyedia daftar sekali lalu check-in harian via GPS; konsumen hanya melihat yang buka hari ini, dan menghubungi via WhatsApp.
 
 ## Features — sudah jadi
@@ -25,6 +25,8 @@ Dua wajah aplikasi:
 - **Detail penyedia sebagai halaman penuh** `/provider/<id>` (#4a/#19) — deep-link, back/refresh via pushState
 - **"Satu peta" berlapis (#21/#22)** — tab Peta Explorer: direktori (scrape) + lapisan live "Buka Hari Ini" dari check-in (jajanan + jasa), popup live → `/provider/<id>`
 - **Seed penyedia demo** `npm run db:seed:demo` (#23/#24) — 18 bisnis campuran food+jasa, idempoten, re-run refresh check-in hari ini
+- **Klaim listing direktori (#31)** — "Klaim listing ini" di PlaceModal → registrasi ter-prefill; place terklaim dapat badge terverifikasi + tombol ke halaman usahanya
+- **UI/UX Tier 0–2 (#34/#36)** — dark mode skema [Linear](DESIGN.md) + light mode, landing live (hero hitungan real-time + search + feed check-in), bottom nav mobile, **PWA offline-first** (service worker: shell + dataset + tile; app tetap jalan tanpa jaringan), deep-link `/place/:id` (shareable), tombol Reset kontekstual, fallback foto (SmartImage), a11y (focus-trap, aria-live, kontras AA), touch target ≥44px
 
 ## Features — to do
 
@@ -37,13 +39,13 @@ Tidak ada untuk MVP — semua item semula "to do" sudah selesai (fase 0–6, lih
 - ~~Registrasi dengan verifikasi WhatsApp (kode 6 digit + approval admin)~~ (#6)
 - ~~Cluster markers di peta check-in~~ — cluster penuh di peta Explorer; peta check-in menyusul jika dibutuhkan
 
-Rencana berikutnya (post-hackathon): test coverage lebih luas, **claim-and-verify** direktori ↔ provider (fase 3 [`docs/proposals/unified-map.md`](docs/proposals/unified-map.md)), evaluasi **Overture Maps** sebagai sumber direktori bersih-lisensi (5.457 POI Tegal terukur, CDLA-Permissive), custom domain `.id`.
+Rencana berikutnya (post-hackathon): test coverage lebih luas, evaluasi **Overture Maps** sebagai sumber direktori bersih-lisensi (5.457 POI Tegal terukur, CDLA-Permissive), **OG preview per-place** (butuh prerender — lihat `docs/uiux-plan.md` §8.8), A2HS banner + streak/ping/digest (Tier 3), custom domain `.id`.
 
 ## Known gaps — F&B vs jasa
 
 App ini didesain untuk **kuliner + jasa rumah tangga** (lihat [`docs/prd.md`](docs/prd.md)). Status setelah peta berlapis (#21/#22) & seed demo (#23/#24):
 
-- ~~**"Satu peta" belum menyatu**~~ — **selesai untuk demo**: tab Peta Explorer kini dua lapisan (direktori F&B + live check-in jajanan/jasa). Sisa pekerjaan pasca-hackathon: klaim listing (fase 3 proposal).
+- ~~**"Satu peta" belum menyatu**~~ — **selesai untuk demo**: tab Peta Explorer kini dua lapisan (direktori F&B + live check-in jajanan/jasa). ~~Klaim listing (fase 3 proposal)~~ — **selesai (#31)**: tombol "Klaim listing ini" di PlaceModal.
 - **Data jasa masih demo** — kategori jasa lengkap & alur end-to-end (registrasi → verifikasi → check-in → listing → WhatsApp), dan `npm run db:seed:demo` mengisi 18 bisnis campuran (10 buka hari ini). **Tapi** penyedia jasa NYATA belum ada — rekrutmen manual 5–10 usaha tetap jadi tugas tim sebelum demo day.
 - **Direktori masih scrape Google Maps** — dataset `places` (63 F&B) read-only dari ekspor GMaps (ToS: hanya untuk demo/internal). Overture Maps teruji berisi 5.457 POI Tegal ber-lisensi CDLA-Permissive — kandidat migrasi direktori pasca-hackathon (lihat `docs/decisions.md` 2026-09-29).
 
@@ -80,10 +82,12 @@ Full run / seed / test / deploy instructions: [`docs/runbook.md`](docs/runbook.m
 
 | Doc | What it is |
 | --- | ---------- |
+| [`DESIGN.md`](DESIGN.md) | Design system: token warna/radius/shadow, aturan UI, mode gelap skema Linear, checklist Audit UI |
 | [`docs/prd.md`](docs/prd.md) | Product requirements: problem, users, flows, acceptance criteria |
 | [`docs/tech-spec.md`](docs/tech-spec.md) | Canonical spec: stack, data model, API contract |
 | [`docs/dev-standards.md`](docs/dev-standards.md) | Coding conventions + validation (Definition of Done) |
 | [`docs/ownership.md`](docs/ownership.md) | Who owns what (team) |
 | [`docs/decisions.md`](docs/decisions.md) | Decision log |
 | [`docs/runbook.md`](docs/runbook.md) | Run / seed / test / deploy commands |
+| [`docs/uiux-plan.md`](docs/uiux-plan.md) | Rencana & status eksekusi UI/UX (Tier 0–3) |
 | [`TASKS.md`](TASKS.md) | Live task ledger |
