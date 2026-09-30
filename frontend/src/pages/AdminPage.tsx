@@ -17,6 +17,7 @@ import {
 } from "../adminApi";
 import type { AdminCategory, AdminProvider, AdminStats } from "../adminApi";
 import { resolvePhotoUrl } from "../api";
+import { SmartImage } from "../components/SmartImage";
 import {
   BTN_DANGER,
   BTN_PRIMARY,
@@ -496,7 +497,7 @@ function ProvidersPanel({ token }: { token: string }) {
               key={p.id}
             >
               {photoSrc ? (
-                <img
+                <SmartImage
                   className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                   src={photoSrc}
                   alt={p.name}
